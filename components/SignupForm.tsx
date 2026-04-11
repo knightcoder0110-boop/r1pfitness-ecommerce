@@ -105,7 +105,7 @@ export default function SignupForm({ onSwitchToPassword }: SignupFormProps) {
           <h2 className="font-display text-4xl sm:text-5xl tracking-wider">
             JOIN THE OHANA
           </h2>
-          <p className="font-serif italic text-base text-text/60 leading-relaxed max-w-sm mx-auto">
+          <p className="font-serif italic text-lg sm:text-xl text-text/80 leading-relaxed max-w-sm mx-auto">
             Be the first to receive the drop password. Family gets in first. Always.
           </p>
         </div>

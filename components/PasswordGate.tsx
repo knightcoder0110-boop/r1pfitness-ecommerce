@@ -78,7 +78,7 @@ export default function PasswordGate({ onSwitchToSignup }: PasswordGateProps) {
       </form>
 
       <div className="flex flex-col items-center gap-2 w-full">
-        <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-text/35">
+        <p className="font-mono text-sm tracking-[0.2em] uppercase text-text/70 font-bold">
           No password yet?
         </p>
         <motion.button
