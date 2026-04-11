@@ -77,12 +77,19 @@ export default function PasswordGate({ onSwitchToSignup }: PasswordGateProps) {
         </motion.button>
       </form>
 
-      <button
-        onClick={onSwitchToSignup}
-        className="font-serif italic text-sm text-text/70 hover:text-gold transition-colors underline underline-offset-4 decoration-text/40 hover:decoration-gold/50"
-      >
-        No password? Join the Ohana — Get Early Access
-      </button>
+      <div className="flex flex-col items-center gap-2 w-full">
+        <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-text/35">
+          No password yet?
+        </p>
+        <motion.button
+          onClick={onSwitchToSignup}
+          whileHover={{ y: -2, boxShadow: "0 0 28px rgba(201,168,76,0.35)" }}
+          whileTap={{ scale: 0.97 }}
+          className="w-full py-4 border border-gold/60 text-gold font-display text-xl tracking-[0.2em] uppercase rounded-sm bg-gold/5 hover:bg-gold/12 hover:border-gold transition-all duration-200 cursor-pointer"
+        >
+          Join the Ohana — Get Early Access
+        </motion.button>
+      </div>
     </motion.div>
   );
 }

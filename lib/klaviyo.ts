@@ -15,6 +15,8 @@ export async function subscribeToKlaviyo(email: string): Promise<SubscribeResult
   }
 
   try {
+    console.log(`[Klaviyo] Subscribing ${email} to list ${listId}...`);
+
     // Create / update profile and subscribe to list via Klaviyo v3
     const res = await fetch(`${KLAVIYO_API_BASE}/profile-subscription-bulk-create-jobs/`, {
       method: "POST",
@@ -58,14 +60,15 @@ export async function subscribeToKlaviyo(email: string): Promise<SubscribeResult
     });
 
     if (res.ok || res.status === 202) {
+      console.log(`[Klaviyo] ✓ Successfully subscribed ${email} (HTTP ${res.status})`);
       return { success: true };
     }
 
     const errorBody = await res.text();
-    console.error("Klaviyo API error:", res.status, errorBody);
+    console.error(`[Klaviyo] ✗ Failed for ${email} — HTTP ${res.status}:`, errorBody);
     return { success: false, error: "Failed to subscribe. Please try again." };
   } catch (err) {
-    console.error("Klaviyo network error:", err);
+    console.error("[Klaviyo] ✗ Network error:", err);
     return { success: false, error: "Network error. Please try again." };
   }
 }
