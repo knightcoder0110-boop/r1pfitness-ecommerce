@@ -25,7 +25,7 @@ export default function Home() {
           transition={{ duration: 0.7, ease: "easeOut" }}
           className="text-center"
         >
-          <h1 className="font-display text-6xl sm:text-8xl md:text-9xl tracking-[0.1em] leading-none">
+          <h1 className="font-display text-6xl sm:text-8xl md:text-9xl tracking-widest leading-none">
             {siteConfig.brandName}
           </h1>
           <p className="font-serif italic text-lg sm:text-xl md:text-2xl text-text/50 mt-2 tracking-wider">

@@ -60,8 +60,8 @@ export default function DropPage() {
 
       {/* ── Spotlight glow ─────────────────────────────── */}
       <div className="fixed inset-0 z-0 pointer-events-none" aria-hidden="true">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] sm:w-[800px] sm:h-[800px] rounded-full bg-gold/5 blur-[120px] animate-pulse-slow" />
-        <div className="absolute top-1/4 right-1/4 w-[300px] h-[300px] rounded-full bg-coral/8 blur-[100px] animate-pulse-slow-delayed" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-150 h-150 sm:w-200 sm:h-200 rounded-full bg-gold/5 blur-[120px] animate-pulse-slow" />
+        <div className="absolute top-1/4 right-1/4 w-75 h-75 rounded-full bg-coral/8 blur-[100px] animate-pulse-slow-delayed" />
       </div>
 
       {/* ── Content ────────────────────────────────────── */}
@@ -92,8 +92,8 @@ export default function DropPage() {
           variants={fadeUp}
           className="w-40 sm:w-56 h-px relative"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold to-transparent blur-sm opacity-60" />
+          <div className="absolute inset-0 bg-linear-to-r from-transparent via-gold to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-r from-transparent via-gold to-transparent blur-sm opacity-60" />
         </motion.div>
 
         {/* Subtitle */}
@@ -112,14 +112,14 @@ export default function DropPage() {
           className="relative mt-4 p-px rounded-lg overflow-hidden group"
         >
           {/* Animated border gradient */}
-          <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-gold/60 via-coral/40 to-gold/60 animate-border-spin" />
+          <div className="absolute inset-0 rounded-lg bg-linear-to-r from-gold/60 via-coral/40 to-gold/60 animate-border-spin" />
 
           {/* Card interior */}
           <div className="relative rounded-lg bg-bg/95 backdrop-blur-sm px-8 py-8 sm:px-12 sm:py-10 flex flex-col items-center gap-5">
             <p className="font-display text-2xl sm:text-3xl tracking-[0.15em] text-gold">
               EXCLUSIVE ACCESS
             </p>
-            <div className="w-12 h-px bg-gradient-to-r from-transparent via-text/30 to-transparent" />
+            <div className="w-12 h-px bg-linear-to-r from-transparent via-text/30 to-transparent" />
             <p className="font-serif italic text-sm sm:text-base text-text/60 leading-relaxed max-w-sm">
               Real ones get in before the rest.
               This drop is limited — once it&apos;s gone, it&apos;s gone.
