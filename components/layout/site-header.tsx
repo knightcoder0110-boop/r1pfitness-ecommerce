@@ -3,6 +3,7 @@ import { CartButton } from "@/components/cart/cart-button";
 import { Container } from "@/components/ui/container";
 import { ROUTES, SITE } from "@/lib/constants";
 import { MobileNav, type NavLinkItem } from "./mobile-nav";
+import { AccountButton } from "./account-button";
 
 /**
  * Primary nav links. Declared once — both desktop nav and `<MobileNav />`
@@ -53,8 +54,9 @@ export function SiteHeader() {
           </ul>
         </nav>
 
-        {/* Right: cart */}
-        <div className="flex items-center">
+        {/* Right: account + cart */}
+        <div className="flex items-center gap-3">
+          <AccountButton />
           <CartButton />
         </div>
       </Container>

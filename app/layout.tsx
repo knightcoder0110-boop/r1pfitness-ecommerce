@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bebas_Neue, Cormorant_Garamond, Space_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Providers } from "./providers";
 import "./globals.css";
 
 const bebasNeue = Bebas_Neue({
@@ -43,7 +44,9 @@ export default function RootLayout({
       className={`${bebasNeue.variable} ${cormorantGaramond.variable} ${spaceMono.variable} h-full antialiased`}
     >
       <body className="relative min-h-full flex flex-col z-10">
-        {children}
+        <Providers>
+          {children}
+        </Providers>
         <Analytics />
         <SpeedInsights />
       </body>
