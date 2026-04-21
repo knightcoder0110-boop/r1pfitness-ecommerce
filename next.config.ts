@@ -5,15 +5,9 @@ const nextConfig: NextConfig = {
     const permanent = true;
     return [
       // ── Shopify product & collection pages ─────────────
-      { source: "/products/:slug*",    destination: "/", permanent },
-      { source: "/collections/:slug*", destination: "/", permanent },
-      { source: "/collections",        destination: "/", permanent },
-
-      // ── Cart & checkout ─────────────────────────────────
-      { source: "/cart/:path*",        destination: "/", permanent },
-      { source: "/cart",               destination: "/", permanent },
-      { source: "/checkout/:path*",    destination: "/", permanent },
-      { source: "/checkout",           destination: "/", permanent },
+      { source: "/products/:slug*",    destination: "/product/:slug*", permanent },
+      { source: "/collections/:slug*", destination: "/shop/:slug*", permanent },
+      { source: "/collections",        destination: "/shop", permanent },
 
       // ── Account & auth ──────────────────────────────────
       { source: "/account/:path*",     destination: "/", permanent },

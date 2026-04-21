@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ProductGallery, VariantPicker } from "@/components/product";
+import { ProductGallery, ProductPurchase } from "@/components/product";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Price } from "@/components/ui/price";
 import { getCatalog } from "@/lib/catalog";
 import { SITE } from "@/lib/constants";
@@ -82,11 +81,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <p className="font-serif text-lg italic text-text/80">{product.shortDescription}</p>
           ) : null}
 
-          <VariantPicker attributes={product.attributes} />
-
-          <Button size="lg" disabled={outOfStock} className="w-full sm:w-auto">
-            {outOfStock ? "Sold Out" : "Add to Cart"}
-          </Button>
+          <ProductPurchase product={product} />
 
           <section
             className="prose prose-invert max-w-none font-serif text-text/80"

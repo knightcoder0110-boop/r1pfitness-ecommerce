@@ -6,3 +6,5 @@ export { ProductGallery } from "./product-gallery";
 export type { ProductGalleryProps } from "./product-gallery";
 export { VariantPicker } from "./variant-picker";
 export type { VariantPickerProps } from "./variant-picker";
+export { ProductPurchase } from "./product-purchase";
+export type { ProductPurchaseProps } from "./product-purchase";
