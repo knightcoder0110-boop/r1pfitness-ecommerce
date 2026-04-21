@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckoutForm } from "@/components/checkout/checkout-form";
+import { CheckoutSidebar } from "@/components/checkout/checkout-sidebar";
 import { Container } from "@/components/ui/container";
 import { Heading } from "@/components/ui/heading";
 import { ROUTES } from "@/lib/constants";
@@ -50,46 +51,9 @@ export default function CheckoutPage() {
           <CheckoutForm />
         </div>
 
-        {/* Right rail — static trust signals; dynamic summary lives inside CheckoutForm */}
+        {/* Right rail — live order summary + trust signals */}
         <aside className="hidden lg:block">
-          <div className="border border-border p-6">
-            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
-              Why R1P?
-            </p>
-            <ul className="mt-4 space-y-3">
-              {[
-                "Limited drops — every piece is numbered",
-                "Heavyweight 400gsm fabric",
-                "Printed & shipped from Waipahu, HI",
-                "30-day fit guarantee",
-              ].map((point) => (
-                <li key={point} className="flex items-start gap-2">
-                  <span className="mt-px font-mono text-xs text-accent" aria-hidden>
-                    /
-                  </span>
-                  <span className="font-sans text-sm text-muted">{point}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="mt-4 border border-border p-6">
-            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
-              Questions?
-            </p>
-            <p className="mt-2 font-sans text-sm text-muted">
-              DM us on{" "}
-              <a
-                href="https://instagram.com/r1pfitness"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-text underline underline-offset-2 hover:no-underline"
-              >
-                @r1pfitness
-              </a>{" "}
-              — we reply same day.
-            </p>
-          </div>
+          <CheckoutSidebar />
         </aside>
       </div>
     </Container>
