@@ -112,6 +112,8 @@ export interface ProductSummary {
   image?: ImageRef;
   stockStatus: StockStatus;
   isLimited: boolean;
+  /** ISO 8601 date-time string from `date_modified` in the Store API. Used by the sitemap. */
+  updatedAt?: string;
 }
 
 export interface Address {

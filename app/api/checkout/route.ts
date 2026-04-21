@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import type { ZodError } from "zod";
 import {
   CheckoutRequestSchema,
@@ -7,6 +7,7 @@ import {
   createPaymentIntent,
   createWooOrder,
 } from "@/lib/checkout";
+import { checkRateLimit } from "@/lib/api/ratelimit";
 
 /**
  * POST /api/checkout
@@ -24,7 +25,23 @@ import {
  * The Stripe webhook (app/api/webhooks/stripe/route.ts) listens for
  * `payment_intent.succeeded` and transitions the Woo order to "processing".
  */
-export async function POST(req: Request): Promise<NextResponse> {
+export async function POST(req: NextRequest): Promise<NextResponse> {
+  // Rate limit: 5 checkout attempts per IP per minute.
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown";
+  const rl = checkRateLimit(ip, { max: 5, windowMs: 60_000 });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Too many requests — please slow down" },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) },
+      },
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();

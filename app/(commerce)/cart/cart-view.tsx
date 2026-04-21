@@ -2,15 +2,18 @@
 
 import Link from "next/link";
 import { CartLineItem } from "@/components/cart/cart-line-item";
+import { CouponForm } from "@/components/cart/coupon-form";
 import { Button } from "@/components/ui/button";
 import { Price } from "@/components/ui/price";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  useCartCoupon,
   useCartItemCount,
   useCartItems,
   useCartSubtotal,
   useHasHydrated,
 } from "@/lib/cart";
+import { formatMoney } from "@/lib/utils/format";
 import { ROUTES } from "@/lib/constants";
 
 /**
@@ -26,6 +29,7 @@ export function CartView() {
   const items = useCartItems();
   const subtotal = useCartSubtotal();
   const count = useCartItemCount();
+  const coupon = useCartCoupon();
 
   if (!hydrated) {
     return (
@@ -70,7 +74,10 @@ export function CartView() {
         className="h-fit border border-border p-5 sm:p-6 lg:sticky lg:top-[calc(var(--size-header)+1.5rem)]"
       >
         <h2 className="font-display text-xl tracking-wider text-text">Summary</h2>
-        <dl className="mt-6 space-y-3 font-mono text-xs uppercase tracking-[0.2em]">
+        <div className="mt-6">
+          <CouponForm />
+        </div>
+        <dl className="mt-4 space-y-3 font-mono text-xs uppercase tracking-[0.2em]">
           <div className="flex justify-between">
             <dt className="text-muted">Items</dt>
             <dd className="text-text tabular-nums">{count}</dd>
@@ -81,6 +88,12 @@ export function CartView() {
               <Price price={subtotal} size="md" />
             </dd>
           </div>
+          {coupon && (
+            <div className="flex items-center justify-between">
+              <dt className="text-muted">Discount ({coupon.code})</dt>
+              <dd className="text-green-500">−{formatMoney(coupon.discount)}</dd>
+            </div>
+          )}
           <div className="flex justify-between">
             <dt className="text-muted">Shipping</dt>
             <dd className="text-muted">Calculated at checkout</dd>

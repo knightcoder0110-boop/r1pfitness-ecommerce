@@ -20,6 +20,7 @@ export const dynamic = "force-dynamic";
 
 export const POST = withApi({
   schema,
+  rateLimit: { max: 20, windowMs: 60_000 },
   handler: async ({ input }) => {
     if (!process.env.WOO_BASE_URL) {
       throw new ApiError({

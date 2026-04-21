@@ -3,6 +3,7 @@ import { ZodError, type ZodType } from "zod";
 import { WooError } from "@/lib/woo/errors";
 import { ApiError } from "./errors";
 import { fail, ok, type ApiMeta, type ApiResponse } from "./response";
+import { checkRateLimit, type RateLimitOptions } from "./ratelimit";
 
 /**
  * Higher-order handler that wraps an App Router route handler with:
@@ -34,6 +35,11 @@ export interface HandlerResult<TData> {
 
 export interface WithApiConfig<TSchema extends ZodType | undefined, TData> {
   schema?: TSchema;
+  /**
+   * Optional per-IP rate limit enforced before the handler runs.
+   * Defaults: 30 requests / 60 s. Pass `{}` to use those defaults.
+   */
+  rateLimit?: RateLimitOptions;
   handler: (
     ctx: HandlerContext<TSchema extends ZodType ? TSchema["_output"] : undefined>,
   ) => Promise<TData | HandlerResult<TData>>;
@@ -44,6 +50,26 @@ export function withApi<TSchema extends ZodType | undefined, TData>(
 ) {
   return async function routeHandler(req: NextRequest): Promise<NextResponse<ApiResponse<TData>>> {
     try {
+      // --- Rate limiting ---
+      if (config.rateLimit !== undefined) {
+        const ip =
+          req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+          req.headers.get("x-real-ip") ??
+          "unknown";
+        const rl = checkRateLimit(ip, config.rateLimit);
+        if (!rl.ok) {
+          return NextResponse.json(fail("RATE_LIMIT", "Too many requests — please slow down"), {
+            status: 429,
+            headers: {
+              "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
+              "X-RateLimit-Limit": String(config.rateLimit.max ?? 30),
+              "X-RateLimit-Remaining": "0",
+              "X-RateLimit-Reset": String(Math.ceil(rl.resetAt / 1000)),
+            },
+          });
+        }
+      }
+
       let input: unknown = undefined;
       if (config.schema) {
         const raw = await safeJson(req);

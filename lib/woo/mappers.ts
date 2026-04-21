@@ -61,6 +61,8 @@ export interface RawStoreProduct {
   low_stock_remaining?: number | null;
   stock_quantity?: number | null;
   meta_data?: Array<{ key: string; value: unknown }>;
+  /** ISO 8601 datetime of last modification, e.g. "2024-11-01T10:30:00" */
+  date_modified?: string;
 }
 
 export interface RawStoreVariation {
@@ -254,6 +256,7 @@ export function mapProductSummary(raw: RawStoreProduct): ProductSummary {
     ...(first ? { image: mapImage(first) } : {}),
     stockStatus: deriveStockStatus(raw),
     isLimited: meta["is_limited"] === true || meta["is_limited"] === "1",
+    ...(raw.date_modified ? { updatedAt: raw.date_modified } : {}),
   };
 }
 

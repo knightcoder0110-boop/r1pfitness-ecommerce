@@ -61,6 +61,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
       ...products.map((product) => ({
         url: toUrl(ROUTES.product(product.slug)),
+        lastModified: product.updatedAt ? new Date(product.updatedAt) : undefined,
         changeFrequency: "weekly" as const,
         priority: 0.7,
       })),
