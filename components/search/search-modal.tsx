@@ -135,16 +135,16 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
   return (
     /* backdrop */
     <div
-      className="fixed inset-0 z-[60] flex items-start justify-center pt-[10vh] px-4 bg-bg/80 backdrop-blur-sm"
+      className="fixed inset-0 z-[60] flex items-start justify-center pt-[10vh] px-4 bg-[#0D0D0D]/90 backdrop-blur-md"
       onClick={handleBackdropClick}
       aria-hidden={!open}
     >
-      {/* dialog */}
+      {/* dialog — must be fully opaque; bg-surface-1 is only 4% opacity */}
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelId}
-        className="relative w-full max-w-xl bg-surface-1 border border-border shadow-overlay flex flex-col overflow-hidden"
+        className="relative w-full max-w-xl bg-[#141414] border border-[rgba(242,237,228,0.12)] shadow-[0_24px_48px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden"
         onKeyDown={handleKeyDown}
       >
         {/* ── Search input ──────────────────────────────────────────── */}

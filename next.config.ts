@@ -18,6 +18,9 @@ const wooHostname = process.env.WOO_BASE_URL
 
 const nextConfig: NextConfig = {
   images: {
+    // Cache images for 30 days on the Next.js image proxy.
+    // Without this every unique URL re-fetches from Hostinger on expiry.
+    minimumCacheTTL: 2592000,
     remotePatterns: [
       // Production WordPress / WooCommerce install (read from WOO_BASE_URL at build time).
       ...(wooHostname
