@@ -5,6 +5,7 @@ import { ROUTES, SITE } from "@/lib/constants";
 import { MobileNav, type NavLinkItem } from "./mobile-nav";
 import { AccountButton } from "./account-button";
 import { AnnouncementBar } from "./announcement-bar";
+import { SearchButton } from "@/components/search/search-button";
 
 /**
  * Primary nav links. Declared once — both desktop nav and `<MobileNav />`
@@ -64,8 +65,9 @@ export function SiteHeader() {
           </ul>
         </nav>
 
-        {/* Right: account + cart */}
-        <div className="flex items-center gap-3">
+        {/* Right: search + account + cart */}
+        <div className="flex items-center gap-1">
+          <SearchButton />
           <AccountButton />
           <CartButton />
         </div>

@@ -1,9 +1,13 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 /**
- * AnnouncementBar — scrollable gold strip above the site header.
+ * AnnouncementBar — dismissible gold scrolling strip above the site header.
  *
- * Server component. Zero client JS. Pure CSS marquee using an inline
- * @keyframes block so this file is fully self-contained (no globals.css edit).
- * Content is duplicated to create a seamless infinite loop.
+ * Client component: needs localStorage to persist the dismissed state.
+ * Renders nothing after the user clicks ×, and stays dismissed across
+ * navigation. Re-appears when DISMISS_KEY is bumped (content change).
  */
 
 const MESSAGES = [
@@ -14,8 +18,26 @@ const MESSAGES = [
   "REBORN 1N PARADISE · R1P FITNESS",
 ];
 
+// Bump this string to force the bar to reappear after content changes.
+const DISMISS_KEY = "r1p-ann-dismissed-v1";
+
 export function AnnouncementBar() {
-  const track = [...MESSAGES, ...MESSAGES]; // duplicate for seamless loop
+  const [visible, setVisible] = useState(false); // start hidden to avoid SSR mismatch
+
+  useEffect(() => {
+    if (!localStorage.getItem(DISMISS_KEY)) {
+      setVisible(true);
+    }
+  }, []);
+
+  function dismiss() {
+    localStorage.setItem(DISMISS_KEY, "1");
+    setVisible(false);
+  }
+
+  if (!visible) return null;
+
+  const track = [...MESSAGES, ...MESSAGES]; // duplicate for seamless CSS loop
 
   return (
     <div
@@ -23,6 +45,7 @@ export function AnnouncementBar() {
       aria-label="Site announcements"
       className="relative overflow-hidden bg-[#C9A84C] py-2 select-none"
     >
+      {/* Scrolling track */}
       <div
         aria-hidden
         className="flex whitespace-nowrap"
@@ -39,10 +62,22 @@ export function AnnouncementBar() {
         ))}
       </div>
 
-      {/* Visually-hidden live region for screen readers — shows first message only */}
+      {/* Visually-hidden live region for screen readers */}
       <p className="sr-only" aria-live="off">
         {MESSAGES[0]}
       </p>
+
+      {/* Dismiss button */}
+      <button
+        type="button"
+        onClick={dismiss}
+        aria-label="Dismiss announcement"
+        className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center size-5 rounded-full text-[#0D0D0D]/60 hover:text-[#0D0D0D] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D0D0D]"
+      >
+        <svg aria-hidden viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={2} className="size-3">
+          <path d="m3 3 10 10M13 3 3 13" strokeLinecap="round" />
+        </svg>
+      </button>
 
       <style>{`
         @keyframes r1p-ann-scroll {
@@ -58,3 +93,4 @@ export function AnnouncementBar() {
     </div>
   );
 }
+
