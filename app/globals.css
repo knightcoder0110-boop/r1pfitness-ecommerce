@@ -142,6 +142,7 @@
 html, body {
   background: var(--color-bg);
   color: var(--color-text);
+  overflow-x: hidden;
 }
 
 body {
@@ -191,8 +192,8 @@ body::after {
 }
 
 @keyframes drift {
-  0%   { transform: translate(0, 0); }
-  100% { transform: translate(20px, -15px); }
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-15px); }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -321,6 +322,7 @@ select:focus {
 html, body {
   background: var(--color-bg);
   color: var(--color-text);
+  overflow-x: hidden;
 }
 
 /* ── Noise texture overlay ────────────────────────────── */
@@ -350,8 +352,8 @@ body::after {
 }
 
 @keyframes drift {
-  0%   { transform: translate(0, 0); }
-  100% { transform: translate(20px, -15px); }
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-15px); }
 }
 
 /* ── Marquee animation ────────────────────────────────── */
