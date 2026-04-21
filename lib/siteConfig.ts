@@ -47,6 +47,25 @@ export const siteConfig = {
     "REBORN 1N PARADISE. OHANA FOREVER.",
   ],
 
+  // ── Drop Campaigns ────────────────────────────────────
+  // Each campaign gets its own /drop/[slug] page.
+  // dropDate: ISO string — when the products go live. If empty, drop is live now.
+  // categorySlug: maps to a Woo product category slug shown post-drop.
+  // productSlugs: explicit product slugs to feature on the campaign page.
+  campaigns: [
+    {
+      slug: "summer-26",
+      name: "SUMMER '26",
+      tagline: "The heat is on. Limited run.",
+      description:
+        "Our first summer drop — built for beach sessions and early morning workouts. 24 hours. No restocks.",
+      dropDate: "", // ISO date — e.g. "2026-07-04T12:00:00"
+      categorySlug: "tees",
+      klaviyoListId: "KLAVIYO_LIST_ID",
+      isActive: true,
+    },
+  ],
+
   // ── Colors (also reflected in Tailwind / CSS) ─────────
   colors: {
     background: "#0D0D0D",
