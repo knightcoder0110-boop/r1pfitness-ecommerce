@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { siteConfig } from "@/lib/siteConfig";
-import CountdownTimer from "@/components/CountdownTimer";
-import PasswordGate from "@/components/PasswordGate";
-import SignupForm from "@/components/SignupForm";
-import Marquee from "@/components/Marquee";
-import Manifesto from "@/components/Manifesto";
+import CountdownTimer from "@/components/countdown-timer";
+import PasswordGate from "@/components/password-gate";
+import SignupForm from "@/components/signup-form";
+import Marquee from "@/components/marquee";
+import Manifesto from "@/components/manifesto";
 
 type View = "password" | "signup";
 

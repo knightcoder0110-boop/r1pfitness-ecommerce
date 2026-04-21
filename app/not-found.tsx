@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { siteConfig } from "@/lib/siteConfig";
-import Toast, { ToastType } from "@/components/Toast";
+import Toast, { type ToastType } from "@/components/toast";
 
 /* ── URL → context parser ─────────────────────────────── */
 function parseOldUrl(pathname: string) {

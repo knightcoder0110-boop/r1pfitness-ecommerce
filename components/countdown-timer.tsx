@@ -54,6 +54,8 @@ export default function CountdownTimer() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // Deliberate: avoids SSR hydration mismatch for time-dependent output.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     if (!dateStr) return;
 

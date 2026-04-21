@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import Toast, { ToastType } from "@/components/Toast";
+import Toast, { type ToastType } from "@/components/toast";
 
 interface SignupFormProps {
   onSwitchToPassword: () => void;

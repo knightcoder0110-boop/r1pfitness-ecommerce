@@ -13,7 +13,7 @@ interface Particle {
   color: string;
 }
 
-const COLORS = ["#C9A84C", "#F2EDE4", "#C4572A", "#C9A84C", "#C9A84C"];
+const COLORS = ["#C9A84C", "#F2EDE4", "#C4572A", "#C9A84C", "#C9A84C"] as const;
 
 export default function Sparkles({ count = 60 }: { count?: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -41,7 +41,7 @@ export default function Sparkles({ count = 60 }: { count?: number }) {
       speedY: (Math.random() - 0.5) * 0.3 - 0.15,
       opacity: Math.random(),
       fadeDir: Math.random() > 0.5 ? 1 : -1,
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      color: COLORS[Math.floor(Math.random() * COLORS.length)] ?? COLORS[0],
     });
 
     const init = () => {

@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Sparkles from "@/components/Sparkles";
-import ShootingStars from "@/components/ShootingStars";
+import Sparkles from "@/components/sparkles";
+import ShootingStars from "@/components/shooting-stars";
 
 /* ── stagger helpers ───────────────────────────────────── */
 const container = {
