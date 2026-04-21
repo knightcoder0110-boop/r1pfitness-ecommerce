@@ -4,4 +4,5 @@ export type {
   ListProductsResult,
 } from "./types";
 export { createFixtureCatalog } from "./fixture-adapter";
+export { createWooCatalog } from "./woo-adapter";
 export { getCatalog, __resetCatalogForTests } from "./source";

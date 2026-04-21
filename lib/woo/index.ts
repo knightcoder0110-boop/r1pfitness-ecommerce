@@ -19,3 +19,12 @@ export type {
   RawStorePrices,
   RawStoreAttribute,
 } from "./mappers";
+export {
+  WOO_TAGS,
+  listStoreProducts,
+  getStoreProductBySlug,
+  getStoreVariations,
+  listStoreCategories,
+  getStoreCategoryBySlug,
+} from "./products";
+export type { StoreListProductsParams, StoreListProductsResult } from "./products";
