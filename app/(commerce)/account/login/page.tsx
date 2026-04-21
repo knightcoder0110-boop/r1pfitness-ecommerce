@@ -30,6 +30,14 @@ export default function LoginPage() {
             Create one
           </Link>
         </p>
+        <p className="mt-3 font-mono text-xs text-muted text-center">
+          <Link
+            href={ROUTES.forgotPassword}
+            className="underline hover:text-text transition-colors"
+          >
+            Forgot your password?
+          </Link>
+        </p>
       </div>
     </div>
   );

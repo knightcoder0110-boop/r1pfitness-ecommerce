@@ -53,6 +53,7 @@ export const env = createEnv({
     NEXT_PUBLIC_MEILI_SEARCH_KEY: z.string().optional(),
     NEXT_PUBLIC_KLAVIYO_COMPANY_ID: z.string().optional(),
     NEXT_PUBLIC_GTM_ID: z.string().optional(),
+    NEXT_PUBLIC_KLAVIYO_LIST_ID: z.string().optional(),
   },
 
   // Required for Next.js to statically replace NEXT_PUBLIC_* at build time.
@@ -76,6 +77,7 @@ export const env = createEnv({
     NEXT_PUBLIC_MEILI_SEARCH_KEY: process.env.NEXT_PUBLIC_MEILI_SEARCH_KEY,
     NEXT_PUBLIC_KLAVIYO_COMPANY_ID: process.env.NEXT_PUBLIC_KLAVIYO_COMPANY_ID,
     NEXT_PUBLIC_GTM_ID: process.env.NEXT_PUBLIC_GTM_ID,
+    NEXT_PUBLIC_KLAVIYO_LIST_ID: process.env.NEXT_PUBLIC_KLAVIYO_LIST_ID,
   },
 
   // Skip validation during builds where env isn't fully populated (e.g. Docker stage).

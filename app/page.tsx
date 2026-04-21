@@ -14,6 +14,8 @@ import { ProductSpotlight } from "@/components/marketing/product-spotlight";
 import { CategoryGrid } from "@/components/marketing/category-grid";
 import { SplitBanners, DEFAULT_SPLIT_BANNERS } from "@/components/marketing/split-banners";
 import { Testimonials } from "@/components/marketing/testimonials";
+import { CampaignCountdown } from "@/components/campaign/campaign-countdown";
+import { siteConfig } from "@/lib/siteConfig";
 import { ROUTES, SITE } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -113,6 +115,39 @@ export default async function HomePage() {
             2. TICKER MARQUEE — thin band of brand identity
             ══════════════════════════════════════════════════════════ */}
         <Marquee />
+
+        {/* ══════════════════════════════════════════════════════════
+            2b. DROP COUNTDOWN — shown only when nextDropDate is set
+            ══════════════════════════════════════════════════════════ */}
+        {siteConfig.nextDropDate && (
+          <section
+            aria-labelledby="countdown-heading"
+            className="border-b border-border bg-bg py-16 sm:py-20"
+          >
+            <Container className="flex flex-col items-center gap-8 text-center">
+              <div>
+                <p
+                  id="countdown-heading"
+                  className="font-mono text-[10px] uppercase tracking-[0.55em] text-gold mb-2"
+                >
+                  Next Drop
+                </p>
+                <p className="font-serif italic text-subtle">
+                  Limited run. 24 hours only. You&apos;ve been warned.
+                </p>
+              </div>
+
+              <CampaignCountdown dropDate={siteConfig.nextDropDate} />
+
+              <Link
+                href={ROUTES.shop}
+                className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted underline hover:text-gold transition-colors"
+              >
+                Browse current drop →
+              </Link>
+            </Container>
+          </section>
+        )}
 
         {/* ══════════════════════════════════════════════════════════
             3. TRUST BAR — 5 signals in gold

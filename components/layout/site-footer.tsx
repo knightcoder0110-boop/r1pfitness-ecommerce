@@ -15,12 +15,11 @@ const SHOP_LINKS = [
 ];
 
 const INFO_LINKS = [
-  { label: "About R1P", href: "#" },
-  { label: "Our Story", href: "#" },
-  { label: "Shipping & Returns", href: "#" },
-  { label: "Sizing Guide", href: "#" },
-  { label: "FAQ", href: "#" },
-  { label: "Contact", href: "#" },
+  { label: "About R1P", href: ROUTES.about },
+  { label: "Our Story", href: ROUTES.about },
+  { label: "All Collections", href: ROUTES.collections },
+  { label: "FAQ", href: `${ROUTES.about}#faq` },
+  { label: "Contact", href: "mailto:aloha@r1pfitness.com" },
 ];
 
 /* ─── Instagram icon ─────────────────────────────────────────────────────── */

@@ -61,7 +61,8 @@ export const siteConfig = {
         "Our first summer drop — built for beach sessions and early morning workouts. 24 hours. No restocks.",
       dropDate: "", // ISO date — e.g. "2026-07-04T12:00:00"
       categorySlug: "tees",
-      klaviyoListId: "KLAVIYO_LIST_ID",
+      // Set NEXT_PUBLIC_KLAVIYO_LIST_ID in .env.local → get from Klaviyo → Lists
+      klaviyoListId: process.env.NEXT_PUBLIC_KLAVIYO_LIST_ID || "",
       isActive: true,
     },
   ],

@@ -2,8 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { VariantPicker } from "@/components/product/variant-picker";
+import { SizeGuideModal } from "@/components/product/size-guide-modal";
+import { BackInStockForm } from "@/components/product/back-in-stock-form";
 import { Button } from "@/components/ui/button";
 import { useServerCart } from "@/lib/cart";
+import { useToastStore } from "@/lib/toast";
 import { trackAddToCart } from "@/lib/analytics";
 import type { Product, ProductVariation } from "@/lib/woo/types";
 
@@ -24,7 +27,8 @@ export interface ProductPurchaseProps {
  * and can remain `generateStaticParams`-friendly.
  */
 export function ProductPurchase({ product }: ProductPurchaseProps) {
-  const { addItem } = useServerCart();
+  const { addItem, open: openCart } = useServerCart();
+  const showToast = useToastStore((s) => s.show);
   const [isPending, setIsPending] = useState(false);
 
   // Required variation-producing attributes.
@@ -70,12 +74,15 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
   function handleAdd() {
     if (disabled) return;
     setIsPending(true);
-    // Fire-and-forget: local store update is synchronous, BFF sync happens in background.
+    // Optimistic: local state updates synchronously; BFF syncs in background.
     void addItem({
       product,
       ...(matchingVariation ? { variation: matchingVariation } : {}),
       quantity: 1,
     }).finally(() => setIsPending(false));
+    // Open cart drawer + show confirmation toast immediately (optimistic UX).
+    openCart();
+    showToast(`${product.name} added to your cart 🤙`, "success");
     trackAddToCart({
       productId: product.id,
       variationId: matchingVariation?.id,
@@ -87,11 +94,40 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <VariantPicker
-        attributes={product.attributes}
-        value={selected}
-        onChange={setSelected}
-      />
+      {/* Variant picker + size guide link */}
+      {requiredAttrs.length > 0 && (
+        <div className="flex flex-col gap-3">
+          <VariantPicker
+            attributes={product.attributes}
+            value={selected}
+            onChange={setSelected}
+          />
+          {/* Show size guide only when a size attribute exists */}
+          {product.attributes.some((a) => /size/i.test(a.name)) && (
+            <div className="flex justify-end">
+              <SizeGuideModal
+                defaultTab={
+                  product.categories.some((c) => /hoodie/i.test(c.name))
+                    ? "Hoodies"
+                    : product.categories.some((c) =>
+                        /bottom|short|pant/i.test(c.name),
+                      )
+                    ? "Bottoms"
+                    : "Tees"
+                }
+              />
+            </div>
+          )}
+        </div>
+      )}
+      {/* No variants — still show size guide if product likely has sizing */}
+      {requiredAttrs.length === 0 && (
+        <VariantPicker
+          attributes={product.attributes}
+          value={selected}
+          onChange={setSelected}
+        />
+      )}
       <Button
         size="lg"
         disabled={disabled}
@@ -100,6 +136,15 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
       >
         {label}
       </Button>
+
+      {/* Back-in-stock subscribe form — shown when item is genuinely OOS */}
+      {(productOutOfStock || variationOutOfStock) && (
+        <BackInStockForm
+          productId={product.id}
+          variationId={matchingVariation?.id}
+          productName={product.name}
+        />
+      )}
     </div>
   );
 }

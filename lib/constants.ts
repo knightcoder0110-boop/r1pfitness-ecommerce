@@ -73,4 +73,7 @@ export const ROUTES = {
   register: "/account/register",
   drop: (campaign: string) => `/drop/${campaign}`,
   search: "/search",
+  about: "/about",
+  collections: "/collections",
+  forgotPassword: "/account/forgot-password",
 } as const;
