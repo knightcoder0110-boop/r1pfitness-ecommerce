@@ -4,6 +4,7 @@ import { Container } from "@/components/ui/container";
 import { ROUTES, SITE } from "@/lib/constants";
 import { MobileNav, type NavLinkItem } from "./mobile-nav";
 import { AccountButton } from "./account-button";
+import { AnnouncementBar } from "./announcement-bar";
 
 /**
  * Primary nav links. Declared once — both desktop nav and `<MobileNav />`
@@ -24,10 +25,12 @@ const NAV_LINKS: NavLinkItem[] = [
  */
 export function SiteHeader() {
   return (
-    <header
-      className="sticky top-0 z-[40] w-full border-b border-border bg-bg/80 backdrop-blur-md"
-      style={{ height: "var(--size-header)" }}
-    >
+    <>
+      <AnnouncementBar />
+      <header
+        className="sticky top-0 z-[40] w-full border-b border-border bg-bg/80 backdrop-blur-md"
+        style={{ height: "var(--size-header)" }}
+      >
       <Container className="flex h-full items-center justify-between gap-4">
         {/* Left: mobile menu + logo */}
         <div className="flex items-center gap-2">
@@ -67,6 +70,7 @@ export function SiteHeader() {
           <CartButton />
         </div>
       </Container>
-    </header>
+      </header>
+    </>
   );
 }

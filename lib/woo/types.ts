@@ -110,6 +110,8 @@ export interface ProductSummary {
   price: Money;
   compareAtPrice?: Money;
   image?: ImageRef;
+  /** Second gallery image — shown on card hover (front/back crossfade). */
+  hoverImage?: ImageRef;
   stockStatus: StockStatus;
   isLimited: boolean;
   /** ISO 8601 date-time string from `date_modified` in the Store API. Used by the sitemap. */

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { ROUTES, SITE } from "@/lib/constants";
+import { NewsletterForm } from "@/components/marketing/newsletter-form";
 
 /* ─── Nav columns ───────────────────────────────────────────────────────── */
 const SHOP_LINKS = [
@@ -33,7 +34,7 @@ function InstagramIcon({ className }: { className?: string }) {
   );
 }
 
-/* ─── Newsletter form — client not needed, just a mailto for now ─────────── */
+/* ─── Newsletter row — uses the live Klaviyo client form ─────────────────── */
 function NewsletterRow() {
   return (
     <div className="border-t border-border pt-10 mt-10">
@@ -49,26 +50,11 @@ function NewsletterRow() {
             Limited drops, exclusive early access, and Waipahu culture — direct to your inbox.
           </p>
         </div>
-        {/* Placeholder form — button is type=button so no submit happens.
-            Will wire to Klaviyo/email API in a dedicated client component later. */}
-        <form className="flex gap-2" aria-label="Newsletter signup">
-          <label htmlFor="footer-email" className="sr-only">
-            Email address
-          </label>
-          <input
-            id="footer-email"
-            type="email"
-            autoComplete="email"
-            placeholder="your@email.com"
-            className="flex-1 min-w-0 h-11 px-4 bg-surface-2 border border-border text-text text-sm placeholder:text-muted rounded-none focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
-          />
-          <button
-            type="button"
-            className="h-11 px-6 bg-gold text-bg font-semibold text-xs uppercase tracking-widest hover:brightness-110 transition-[filter] duration-200 shrink-0"
-          >
-            Subscribe
-          </button>
-        </form>
+        <NewsletterForm
+          buttonLabel="Subscribe"
+          placeholder="your@email.com"
+          size="full"
+        />
       </div>
     </div>
   );

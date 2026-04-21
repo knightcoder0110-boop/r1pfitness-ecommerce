@@ -244,6 +244,7 @@ export function mapProduct(raw: RawStoreProduct): Product {
 export function mapProductSummary(raw: RawStoreProduct): ProductSummary {
   const currency = raw.prices.currency_code;
   const first = raw.images?.[0];
+  const second = raw.images?.[1];
   const meta = mapMetaDataRecord(raw.meta_data);
   return {
     id: String(raw.id),
@@ -254,6 +255,7 @@ export function mapProductSummary(raw: RawStoreProduct): ProductSummary {
       ? { compareAtPrice: money(raw.prices.regular_price, currency) }
       : {}),
     ...(first ? { image: mapImage(first) } : {}),
+    ...(second ? { hoverImage: mapImage(second) } : {}),
     stockStatus: deriveStockStatus(raw),
     isLimited: meta["is_limited"] === true || meta["is_limited"] === "1",
     ...(raw.date_modified ? { updatedAt: raw.date_modified } : {}),

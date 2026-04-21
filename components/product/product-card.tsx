@@ -14,8 +14,14 @@ export interface ProductCardProps {
 }
 
 /**
- * Grid cell for a product listing. Link-wrapped — keyboard accessible.
- * Dimensions are controlled by the parent grid; the card fills the cell.
+ * Product listing card. Uses an <article> wrapper so interactive children
+ * (two separate <Link>s, quick-add overlay) are all valid descendants without
+ * the HTML crime of an <a> inside an <a>.
+ *
+ * Hover effects:
+ *  - Primary image: subtle scale-up (or crossfades out when hoverImage exists)
+ *  - Hover image (when available): crossfades in at full opacity
+ *  - Quick-add strip: slides up from the bottom of the image
  */
 export function ProductCard({ product, priority, className }: ProductCardProps) {
   const onSale = product.compareAtPrice && product.compareAtPrice.amount > product.price.amount;
@@ -23,16 +29,14 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
   const lowStock = product.stockStatus === "low_stock";
 
   return (
-    <Link
-      href={ROUTES.product(product.slug)}
-      className={cn(
-        "group relative flex flex-col gap-3",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
-        className,
-      )}
-      aria-label={`${product.name}, ${product.price.currency} ${(product.price.amount / 100).toFixed(2)}`}
+    <article
+      aria-label={product.name}
+      className={cn("group relative flex flex-col gap-3", className)}
     >
+      {/* ── Image block ─────────────────────────────────────────────── */}
       <div className="relative aspect-[4/5] w-full overflow-hidden rounded-sm bg-surface-1">
+
+        {/* Primary image */}
         {product.image ? (
           <Image
             src={product.image.url}
@@ -41,8 +45,9 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
             priority={priority}
             className={cn(
-              "object-cover transition-transform duration-500",
-              !outOfStock && "group-hover:scale-105",
+              "object-cover transition-[transform,opacity] duration-500",
+              !outOfStock && !product.hoverImage && "group-hover:scale-105",
+              !outOfStock && product.hoverImage && "group-hover:opacity-0",
               outOfStock && "opacity-40",
             )}
           />
@@ -52,15 +57,56 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
           </div>
         )}
 
-        <div className="absolute left-3 top-3 flex flex-col gap-1.5">
+        {/* Hover image (crossfade) — shown only when a second gallery image exists */}
+        {product.hoverImage && !outOfStock && (
+          <Image
+            src={product.hoverImage.url}
+            alt={product.hoverImage.alt || `${product.name} — alternate view`}
+            fill
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+            className="object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+          />
+        )}
+
+        {/* Badges */}
+        <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5">
           {product.isLimited ? <Badge tone="gold">Limited</Badge> : null}
           {onSale ? <Badge tone="coral">Sale</Badge> : null}
           {lowStock ? <Badge tone="neutral">Low stock</Badge> : null}
           {outOfStock ? <Badge tone="danger">Sold out</Badge> : null}
         </div>
+
+        {/* Quick-add overlay — slides up from the bottom on group-hover.
+            Uses a separate <Link> (not a button inside another anchor). */}
+        {!outOfStock && (
+          <Link
+            href={ROUTES.product(product.slug)}
+            tabIndex={-1}
+            aria-hidden
+            className={cn(
+              "absolute inset-x-0 bottom-0 z-10",
+              "flex items-center justify-between gap-2 px-4 py-3",
+              "bg-[linear-gradient(170deg,#D4AF55_0%,#C9A84C_45%,#9A7C2C_100%)] text-bg",
+              "translate-y-full group-hover:translate-y-0",
+              "transition-transform duration-300 ease-out",
+            )}
+          >
+            <span className="font-mono text-[10px] uppercase tracking-[0.35em] font-semibold">
+              Quick Add
+            </span>
+            <span aria-hidden className="text-xs opacity-80">→</span>
+          </Link>
+        )}
       </div>
 
-      <div className="flex flex-col gap-1">
+      {/* ── Info — separate link so HTML remains valid ───────────────── */}
+      <Link
+        href={ROUTES.product(product.slug)}
+        className={cn(
+          "flex flex-col gap-1",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
+        )}
+      >
         <h3 className="font-display text-lg tracking-wider text-text group-hover:text-gold transition-colors">
           {product.name}
         </h3>
@@ -69,7 +115,7 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
           {...(product.compareAtPrice ? { compareAtPrice: product.compareAtPrice } : {})}
           size="sm"
         />
-      </div>
-    </Link>
+      </Link>
+    </article>
   );
 }
