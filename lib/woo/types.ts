@@ -129,8 +129,19 @@ export interface Address {
 }
 
 export interface CartLineItem {
-  /** Opaque key from Woo (used for updates/removals) */
+  /**
+   * Local stable key: `productId::variationId` for optimistically-added items.
+   * For items loaded from the WooCommerce server via reconciliation, this IS
+   * the WC opaque key (since mapCartItem sets key = raw.key).
+   */
   key: string;
+  /**
+   * WooCommerce cart item key (opaque alphanumeric string from Store API).
+   * Populated after a successful BFF add mutation. Required for BFF
+   * update/remove calls when the item was added optimistically.
+   * If undefined, fall back to `key` (which IS the WC key for server-loaded items).
+   */
+  wooKey?: string;
   productId: string;
   variationId?: string;
   name: string;

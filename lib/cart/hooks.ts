@@ -27,6 +27,7 @@ export const useCartItems = () => useCartStore(useShallow(selectItems));
 export const useCartItemCount = () => useCartStore(selectItemCount);
 export const useCartSubtotal = () => useCartStore(useShallow(selectSubtotal));
 export const useCartIsOpen = () => useCartStore(selectIsOpen);
+export const useCartCoupon = () => useCartStore((s) => s.coupon);
 
 /** Bound action creators. Stable identity — safe for deps arrays. */
 export function useCartActions() {
@@ -36,6 +37,9 @@ export function useCartActions() {
       setQuantity: s.setQuantity,
       removeItem: s.removeItem,
       clear: s.clear,
+      patchWooKey: s.patchWooKey,
+      syncFromServer: s.syncFromServer,
+      setCoupon: s.setCoupon,
       open: s.open,
       close: s.close,
       toggle: s.toggle,

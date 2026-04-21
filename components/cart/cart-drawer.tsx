@@ -6,8 +6,10 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Price } from "@/components/ui/price";
 import { CartLineItem } from "./cart-line-item";
+import { CouponForm } from "./coupon-form";
 import {
   useCartActions,
+  useCartCoupon,
   useCartIsOpen,
   useCartItemCount,
   useCartItems,
@@ -15,6 +17,7 @@ import {
 } from "@/lib/cart";
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils/cn";
+import { formatMoney } from "@/lib/utils";
 
 /**
  * Slide-in cart drawer. Rendered once in the root layout so every route has
@@ -31,6 +34,7 @@ export function CartDrawer() {
   const items = useCartItems();
   const subtotal = useCartSubtotal();
   const itemCount = useCartItemCount();
+  const coupon = useCartCoupon();
   const { close } = useCartActions();
 
   // Escape to close.
@@ -125,12 +129,29 @@ export function CartDrawer() {
 
         {items.length > 0 ? (
           <footer className="border-t border-border px-5 py-5 space-y-4">
+            {/* Coupon input / applied coupon */}
+            <CouponForm />
+
+            {/* Subtotal row */}
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs uppercase tracking-[0.25em] text-muted">
                 Subtotal
               </span>
               <Price price={subtotal} size="md" />
             </div>
+
+            {/* Discount row — only visible when a coupon is applied */}
+            {coupon && (
+              <div className="flex items-center justify-between -mt-2">
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
+                  Discount
+                </span>
+                <span className="font-mono text-xs text-green-500">
+                  −{formatMoney(coupon.discount)}
+                </span>
+              </div>
+            )}
+
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-subtle">
               Shipping &amp; taxes calculated at checkout
             </p>

@@ -14,9 +14,11 @@ import type { CartLineItem, Money, Product, ProductVariation } from "@/lib/woo/t
 export interface CartState {
   items: CartLineItem[];
   currency: string;
+  /** Applied coupon + discount amount. null when no coupon is active. */
+  coupon: { code: string; discount: Money } | null;
 }
 
-export const EMPTY_CART: CartState = { items: [], currency: "USD" };
+export const EMPTY_CART: CartState = { items: [], currency: "USD", coupon: null };
 
 /** Stable key for an item — (productId, variationId?). Used for dedup. */
 export function lineKey(productId: string, variationId?: string): string {
@@ -80,6 +82,7 @@ export function addItem(
   const existingIdx = state.items.findIndex((i) => i.key === incoming.key);
   if (existingIdx === -1) {
     return {
+      ...state,
       currency: incoming.unitPrice.currency,
       items: [...state.items, incoming],
     };
@@ -120,7 +123,15 @@ export function removeItem(state: CartState, key: string): CartState {
 /** Remove every item. Preserves currency so downstream code has a valid default. */
 export function clearCart(state: CartState): CartState {
   if (state.items.length === 0) return state;
-  return { ...state, items: [] };
+  return { ...state, items: [], coupon: null };
+}
+
+/** Set or clear the active coupon. */
+export function setCoupon(
+  state: CartState,
+  coupon: CartState["coupon"],
+): CartState {
+  return { ...state, coupon };
 }
 
 export interface CartTotals {

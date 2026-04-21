@@ -4,7 +4,7 @@ import Image from "next/image";
 import { X } from "lucide-react";
 import { Price } from "@/components/ui/price";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
-import { useCartActions } from "@/lib/cart";
+import { useServerCart } from "@/lib/cart/sync";
 import type { CartLineItem as CartLineItemType } from "@/lib/woo/types";
 
 export interface CartLineItemProps {
@@ -18,7 +18,7 @@ export interface CartLineItemProps {
  * remove button — never lifts state up, just calls store actions directly.
  */
 export function CartLineItem({ item, compact = false }: CartLineItemProps) {
-  const { setQuantity, removeItem } = useCartActions();
+  const { setQuantity, removeItem } = useServerCart();
 
   const attributeLine = Object.values(item.attributes).filter(Boolean).join(" · ");
 
