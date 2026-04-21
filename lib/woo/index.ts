@@ -28,3 +28,12 @@ export {
   getStoreCategoryBySlug,
 } from "./products";
 export type { StoreListProductsParams, StoreListProductsResult } from "./products";
+export {
+  getCart,
+  addCartItem,
+  updateCartItem,
+  removeCartItem,
+  applyCoupon,
+  removeCoupon,
+} from "./cart";
+export type { AddItemAttribute } from "./cart";
