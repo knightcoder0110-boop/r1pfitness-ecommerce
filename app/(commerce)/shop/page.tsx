@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ProductGrid } from "@/components/product";
+import { Container } from "@/components/ui/container";
+import { Heading } from "@/components/ui/heading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCatalog } from "@/lib/catalog";
 
@@ -47,10 +49,10 @@ async function ShopProducts({ searchParams }: ShopPageProps) {
   return (
     <>
       <div className="mb-8 flex items-baseline justify-between">
-        <p className="font-mono text-xs uppercase tracking-[0.3em] text-text/50">
+        <p className="font-mono text-xs uppercase tracking-[0.3em] text-muted">
           {total} {total === 1 ? "piece" : "pieces"}
         </p>
-        <p className="font-mono text-xs uppercase tracking-[0.3em] text-text/50">
+        <p className="font-mono text-xs uppercase tracking-[0.3em] text-muted">
           Page {currentPage} / {pageCount}
         </p>
       </div>
@@ -75,10 +77,12 @@ function ShopSkeleton() {
 
 export default function ShopPage(props: ShopPageProps) {
   return (
-    <main className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <header className="mb-12">
-        <h1 className="font-display text-5xl tracking-wider text-text sm:text-6xl">Shop</h1>
-        <p className="mt-2 max-w-xl font-serif text-lg italic text-text/70">
+    <Container as="main" className="py-10 sm:py-16">
+      <header className="mb-10 sm:mb-12">
+        <Heading level={1} size="xl" className="text-4xl sm:text-5xl lg:text-6xl">
+          Shop
+        </Heading>
+        <p className="mt-2 max-w-xl font-serif text-base sm:text-lg italic text-muted">
           Limited runs. Heavyweight fabric. Made with intention.
         </p>
       </header>
@@ -86,6 +90,6 @@ export default function ShopPage(props: ShopPageProps) {
       <Suspense fallback={<ShopSkeleton />}>
         <ShopProducts {...props} />
       </Suspense>
-    </main>
+    </Container>
   );
 }

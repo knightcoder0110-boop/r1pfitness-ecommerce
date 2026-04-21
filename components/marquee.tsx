@@ -6,9 +6,9 @@ export default function Marquee() {
   const doubled = `${text} ${text} ${text} ${text}`;
 
   return (
-    <div className="w-full overflow-hidden border-y border-text/10 py-3">
+    <div className="w-full overflow-hidden border-y border-border py-3">
       <div className="animate-marquee whitespace-nowrap">
-        <span className="font-mono text-xs sm:text-sm tracking-[0.3em] uppercase text-text/30">
+        <span className="font-mono text-xs sm:text-sm tracking-[0.3em] uppercase text-faint">
           {doubled}
         </span>
       </div>

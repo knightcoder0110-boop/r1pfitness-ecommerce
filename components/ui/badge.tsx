@@ -9,9 +9,9 @@ const badgeVariants = cva(
       tone: {
         gold: "border-gold/60 bg-gold/10 text-gold",
         coral: "border-coral/60 bg-coral/10 text-coral",
-        neutral: "border-text/30 bg-text/5 text-text/70",
+        neutral: "border-muted bg-surface-1 text-muted",
         danger: "border-red-500/50 bg-red-500/10 text-red-300",
-        ocean: "border-ocean/60 bg-ocean/15 text-text/80",
+        ocean: "border-ocean/60 bg-ocean/15 text-text",
       },
     },
     defaultVariants: {

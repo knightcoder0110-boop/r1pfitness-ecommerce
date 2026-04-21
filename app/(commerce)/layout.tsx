@@ -10,6 +10,7 @@ import { SiteHeader, SiteFooter } from "@/components/layout";
 export default function CommerceLayout({ children }: { children: ReactNode }) {
   return (
     <>
+      <a href="#main" className="skip-link">Skip to content</a>
       <SiteHeader />
       <main id="main" className="min-h-[calc(100vh-10rem)]">
         {children}

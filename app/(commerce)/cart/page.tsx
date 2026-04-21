@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Container } from "@/components/ui/container";
+import { Heading } from "@/components/ui/heading";
 import { CartView } from "./cart-view";
 
 export const metadata: Metadata = {
@@ -9,16 +11,16 @@ export const metadata: Metadata = {
 
 export default function CartPage() {
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
-      <header className="mb-10">
-        <h1 className="font-display text-4xl tracking-[0.15em] text-text sm:text-5xl">
+    <Container size="md" className="py-8 sm:py-12">
+      <header className="mb-8 sm:mb-10">
+        <Heading level={1} size="xl" className="text-3xl sm:text-4xl lg:text-5xl tracking-[0.15em]">
           Your Cart
-        </h1>
-        <p className="mt-2 font-mono text-xs uppercase tracking-[0.2em] text-text/50">
+        </Heading>
+        <p className="mt-2 font-mono text-xs uppercase tracking-[0.2em] text-muted">
           Limited drops. Secure yours before they&apos;re gone.
         </p>
       </header>
       <CartView />
-    </div>
+    </Container>
   );
 }

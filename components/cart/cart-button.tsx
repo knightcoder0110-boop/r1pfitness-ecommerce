@@ -24,7 +24,7 @@ export function CartButton({ className }: CartButtonProps) {
       onClick={open}
       aria-label={`Open cart${showBadge ? `, ${count} item${count === 1 ? "" : "s"}` : ""}`}
       className={cn(
-        "relative inline-flex h-10 w-10 items-center justify-center text-text/80 transition-colors hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold",
+        "relative inline-flex h-10 w-10 items-center justify-center text-text transition-colors hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold",
         className,
       )}
     >
@@ -32,7 +32,7 @@ export function CartButton({ className }: CartButtonProps) {
       {showBadge ? (
         <span
           aria-hidden
-          className="absolute -right-0.5 -top-0.5 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-[#C4572A] px-1 font-mono text-[10px] font-semibold text-[#F2EDE4] tabular-nums"
+          className="absolute -right-0.5 -top-0.5 inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-accent px-1 font-mono text-[10px] font-semibold text-text tabular-nums"
         >
           {count > 99 ? "99+" : count}
         </span>

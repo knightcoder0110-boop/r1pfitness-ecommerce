@@ -24,11 +24,11 @@ export function CartLineItem({ item, compact = false }: CartLineItemProps) {
 
   return (
     <article
-      className="flex gap-4 border-b border-text/10 py-4 last:border-b-0"
+      className="flex gap-4 border-b border-border py-4 last:border-b-0"
       aria-label={item.name}
     >
       {item.image ? (
-        <div className="relative h-24 w-20 flex-shrink-0 overflow-hidden bg-text/5">
+        <div className="relative h-24 w-20 flex-shrink-0 overflow-hidden bg-surface-1">
           <Image
             src={item.image.url}
             alt={item.image.alt || item.name}
@@ -46,7 +46,7 @@ export function CartLineItem({ item, compact = false }: CartLineItemProps) {
               {item.name}
             </h3>
             {attributeLine ? (
-              <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.2em] text-text/50">
+              <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
                 {attributeLine}
               </p>
             ) : null}
@@ -55,7 +55,7 @@ export function CartLineItem({ item, compact = false }: CartLineItemProps) {
             type="button"
             onClick={() => removeItem(item.key)}
             aria-label={`Remove ${item.name}`}
-            className="-mr-1 -mt-1 p-1 text-text/40 transition-colors hover:text-text"
+            className="-mr-1 -mt-1 p-1 text-subtle transition-colors hover:text-text"
           >
             <X className="h-4 w-4" />
           </button>

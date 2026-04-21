@@ -41,7 +41,7 @@ function Digit({ value, label }: { value: number; label: string }) {
           </motion.span>
         </AnimatePresence>
       </div>
-      <span className="font-mono text-[10px] sm:text-xs tracking-[0.25em] uppercase text-text/50">
+      <span className="font-mono text-[10px] sm:text-xs tracking-[0.25em] uppercase text-muted">
         {label}
       </span>
     </div>

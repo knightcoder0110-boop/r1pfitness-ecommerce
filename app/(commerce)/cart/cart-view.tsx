@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CartLineItem } from "@/components/cart/cart-line-item";
 import { Button } from "@/components/ui/button";
 import { Price } from "@/components/ui/price";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useCartItemCount,
   useCartItems,
@@ -13,11 +14,12 @@ import {
 import { ROUTES } from "@/lib/constants";
 
 /**
- * Client view for `/cart`. Split out so the page shell can stay server-side
- * and own metadata.
+ * Client view for `/cart`. Split from the server page so `<CartPage />` can
+ * own metadata. Gated on hydration to avoid empty-cart SSR flicker.
  *
- * We gate rendering on hydration so the SSR HTML never shows a stale empty-cart
- * state that then flickers to populated after localStorage rehydrates.
+ * Layout:
+ *  - Mobile: items stack above a full-width summary card.
+ *  - >=lg: two-column grid; summary is sticky.
  */
 export function CartView() {
   const hydrated = useHasHydrated();
@@ -28,8 +30,9 @@ export function CartView() {
   if (!hydrated) {
     return (
       <div className="grid gap-4">
-        <div className="h-24 animate-pulse bg-text/5" />
-        <div className="h-24 animate-pulse bg-text/5" />
+        <Skeleton className="h-24" />
+        <Skeleton className="h-24" />
+        <Skeleton className="h-24" />
       </div>
     );
   }
@@ -37,10 +40,10 @@ export function CartView() {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center gap-6 py-16 text-center">
-        <p className="font-display text-3xl tracking-wider text-text/70">
+        <p className="font-display text-2xl sm:text-3xl tracking-wider text-muted">
           Your cart is empty
         </p>
-        <p className="max-w-md font-serif italic text-text/60">
+        <p className="max-w-md font-serif italic text-muted">
           Nothing claimed yet. Head to the shop and see what&apos;s left of the drop.
         </p>
         <Link href={ROUTES.shop}>
@@ -51,9 +54,9 @@ export function CartView() {
   }
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
-      <section aria-label="Cart items">
-        <ul className="divide-y divide-text/10">
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-12">
+      <section aria-label="Cart items" className="min-w-0">
+        <ul className="divide-y divide-border">
           {items.map((item) => (
             <li key={item.key}>
               <CartLineItem item={item} />
@@ -62,35 +65,36 @@ export function CartView() {
         </ul>
       </section>
 
-      <aside aria-label="Order summary" className="h-fit border border-text/10 p-6">
+      <aside
+        aria-label="Order summary"
+        className="h-fit border border-border p-5 sm:p-6 lg:sticky lg:top-[calc(var(--size-header)+1.5rem)]"
+      >
         <h2 className="font-display text-xl tracking-wider text-text">Summary</h2>
         <dl className="mt-6 space-y-3 font-mono text-xs uppercase tracking-[0.2em]">
           <div className="flex justify-between">
-            <dt className="text-text/60">Items</dt>
+            <dt className="text-muted">Items</dt>
             <dd className="text-text tabular-nums">{count}</dd>
           </div>
           <div className="flex items-center justify-between">
-            <dt className="text-text/60">Subtotal</dt>
+            <dt className="text-muted">Subtotal</dt>
             <dd>
               <Price price={subtotal} size="md" />
             </dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-text/60">Shipping</dt>
-            <dd className="text-text/50">Calculated at checkout</dd>
+            <dt className="text-muted">Shipping</dt>
+            <dd className="text-muted">Calculated at checkout</dd>
           </div>
         </dl>
 
-        <div className="mt-6">
-          <Link href={ROUTES.checkout} className="block">
-            <Button full size="lg">
-              Checkout
-            </Button>
-          </Link>
-        </div>
+        <Link href={ROUTES.checkout} className="mt-6 block">
+          <Button full size="lg">
+            Checkout
+          </Button>
+        </Link>
 
-        <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-text/40">
-          Taxes calculated at checkout · Secure payment
+        <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-subtle">
+          Taxes calculated at checkout &middot; Secure payment
         </p>
       </aside>
     </div>

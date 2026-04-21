@@ -1,50 +1,63 @@
 import Link from "next/link";
 import { CartButton } from "@/components/cart/cart-button";
-import { ROUTES } from "@/lib/constants";
-import { SITE } from "@/lib/constants";
+import { Container } from "@/components/ui/container";
+import { ROUTES, SITE } from "@/lib/constants";
+import { MobileNav, type NavLinkItem } from "./mobile-nav";
 
 /**
- * Persistent site header. Server component — the only client bit is the
- * `<CartButton>` which has `"use client"` at its boundary.
- *
- * Keep this lean — no mega-menu until we have more than 5 categories.
+ * Primary nav links. Declared once — both desktop nav and `<MobileNav />`
+ * consume the same list so there's no drift.
+ */
+const NAV_LINKS: NavLinkItem[] = [
+  { label: "Shop",    href: ROUTES.shop },
+  { label: "Tees",    href: ROUTES.category("tees") },
+  { label: "Hoodies", href: ROUTES.category("hoodies") },
+];
+
+/**
+ * Persistent site header. Server component — client behaviour is isolated
+ * to `<CartButton />` and `<MobileNav />` at their own boundaries.
  */
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-text/10 bg-bg/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link
-          href={ROUTES.home}
-          aria-label={`${SITE.name} home`}
-          className="font-display text-xl tracking-[0.25em] text-text transition-opacity hover:opacity-80"
-        >
-          {SITE.name}
-        </Link>
+    <header
+      className="sticky top-0 z-[40] w-full border-b border-border bg-bg/80 backdrop-blur-md"
+      style={{ height: "var(--size-header)" }}
+    >
+      <Container className="flex h-full items-center justify-between gap-4">
+        {/* Left: mobile menu + logo */}
+        <div className="flex items-center gap-2">
+          <MobileNav links={NAV_LINKS} />
+          <Link
+            href={ROUTES.home}
+            aria-label={`${SITE.name} home`}
+            className="font-display text-lg sm:text-xl tracking-[0.25em] text-text transition-opacity hover:opacity-80"
+          >
+            {SITE.name}
+          </Link>
+        </div>
 
+        {/* Desktop nav */}
         <nav aria-label="Primary" className="hidden sm:block">
-          <ul className="flex items-center gap-8 font-mono text-xs uppercase tracking-[0.25em] text-text/70">
-            <li>
-              <Link href={ROUTES.shop} className="transition-colors hover:text-text">
-                Shop
-              </Link>
-            </li>
-            <li>
-              <Link href="/shop/tees" className="transition-colors hover:text-text">
-                Tees
-              </Link>
-            </li>
-            <li>
-              <Link href="/shop/hoodies" className="transition-colors hover:text-text">
-                Hoodies
-              </Link>
-            </li>
+          <ul className="flex items-center gap-6 md:gap-8 font-mono text-xs uppercase tracking-[0.25em] text-muted">
+            {NAV_LINKS.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="transition-colors hover:text-text focus-visible:text-text"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </nav>
 
-        <div className="flex items-center gap-1">
+        {/* Right: cart */}
+        <div className="flex items-center">
           <CartButton />
         </div>
-      </div>
+      </Container>
     </header>
   );
 }

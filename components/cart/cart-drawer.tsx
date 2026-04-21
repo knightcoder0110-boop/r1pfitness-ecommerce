@@ -14,6 +14,7 @@ import {
   useCartSubtotal,
 } from "@/lib/cart";
 import { ROUTES } from "@/lib/constants";
+import { cn } from "@/lib/utils/cn";
 
 /**
  * Slide-in cart drawer. Rendered once in the root layout so every route has
@@ -56,7 +57,7 @@ export function CartDrawer() {
       aria-modal="true"
       aria-label="Cart"
       aria-hidden={!isOpen}
-      className="fixed inset-0 z-50 pointer-events-none"
+      className="fixed inset-0 z-[60] pointer-events-none"
     >
       {/* Backdrop */}
       <button
@@ -64,41 +65,45 @@ export function CartDrawer() {
         aria-label="Close cart"
         onClick={close}
         tabIndex={isOpen ? 0 : -1}
-        className={`absolute inset-0 bg-bg/70 transition-opacity duration-300 ${
-          isOpen ? "pointer-events-auto opacity-100" : "opacity-0"
-        }`}
+        className={cn(
+          "absolute inset-0 bg-bg/70 backdrop-blur-sm transition-opacity duration-[var(--dur-slow)] ease-out",
+          isOpen ? "pointer-events-auto opacity-100" : "opacity-0",
+        )}
       />
 
-      {/* Panel */}
+      {/* Panel — full-width on mobile, 28rem (--size-drawer) on ≥sm */}
       <aside
-        className={`absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-bg border-l border-text/10 shadow-2xl transition-transform duration-300 ease-out ${
-          isOpen ? "pointer-events-auto translate-x-0" : "translate-x-full"
-        }`}
+        className={cn(
+          "absolute right-0 top-0 flex h-full w-full max-w-full flex-col bg-bg border-l border-border shadow-overlay",
+          "sm:max-w-[var(--size-drawer)]",
+          "transition-transform duration-[var(--dur-slow)] ease-out",
+          isOpen ? "pointer-events-auto translate-x-0" : "translate-x-full",
+        )}
       >
-        <header className="flex items-center justify-between border-b border-text/10 px-5 py-4">
+        <header className="flex items-center justify-between border-b border-border px-5 py-4">
           <h2 className="font-display text-xl tracking-wider text-text">
             Cart
             {itemCount > 0 ? (
-              <span className="ml-2 font-mono text-xs text-text/50">({itemCount})</span>
+              <span className="ml-2 font-mono text-xs text-muted">({itemCount})</span>
             ) : null}
           </h2>
           <button
             type="button"
             onClick={close}
             aria-label="Close cart"
-            className="p-1 text-text/60 transition-colors hover:text-text"
+            className="p-1 text-muted transition-colors hover:text-text"
           >
             <X className="h-5 w-5" />
           </button>
         </header>
 
-        <div className="flex-1 overflow-y-auto px-5">
+        <div className="flex-1 overflow-y-auto overscroll-contain px-5">
           {items.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center gap-4 py-16 text-center">
-              <p className="font-display text-2xl tracking-wider text-text/60">
+              <p className="font-display text-2xl tracking-wider text-muted">
                 Your cart is empty
               </p>
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-text/40">
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-subtle">
                 Start browsing the drop
               </p>
               <Link href={ROUTES.shop} onClick={close}>
@@ -108,7 +113,7 @@ export function CartDrawer() {
               </Link>
             </div>
           ) : (
-            <ul className="divide-y divide-text/10">
+            <ul className="divide-y divide-border">
               {items.map((item) => (
                 <li key={item.key}>
                   <CartLineItem item={item} compact />
@@ -119,14 +124,14 @@ export function CartDrawer() {
         </div>
 
         {items.length > 0 ? (
-          <footer className="border-t border-text/10 px-5 py-5 space-y-4">
+          <footer className="border-t border-border px-5 py-5 space-y-4">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-xs uppercase tracking-[0.25em] text-text/60">
+              <span className="font-mono text-xs uppercase tracking-[0.25em] text-muted">
                 Subtotal
               </span>
               <Price price={subtotal} size="md" />
             </div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-text/40">
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-subtle">
               Shipping &amp; taxes calculated at checkout
             </p>
             <Link href={ROUTES.cart} onClick={close} className="block">

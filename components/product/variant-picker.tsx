@@ -40,7 +40,7 @@ export function VariantPicker({ attributes, value, onChange }: VariantPickerProp
         const selected = selection[attr.id];
         return (
           <fieldset key={attr.id} className="flex flex-col gap-2">
-            <legend className="font-mono text-xs uppercase tracking-[0.25em] text-text/60">
+            <legend className="font-mono text-xs uppercase tracking-[0.25em] text-muted">
               {attr.name}
               {selected ? <span className="ml-2 text-text">· {selected}</span> : null}
             </legend>
@@ -59,7 +59,7 @@ export function VariantPicker({ attributes, value, onChange }: VariantPickerProp
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
                       isSelected
                         ? "border-gold bg-gold/10 text-gold"
-                        : "border-text/20 text-text/80 hover:border-text/50",
+                        : "border-border-strong text-text hover:border-muted",
                     )}
                   >
                     {option}

@@ -58,7 +58,7 @@ export default function Toast({ message, type, visible, onDismiss }: ToastProps)
           {/* Dismiss */}
           <button
             onClick={onDismiss}
-            className="text-text/30 hover:text-text/70 transition-colors text-lg leading-none flex-shrink-0 cursor-pointer"
+            className="text-faint hover:text-muted transition-colors text-lg leading-none flex-shrink-0 cursor-pointer"
             aria-label="Dismiss"
           >
             ×

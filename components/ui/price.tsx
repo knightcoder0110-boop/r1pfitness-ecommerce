@@ -31,7 +31,7 @@ export function Price({ price, compareAtPrice, className, size = "md" }: PricePr
         {formatMoney(price)}
       </span>
       {onSale ? (
-        <span className={cn(classes.compare, "text-text/40 line-through")}>
+        <span className={cn(classes.compare, "text-subtle line-through")}>
           {formatMoney(compareAtPrice)}
         </span>
       ) : null}

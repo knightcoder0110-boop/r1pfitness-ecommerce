@@ -72,12 +72,12 @@ export default function SignupForm({ onSwitchToPassword }: SignupFormProps) {
           <h2 className="font-display text-4xl sm:text-5xl tracking-wider text-gold">
             YOU&apos;RE IN THE OHANA 🤙
           </h2>
-          <p className="font-serif italic text-base text-text/60 leading-relaxed">
+          <p className="font-serif italic text-base text-muted leading-relaxed">
             Watch your inbox. When the drop goes live, you&apos;ll be first to know.
           </p>
           <button
             onClick={onSwitchToPassword}
-            className="font-serif italic text-sm text-text/40 hover:text-gold transition-colors underline underline-offset-4 decoration-text/20 hover:decoration-gold/50 mt-4"
+            className="font-serif italic text-sm text-subtle hover:text-gold transition-colors underline underline-offset-4 decoration-text/20 hover:decoration-gold/50 mt-4"
           >
             Already have a password? Enter here
           </button>
@@ -105,7 +105,7 @@ export default function SignupForm({ onSwitchToPassword }: SignupFormProps) {
           <h2 className="font-display text-4xl sm:text-5xl tracking-wider">
             JOIN THE OHANA
           </h2>
-          <p className="font-serif italic text-lg sm:text-xl text-text/80 leading-relaxed max-w-sm mx-auto">
+          <p className="font-serif italic text-lg sm:text-xl text-text leading-relaxed max-w-sm mx-auto">
             Be the first to receive the drop password. Family gets in first. Always.
           </p>
         </div>
@@ -131,7 +131,7 @@ export default function SignupForm({ onSwitchToPassword }: SignupFormProps) {
           </motion.button>
         </form>
 
-        <p className="text-[10px] sm:text-xs text-text/30 text-center leading-relaxed font-mono max-w-sm">
+        <p className="text-[10px] sm:text-xs text-faint text-center leading-relaxed font-mono max-w-sm">
           By submitting your email, you agree to receive marketing communications from R1P
           Fitness including drop announcements, exclusive access passwords, and promotional
           content. We may share your info with service providers per our Privacy Policy. You
@@ -140,7 +140,7 @@ export default function SignupForm({ onSwitchToPassword }: SignupFormProps) {
 
         <button
           onClick={onSwitchToPassword}
-          className="font-serif italic text-sm text-text/40 hover:text-gold transition-colors underline underline-offset-4 decoration-text/20 hover:decoration-gold/50 cursor-pointer"
+          className="font-serif italic text-sm text-subtle hover:text-gold transition-colors underline underline-offset-4 decoration-text/20 hover:decoration-gold/50 cursor-pointer"
         >
           Already have a password? Enter here
         </button>

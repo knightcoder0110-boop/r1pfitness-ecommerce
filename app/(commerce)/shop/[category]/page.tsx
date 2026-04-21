@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductGrid } from "@/components/product";
+import { Container } from "@/components/ui/container";
+import { Eyebrow, Heading } from "@/components/ui/heading";
 import { getCatalog } from "@/lib/catalog";
 
 interface CategoryPageProps {
@@ -57,18 +59,18 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   });
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <header className="mb-12">
-        <p className="font-mono text-xs uppercase tracking-[0.3em] text-text/50">Category</p>
-        <h1 className="mt-2 font-display text-5xl tracking-wider text-text sm:text-6xl">
+    <Container as="main" className="py-10 sm:py-16">
+      <header className="mb-10 sm:mb-12">
+        <Eyebrow>Category</Eyebrow>
+        <Heading level={1} size="xl" className="mt-2 text-4xl sm:text-5xl lg:text-6xl">
           {match.name}
-        </h1>
-        <p className="mt-2 font-mono text-xs uppercase tracking-[0.3em] text-text/50">
+        </Heading>
+        <p className="mt-2 font-mono text-xs uppercase tracking-[0.3em] text-muted">
           {total} {total === 1 ? "piece" : "pieces"}
         </p>
       </header>
 
       <ProductGrid items={items} />
-    </main>
+    </Container>
   );
 }

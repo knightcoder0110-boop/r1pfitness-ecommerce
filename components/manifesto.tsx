@@ -30,7 +30,7 @@ export default function Manifesto() {
         <motion.p
           key={i}
           variants={line}
-          className="font-display text-xl sm:text-2xl md:text-3xl tracking-[0.15em] text-text/80"
+          className="font-display text-xl sm:text-2xl md:text-3xl tracking-[0.15em] text-text"
         >
           {text}
         </motion.p>

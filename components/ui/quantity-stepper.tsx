@@ -44,7 +44,7 @@ export function QuantityStepper({
       role="group"
       aria-label={aria["aria-label"] ?? "Quantity"}
       className={cn(
-        "inline-flex items-center border border-text/20 rounded-sm bg-transparent",
+        "inline-flex items-center border border-border-strong rounded-sm bg-transparent",
         className,
       )}
     >
@@ -53,7 +53,7 @@ export function QuantityStepper({
         onClick={dec}
         disabled={value <= min}
         aria-label="Decrease quantity"
-        className="h-9 w-9 inline-flex items-center justify-center text-text/70 hover:text-text disabled:opacity-30 disabled:cursor-not-allowed"
+        className="h-9 w-9 inline-flex items-center justify-center text-muted hover:text-text disabled:opacity-30 disabled:cursor-not-allowed"
       >
         <Minus className="h-4 w-4" />
       </button>
@@ -68,7 +68,7 @@ export function QuantityStepper({
         onClick={inc}
         disabled={value >= max}
         aria-label="Increase quantity"
-        className="h-9 w-9 inline-flex items-center justify-center text-text/70 hover:text-text disabled:opacity-30 disabled:cursor-not-allowed"
+        className="h-9 w-9 inline-flex items-center justify-center text-muted hover:text-text disabled:opacity-30 disabled:cursor-not-allowed"
       >
         <Plus className="h-4 w-4" />
       </button>

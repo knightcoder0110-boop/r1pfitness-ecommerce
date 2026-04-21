@@ -32,7 +32,7 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
       )}
       aria-label={`${product.name}, ${product.price.currency} ${(product.price.amount / 100).toFixed(2)}`}
     >
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-sm bg-text/5">
+      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-sm bg-surface-1">
         {product.image ? (
           <Image
             src={product.image.url}
@@ -47,7 +47,7 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
             )}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-text/30 font-mono text-xs">
+          <div className="flex h-full w-full items-center justify-center text-faint font-mono text-xs">
             NO IMAGE
           </div>
         )}

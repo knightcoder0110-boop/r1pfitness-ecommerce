@@ -36,7 +36,7 @@ export default function PasswordGate({ onSwitchToSignup }: PasswordGateProps) {
       <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4 w-full">
         <label
           htmlFor="drop-password"
-          className="font-mono text-xs tracking-[0.25em] uppercase text-text/50"
+          className="font-mono text-xs tracking-[0.25em] uppercase text-muted"
         >
           Enter Drop Password
         </label>
@@ -78,7 +78,7 @@ export default function PasswordGate({ onSwitchToSignup }: PasswordGateProps) {
       </form>
 
       <div className="flex flex-col items-center gap-2 w-full">
-        <p className="font-mono text-sm tracking-[0.2em] uppercase text-text/70 font-bold">
+        <p className="font-mono text-sm tracking-[0.2em] uppercase text-muted font-bold">
           No password yet?
         </p>
         <motion.button

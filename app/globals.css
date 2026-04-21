@@ -1,5 +1,310 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════════
+   R1P FITNESS — DESIGN SYSTEM
+   ───────────────────────────────────────────────────────────────────
+   This file is the SINGLE SOURCE OF TRUTH for design tokens.
+
+   ► Raw tokens live in `:root` as CSS custom properties.
+   ► Tailwind v4 `@theme` maps those vars into utility classes
+     (e.g. `bg-surface-1`, `rounded-md`, `shadow-soft`).
+   ► To change a color / spacing / radius globally, edit ONE line here.
+     Every component picks it up automatically.
+
+   Conventions:
+     - Colors: brand (raw hex) + semantic aliases (bg/text/surface/…).
+     - Spacing: Tailwind defaults (4px scale).
+     - Never hard-code `#hex` in components — reach for a token class.
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Brand (raw) ──────────────────────────────────────── */
+  --brand-obsidian:    #0D0D0D;
+  --brand-sand:        #F2EDE4;
+  --brand-coral:       #C4572A;
+  --brand-coral-hover: #A94721;
+  --brand-gold:        #C9A84C;
+  --brand-ocean:       #1B4F6B;
+
+  /* ── Semantic colour aliases ──────────────────────────── */
+  --color-bg:    var(--brand-obsidian);
+  --color-text:  var(--brand-sand);
+  --color-coral: var(--brand-coral);
+  --color-gold:  var(--brand-gold);
+  --color-ocean: var(--brand-ocean);
+
+  /* Neutral surfaces derived from text colour at canonical opacities */
+  --color-surface-1: rgba(242, 237, 228, 0.04);   /* card/input bg     */
+  --color-surface-2: rgba(242, 237, 228, 0.07);   /* hover / raised    */
+  --color-surface-3: rgba(242, 237, 228, 0.10);   /* active / selected */
+
+  --color-border:        rgba(242, 237, 228, 0.10);
+  --color-border-strong: rgba(242, 237, 228, 0.20);
+  --color-border-focus:  var(--brand-gold);
+
+  --color-muted:  rgba(242, 237, 228, 0.50);
+  --color-subtle: rgba(242, 237, 228, 0.35);
+  --color-faint:  rgba(242, 237, 228, 0.20);
+
+  --color-accent:       var(--brand-coral);
+  --color-accent-hover: var(--brand-coral-hover);
+  --color-success: #3F8E5C;
+  --color-warning: var(--brand-gold);
+  --color-danger:  #B4402E;
+
+  /* ── Radius ───────────────────────────────────────────── */
+  --radius-xs:   2px;
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   10px;
+  --radius-xl:   16px;
+
+  /* ── Shadows ──────────────────────────────────────────── */
+  --shadow-soft:    0 2px 12px rgba(0, 0, 0, 0.25);
+  --shadow-raised:  0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-overlay: 0 24px 48px rgba(0, 0, 0, 0.55);
+  --shadow-focus:   0 0 0 2px rgba(201, 168, 76, 0.35);
+
+  /* ── Typography scale ─────────────────────────────────── */
+  --tracking-wide:   0.05em;
+  --tracking-wider:  0.15em;
+  --tracking-widest: 0.25em;
+
+  /* ── Motion ───────────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in:  cubic-bezier(0.6, 0, 0.4, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+
+  /* ── Sizes (non-spacing-scale dimensions) ─────────────── */
+  --size-header:    4rem;  /*  64px — sticky header height */
+  --size-drawer:    28rem; /* 448px — cart drawer max width */
+  --size-container: 80rem; /*1280px — page container        */
+  --size-prose:     48rem; /* 768px — long-form text        */
+
+  /* ── Z-index stack ────────────────────────────────────── */
+  --z-header:  40;
+  --z-overlay: 50;
+  --z-modal:   60;
+  --z-toast:   70;
+}
+
+/* ── Tailwind v4 theme mapping — exposes tokens as utilities ───
+   Generates classes like `bg-bg`, `text-muted`, `rounded-md`,
+   `shadow-raised`, `border-border-strong`, etc. */
+@theme inline {
+  --color-bg:    var(--color-bg);
+  --color-text:  var(--color-text);
+  --color-coral: var(--color-coral);
+  --color-gold:  var(--color-gold);
+  --color-ocean: var(--color-ocean);
+
+  --color-surface-1: var(--color-surface-1);
+  --color-surface-2: var(--color-surface-2);
+  --color-surface-3: var(--color-surface-3);
+
+  --color-border:        var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+
+  --color-muted:  var(--color-muted);
+  --color-subtle: var(--color-subtle);
+  --color-faint:  var(--color-faint);
+
+  --color-accent:       var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --color-success:      var(--color-success);
+  --color-warning:      var(--color-warning);
+  --color-danger:       var(--color-danger);
+
+  --font-display: var(--font-bebas-neue);
+  --font-serif:   var(--font-cormorant-garamond);
+  --font-mono:    var(--font-space-mono);
+
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  --shadow-soft:    var(--shadow-soft);
+  --shadow-raised:  var(--shadow-raised);
+  --shadow-overlay: var(--shadow-overlay);
+
+  --ease-out: var(--ease-out);
+  --ease-in:  var(--ease-in);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════════════════════════ */
+
+html, body {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+body {
+  font-family: var(--font-serif), ui-serif, Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   GLOBAL BACKGROUND EFFECTS
+   ═══════════════════════════════════════════════════════════════════ */
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 600px 600px at 80% 10%, rgba(196, 87, 42, 0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 600px 600px at 15% 85%, rgba(27, 79, 107, 0.10) 0%, transparent 70%);
+  animation: drift 20s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  0%   { transform: translate(0, 0); }
+  100% { transform: translate(20px, -15px); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MARKETING ANIMATIONS (landing page)
+   ═══════════════════════════════════════════════════════════════════ */
+
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee { animation: marquee 30s linear infinite; }
+
+.gold-rule {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--color-gold) 50%, transparent 100%);
+  opacity: 0.75;
+}
+
+.countdown-number {
+  -webkit-text-stroke: 1px var(--color-gold);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-8px); }
+  40%      { transform: translateX(8px); }
+  60%      { transform: translateX(-6px); }
+  80%      { transform: translateX(6px); }
+}
+.animate-shake { animation: shake 0.5s ease-in-out; }
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 0.7; transform: translate(-50%, -50%) scale(1.1); }
+}
+.animate-pulse-slow { animation: pulse-slow 6s ease-in-out infinite; }
+.animate-pulse-slow-delayed { animation: pulse-slow 6s ease-in-out 3s infinite; }
+
+@keyframes border-spin {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animate-border-spin {
+  background-size: 200% 200%;
+  animation: border-spin 4s ease-in-out infinite;
+}
+
+.drop-heading-glow {
+  text-shadow:
+    0 0 40px rgba(201, 168, 76, 0.15),
+    0 0 80px rgba(201, 168, 76, 0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FORM PRIMITIVES
+   ═══════════════════════════════════════════════════════════════════ */
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="number"],
+textarea,
+select {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text);
+  transition:
+    border-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-border-focus);
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ACCESSIBILITY
+   ═══════════════════════════════════════════════════════════════════ */
+
+:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: var(--color-text);
+  color: var(--color-bg);
+  padding: 0.5rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  transform: translateY(-150%);
+  transition: transform var(--dur-base) var(--ease-out);
+  z-index: var(--z-toast);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+@import "tailwindcss";
+
 @theme inline {
   --color-bg: #0D0D0D;
   --color-text: #F2EDE4;

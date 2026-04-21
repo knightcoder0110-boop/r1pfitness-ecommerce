@@ -23,20 +23,22 @@ const buttonVariants = cva(
   [
     "inline-flex items-center justify-center gap-2 whitespace-nowrap",
     "font-semibold uppercase tracking-wider",
-    "transition-colors duration-200",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
+    "transition-colors duration-200 ease-out",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
     "disabled:pointer-events-none disabled:opacity-50",
   ],
   {
     variants: {
       variant: {
-        primary: "bg-[#C4572A] text-[#F2EDE4] hover:bg-[#a94721] focus-visible:ring-[#C4572A]",
+        primary:
+          "bg-accent text-text hover:bg-accent-hover focus-visible:ring-accent",
         secondary:
-          "bg-[#F2EDE4] text-[#0D0D0D] hover:bg-[#d9d3c7] focus-visible:ring-[#F2EDE4]",
+          "bg-text text-bg hover:bg-text/90 focus-visible:ring-text",
         outline:
-          "border border-[#F2EDE4]/40 bg-transparent text-[#F2EDE4] hover:bg-[#F2EDE4]/10 focus-visible:ring-[#F2EDE4]",
-        ghost: "bg-transparent text-[#F2EDE4] hover:bg-[#F2EDE4]/10 focus-visible:ring-[#F2EDE4]",
-        link: "bg-transparent text-[#C9A84C] underline-offset-4 hover:underline focus-visible:ring-[#C9A84C]",
+          "border border-border-strong bg-transparent text-text hover:bg-surface-2 focus-visible:ring-text",
+        ghost:
+          "bg-transparent text-text hover:bg-surface-2 focus-visible:ring-text",
+        link: "bg-transparent text-gold underline-offset-4 hover:underline focus-visible:ring-gold",
       },
       size: {
         sm: "h-9 px-3 text-xs",

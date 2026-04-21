@@ -14,8 +14,8 @@ export interface ProductGridProps {
 export function ProductGrid({ items, className }: ProductGridProps) {
   if (items.length === 0) {
     return (
-      <div className="flex min-h-[240px] items-center justify-center rounded-sm border border-dashed border-text/20">
-        <p className="font-mono text-xs uppercase tracking-[0.3em] text-text/40">
+      <div className="flex min-h-[240px] items-center justify-center rounded-sm border border-dashed border-border-strong">
+        <p className="font-mono text-xs uppercase tracking-[0.3em] text-subtle">
           No products match these filters
         </p>
       </div>
