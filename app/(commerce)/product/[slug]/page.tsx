@@ -80,9 +80,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </header>
 
           {product.shortDescription ? (
-            <p className="font-serif text-base sm:text-lg italic text-muted">
-              {product.shortDescription}
-            </p>
+            <div
+              className="font-serif text-base sm:text-lg italic text-muted [&_p]:mb-0"
+              dangerouslySetInnerHTML={{ __html: product.shortDescription }}
+            />
           ) : null}
 
           <ProductPurchase product={product} />

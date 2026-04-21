@@ -40,5 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# product data exports (large/sensitive CSVs)
+public/assets/products-files/
+
 
 info.md

@@ -5,9 +5,7 @@ import { WooError } from "./errors";
 import {
   mapProduct,
   mapProductSummary,
-  mapVariation,
   type RawStoreProduct,
-  type RawStoreVariation,
 } from "./mappers";
 import type {
   Product,
@@ -212,19 +210,85 @@ export async function getStoreProductBySlug(slug: string): Promise<Product | nul
 }
 
 /**
- * List variations for a variable product. Store API does not include full
- * variation data on the product response — we fetch it separately.
+ * List variations for a variable product.
+ *
+ * The WooCommerce Store API (/wc/store/v1) does NOT expose a
+ * /products/{id}/variations endpoint — that only exists in the authenticated
+ * REST API v3.  We call the v3 endpoint here using the server-only credentials.
  */
 export async function getStoreVariations(productId: string): Promise<ProductVariation[]> {
   if (!productId) return [];
-  const { data } = await storeFetchWithHeaders<RawStoreVariation[]>(
-    `/products/${encodeURIComponent(productId)}/variations`,
-    {
-      searchParams: { per_page: 100 },
-      tags: [WOO_TAGS.variations(productId)],
-    },
-  );
-  return data.map(mapVariation);
+
+  const base = (process.env.WOO_BASE_URL ?? "").replace(/\/$/, "");
+  const key    = process.env.WOO_CONSUMER_KEY    ?? "";
+  const secret = process.env.WOO_CONSUMER_SECRET ?? "";
+
+  if (!base || !key || !secret) {
+    console.warn("[woo] Missing REST API credentials — returning empty variations");
+    return [];
+  }
+
+  const auth = "Basic " + Buffer.from(`${key}:${secret}`).toString("base64");
+  const url = `${base}/wp-json/wc/v3/products/${productId}/variations?per_page=100&status=publish`;
+
+  const res = await fetch(url, {
+    headers: { Authorization: auth, Accept: "application/json" },
+    next: { revalidate: 300, tags: [WOO_TAGS.variations(productId)] },
+  });
+
+  if (!res.ok) {
+    console.warn(`[woo] Variations fetch failed for product ${productId}: ${res.status}`);
+    return [];
+  }
+
+  // v3 REST API shape — prices are dollar strings ("65.00"), not minor unit strings ("6500")
+  type V3Variation = {
+    id: number;
+    sku?: string;
+    price?: string;
+    regular_price?: string;
+    sale_price?: string;
+    stock_status?: string;
+    stock_quantity?: number | null;
+    image?: { id: number; src: string; alt?: string };
+    attributes: Array<{ name: string; option: string }>;
+  };
+
+  const raw: V3Variation[] = (await res.json()) as V3Variation[];
+  const currency = "USD";
+
+  // Convert v3 dollar-string prices to minor units (cents) for our Money type
+  const dollarToMinor = (s: string | undefined): number => {
+    if (!s) return 0;
+    return Math.round(parseFloat(s) * 100);
+  };
+
+  return raw.map((v): ProductVariation => {
+    const priceMinor   = dollarToMinor(v.price);
+    const regularMinor = dollarToMinor(v.regular_price);
+    const hasCompare   = regularMinor > 0 && regularMinor !== priceMinor;
+
+    const stockStatus: import("./types").StockStatus =
+      v.stock_status === "instock"
+        ? (typeof v.stock_quantity === "number" && v.stock_quantity <= 3
+            ? "low_stock"
+            : "in_stock")
+        : "out_of_stock";
+
+    const attrs: Record<string, string> = {};
+    for (const a of v.attributes) attrs[a.name] = a.option;
+
+    return {
+      id: String(v.id),
+      sku: v.sku ?? "",
+      price: { amount: priceMinor, currency },
+      ...(hasCompare ? { compareAtPrice: { amount: regularMinor, currency } } : {}),
+      stockStatus,
+      ...(typeof v.stock_quantity === "number" ? { stockQuantity: v.stock_quantity } : {}),
+      attributes: attrs,
+      ...(v.image ? { image: { id: String(v.image.id), url: v.image.src, alt: v.image.alt ?? "" } } : {}),
+    };
+  });
 }
 
 interface RawStoreCategory {
