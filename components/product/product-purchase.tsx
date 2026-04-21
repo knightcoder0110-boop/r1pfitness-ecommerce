@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { VariantPicker } from "@/components/product/variant-picker";
 import { Button } from "@/components/ui/button";
-import { useCartActions } from "@/lib/cart";
+import { useServerCart } from "@/lib/cart";
 import { trackAddToCart } from "@/lib/analytics";
 import type { Product, ProductVariation } from "@/lib/woo/types";
 
@@ -24,7 +24,8 @@ export interface ProductPurchaseProps {
  * and can remain `generateStaticParams`-friendly.
  */
 export function ProductPurchase({ product }: ProductPurchaseProps) {
-  const { addItem } = useCartActions();
+  const { addItem } = useServerCart();
+  const [isPending, setIsPending] = useState(false);
 
   // Required variation-producing attributes.
   const requiredAttrs = useMemo(
@@ -53,7 +54,8 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
   // Disabled when: no stock; OR has variations but selection incomplete;
   // OR selection complete but variation itself is OOS.
   const needsSelection = requiredAttrs.length > 0 && !allSelected;
-  const disabled = productOutOfStock || needsSelection || variationOutOfStock;
+  const disabled =
+    productOutOfStock || needsSelection || variationOutOfStock || isPending;
 
   const label = productOutOfStock
     ? "Sold Out"
@@ -61,15 +63,19 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
       ? "Select options"
       : variationOutOfStock
         ? "Unavailable"
-        : "Add to Cart";
+        : isPending
+          ? "Adding..."
+          : "Add to Cart";
 
   function handleAdd() {
     if (disabled) return;
-    addItem({
+    setIsPending(true);
+    // Fire-and-forget: local store update is synchronous, BFF sync happens in background.
+    void addItem({
       product,
       ...(matchingVariation ? { variation: matchingVariation } : {}),
       quantity: 1,
-    });
+    }).finally(() => setIsPending(false));
     trackAddToCart({
       productId: product.id,
       variationId: matchingVariation?.id,

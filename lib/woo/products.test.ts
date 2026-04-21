@@ -32,18 +32,14 @@ const PRODUCT_SHIRT = {
   stock_quantity: 50,
 };
 
-const VARIATION = {
+const VARIATION_V3 = {
   id: 101,
   sku: "PT-BLK-M",
-  prices: {
-    price: "4200",
-    regular_price: "4200",
-    currency_code: "USD",
-    currency_minor_unit: 2,
-  },
-  attributes: [{ name: "pa_size", value: "M" }],
-  is_in_stock: true,
+  price: "42.00",
+  regular_price: "42.00",
+  stock_status: "instock",
   stock_quantity: 10,
+  attributes: [{ name: "pa_size", option: "M" }],
 };
 
 function jsonResponse(body: unknown, headers: Record<string, string> = {}): Response {
@@ -72,6 +68,8 @@ function captureFetchMock(responses: Response[]) {
 
 beforeEach(() => {
   process.env.WOO_BASE_URL = "https://wp.example.com";
+  process.env.WOO_CONSUMER_KEY = "ck_test";
+  process.env.WOO_CONSUMER_SECRET = "cs_test";
 });
 
 afterEach(() => {
@@ -174,7 +172,7 @@ describe("getStoreProductBySlug", () => {
   it("attaches variations when the product has any", async () => {
     const { getStoreProductBySlug } = await import("./products");
     const withVariations = { ...PRODUCT_SHIRT, variations: [{ id: 101, attributes: [] }] };
-    captureFetchMock([jsonResponse([withVariations]), jsonResponse([VARIATION])]);
+    captureFetchMock([jsonResponse([withVariations]), jsonResponse([VARIATION_V3])]);
 
     const product = await getStoreProductBySlug("paradise-tee");
     expect(product).not.toBeNull();

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ProductGallery, ProductPurchase } from "@/components/product";
+import { ProductGallery, ProductPurchase, RelatedProducts } from "@/components/product";
 import { Badge } from "@/components/ui/badge";
 import { Container } from "@/components/ui/container";
 import { Heading } from "@/components/ui/heading";
@@ -121,6 +121,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </dl>
         </div>
       </div>
+
+      <RelatedProducts current={product} />
     </Container>
   );
 }

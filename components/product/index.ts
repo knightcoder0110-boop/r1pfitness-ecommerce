@@ -8,3 +8,5 @@ export { VariantPicker } from "./variant-picker";
 export type { VariantPickerProps } from "./variant-picker";
 export { ProductPurchase } from "./product-purchase";
 export type { ProductPurchaseProps } from "./product-purchase";
+export { RelatedProducts } from "./related-products";
+export type { RelatedProductsProps } from "./related-products";

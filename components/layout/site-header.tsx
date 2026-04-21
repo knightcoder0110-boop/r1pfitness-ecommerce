@@ -10,9 +10,12 @@ import { AccountButton } from "./account-button";
  * consume the same list so there's no drift.
  */
 const NAV_LINKS: NavLinkItem[] = [
-  { label: "Shop",    href: ROUTES.shop },
-  { label: "Tees",    href: ROUTES.category("tees") },
-  { label: "Hoodies", href: ROUTES.category("hoodies") },
+  { label: "Shop",        href: ROUTES.shop },
+  { label: "Tees",        href: ROUTES.category("tees") },
+  { label: "Hoodies",     href: ROUTES.category("hoodies") },
+  { label: "Bottoms",     href: ROUTES.category("bottoms") },
+  { label: "Caps",        href: ROUTES.category("caps") },
+  { label: "Accessories", href: ROUTES.category("accessories") },
 ];
 
 /**
@@ -40,9 +43,13 @@ export function SiteHeader() {
 
         {/* Desktop nav */}
         <nav aria-label="Primary" className="hidden sm:block">
-          <ul className="flex items-center gap-6 md:gap-8 font-mono text-xs uppercase tracking-[0.25em] text-muted">
-            {NAV_LINKS.map((link) => (
-              <li key={link.href}>
+          <ul className="flex items-center gap-5 md:gap-7 font-mono text-[11px] uppercase tracking-[0.25em] text-muted">
+            {NAV_LINKS.map((link, i) => (
+              <li
+                key={link.href}
+                // Hide tertiary links on narrower desktops, surface on lg+
+                className={i >= 4 ? "hidden lg:block" : i >= 3 ? "hidden md:block" : ""}
+              >
                 <Link
                   href={link.href}
                   className="transition-colors hover:text-text focus-visible:text-text"
