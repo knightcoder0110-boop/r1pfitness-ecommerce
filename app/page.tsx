@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { getCatalog } from "@/lib/catalog";
 import { ProductGrid } from "@/components/product/product-grid";
@@ -11,7 +12,7 @@ import Marquee from "@/components/marquee";
 import { StatementMarquee } from "@/components/marketing/statement-marquee";
 import { TrustBar } from "@/components/marketing/trust-bar";
 import { ProductSpotlight } from "@/components/marketing/product-spotlight";
-import { CategoryGrid } from "@/components/marketing/category-grid";
+import { CategoryScroller } from "@/components/marketing/category-scroller";
 import { SplitBanners, DEFAULT_SPLIT_BANNERS } from "@/components/marketing/split-banners";
 import { Testimonials } from "@/components/marketing/testimonials";
 import { CampaignCountdown } from "@/components/campaign/campaign-countdown";
@@ -53,10 +54,32 @@ export default async function HomePage() {
           aria-label="Hero"
           className="relative overflow-hidden bg-bg min-h-[85vh] flex items-center"
         >
-          {/* Grid texture */}
+          {/* Hero background image */}
+          <Image
+            src="/images/hero/king-of-kings-collection-cover-image.jpg"
+            alt=""
+            aria-hidden
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+
+          {/* Dark overlay — heavier at edges, lighter at centre so text pops */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--color-border)/0.18)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--color-border)/0.18)_1px,transparent_1px)] bg-[size:44px_44px]"
+            className="absolute inset-0 bg-gradient-to-b from-bg/75 via-bg/55 to-bg/80"
+          />
+          {/* Left-edge fade for readability on wide screens */}
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-gradient-to-r from-bg/60 via-transparent to-bg/60"
+          />
+
+          {/* Grid texture (on top of image) */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--color-border)/0.12)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--color-border)/0.12)_1px,transparent_1px)] bg-[size:44px_44px]"
           />
 
           {/* Radial glow from bottom-left */}
@@ -241,9 +264,9 @@ export default async function HomePage() {
         />
 
         {/* ══════════════════════════════════════════════════════════
-            9. CATEGORY GRID — Shop by category visual strip
+            9. CATEGORY SCROLLER — horizontal snap-scroll on mobile
             ══════════════════════════════════════════════════════════ */}
-        <CategoryGrid />
+        <CategoryScroller />
 
         {/* ══════════════════════════════════════════════════════════
             10. BRAND STORY — text + stat grid
