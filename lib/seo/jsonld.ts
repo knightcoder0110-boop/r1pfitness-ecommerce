@@ -1,4 +1,5 @@
 import { SITE } from "@/lib/constants";
+import type { Product } from "@/lib/woo/types";
 
 /**
  * JSON-LD helpers. Return a plain object — call site embeds via:
@@ -40,6 +41,35 @@ export function websiteSchema(siteUrl: string) {
       "@type": "SearchAction",
       target: `${siteUrl}/search?q={search_term_string}`,
       "query-input": "required name=search_term_string",
+    },
+  };
+}
+
+/**
+ * Schema.org Product + Offer. Call inside the PDP with the current product and
+ * the absolute product URL.
+ */
+export function productSchema(product: Product, productUrl: string) {
+  const availability =
+    product.stockStatus === "out_of_stock"
+      ? "https://schema.org/OutOfStock"
+      : "https://schema.org/InStock";
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.shortDescription || product.name,
+    sku: product.id,
+    image: product.images.map((i) => i.url),
+    brand: { "@type": "Brand", name: SITE.legalName },
+    offers: {
+      "@type": "Offer",
+      url: productUrl,
+      priceCurrency: product.price.currency,
+      price: (product.price.amount / 100).toFixed(2),
+      availability,
+      itemCondition: "https://schema.org/NewCondition",
     },
   };
 }

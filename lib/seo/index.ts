@@ -1,2 +1,2 @@
 export { buildDefaultMetadata } from "./defaults";
-export { organizationSchema, websiteSchema } from "./jsonld";
+export { organizationSchema, websiteSchema, productSchema } from "./jsonld";
