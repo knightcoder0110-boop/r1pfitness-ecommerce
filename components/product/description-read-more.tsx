@@ -5,11 +5,38 @@ import { cn } from "@/lib/utils/cn";
 
 const COLLAPSED_HEIGHT = 140; // px — ~5 lines of prose text
 
-/**
- * Renders HTML product description collapsed to ~5 lines.
- * A "Read more / Read less" toggle expands / collapses with a smooth height
- * transition and a fade-out gradient mask at the bottom.
- */
+function ToggleButton({
+  expanded,
+  onClick,
+}: {
+  expanded: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.35em] text-gold hover:text-gold/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold rounded-sm"
+    >
+      {expanded ? (
+        <>
+          Read less
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={2} className="size-2.5" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 10 8 6l-4 4" />
+          </svg>
+        </>
+      ) : (
+        <>
+          Read more
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={2} className="size-2.5" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6l4 4 4-4" />
+          </svg>
+        </>
+      )}
+    </button>
+  );
+}
+
 export function DescriptionReadMore({
   html,
   className,
@@ -21,19 +48,28 @@ export function DescriptionReadMore({
   const [isTall, setIsTall] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Measure actual rendered height after mount. Re-measure if html changes.
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
-    // Temporarily remove height constraint to get the real scrollHeight.
     el.style.maxHeight = "none";
     const full = el.scrollHeight;
     el.style.maxHeight = "";
-    setIsTall(full > COLLAPSED_HEIGHT + 20); // 20px buffer
+    setIsTall(full > COLLAPSED_HEIGHT + 20);
   }, [html]);
 
+  const toggle = () => setExpanded((v) => !v);
+
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative flex flex-col gap-1", className)}>
+      {/* Top header row — label on left, toggle on right */}
+      <div className="flex items-center justify-between">
+        <p className="font-mono text-[9px] uppercase tracking-[0.4em] text-muted">
+          Description
+        </p>
+        {isTall && <ToggleButton expanded={expanded} onClick={toggle} />}
+      </div>
+
+      {/* Content */}
       <div
         ref={contentRef}
         className={cn(
@@ -44,37 +80,15 @@ export function DescriptionReadMore({
         dangerouslySetInnerHTML={{ __html: html }}
       />
 
-      {/* Fade-out gradient when collapsed */}
+      {/* Bottom fade + toggle when collapsed */}
       {!expanded && isTall && (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-bg to-transparent"
-        />
-      )}
-
-      {/* Toggle button */}
-      {isTall && (
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="mt-3 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.35em] text-gold hover:text-gold/70 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold rounded-sm"
-        >
-          {expanded ? (
-            <>
-              Read less
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={2} className="size-2.5" aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 10 8 6l-4 4" />
-              </svg>
-            </>
-          ) : (
-            <>
-              Read more
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={2} className="size-2.5" aria-hidden>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6l4 4 4-4" />
-              </svg>
-            </>
-          )}
-        </button>
+        <>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-7 h-16 bg-gradient-to-t from-bg to-transparent"
+          />
+          <ToggleButton expanded={false} onClick={toggle} />
+        </>
       )}
     </div>
   );

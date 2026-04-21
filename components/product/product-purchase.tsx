@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { VariantPicker } from "@/components/product/variant-picker";
 import { SizeGuideModal } from "@/components/product/size-guide-modal";
 import { BackInStockForm } from "@/components/product/back-in-stock-form";
+import { StickyAddToCart } from "@/components/product/sticky-add-to-cart";
 import { Button } from "@/components/ui/button";
 import { useServerCart } from "@/lib/cart";
 import { useToastStore } from "@/lib/toast";
@@ -32,6 +33,8 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
   const showToast = useToastStore((s) => s.show);
   const setVariantImage = useActiveVariationStore((s) => s.setVariantImage);
   const [isPending, setIsPending] = useState(false);
+  // Ref pointed at the main Add button — StickyAddToCart watches its visibility.
+  const addBtnRef = useRef<HTMLButtonElement | null>(null);
 
   // Required variation-producing attributes.
   const requiredAttrs = useMemo(
@@ -77,6 +80,9 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
         : isPending
           ? "Adding..."
           : "Add to Cart";
+
+  // Human-readable label for the sticky bar e.g. "M · Black"
+  const selectionLabel = Object.values(selected).join(" · ");
 
   function handleAdd() {
     if (disabled) return;
@@ -136,6 +142,7 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
         />
       )}
       <Button
+        ref={addBtnRef}
         size="lg"
         disabled={disabled}
         onClick={handleAdd}
@@ -152,6 +159,16 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
           productName={product.name}
         />
       )}
+
+      {/* Sticky bar — slides up when main button scrolls out of view */}
+      <StickyAddToCart
+        watchRef={addBtnRef}
+        product={product}
+        matchingVariation={matchingVariation}
+        selectionLabel={selectionLabel}
+        disabled={disabled}
+        label={label}
+      />
     </div>
   );
 }

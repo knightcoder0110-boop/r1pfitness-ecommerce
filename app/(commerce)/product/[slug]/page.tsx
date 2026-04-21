@@ -60,9 +60,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
         dangerouslySetInnerHTML={{ __html: ldJson }}
       />
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
-        <ProductGallery images={product.images} productName={product.name} />
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12 lg:items-start">
+        {/* ── Left: gallery — sticky on desktop until right col ends ── */}
+        <div className="lg:sticky lg:top-[--size-header] lg:self-start">
+          <ProductGallery images={product.images} productName={product.name} />
+        </div>
 
+        {/* ── Right: product info ── */}
         <div className="flex flex-col gap-6 sm:gap-8">
           <header className="flex flex-col gap-3">
             <div className="flex flex-wrap gap-1.5">
