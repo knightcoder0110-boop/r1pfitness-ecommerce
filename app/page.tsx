@@ -8,7 +8,12 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { Container } from "@/components/ui/container";
 import { buttonVariants } from "@/components/ui/button";
 import Marquee from "@/components/marquee";
-import Manifesto from "@/components/manifesto";
+import { StatementMarquee } from "@/components/marketing/statement-marquee";
+import { TrustBar } from "@/components/marketing/trust-bar";
+import { ProductSpotlight } from "@/components/marketing/product-spotlight";
+import { CategoryGrid } from "@/components/marketing/category-grid";
+import { SplitBanners, DEFAULT_SPLIT_BANNERS } from "@/components/marketing/split-banners";
+import { Testimonials } from "@/components/marketing/testimonials";
 import { ROUTES, SITE } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -21,10 +26,15 @@ export const revalidate = 3600;
 
 export default async function HomePage() {
   const catalog = getCatalog();
-  const { items: featured } = await catalog.listProducts({
-    sort: "featured",
-    pageSize: 4,
-  });
+
+  // Single data fetch — pass products to all sections that need them.
+  const [{ items: allFeatured }, { items: bestSellers }] = await Promise.all([
+    catalog.listProducts({ sort: "featured", pageSize: 8 }),
+    catalog.listProducts({ sort: "newest", pageSize: 4 }),
+  ]);
+
+  // First product becomes the spotlight hero; remaining 4 fill the grid.
+  const [spotlightProduct, ...gridProducts] = allFeatured;
 
   return (
     <>
@@ -34,67 +44,139 @@ export default async function HomePage() {
       <SiteHeader />
 
       <main id="main">
-        {/* ── Hero ───────────────────────────────────────────────────── */}
+        {/* ══════════════════════════════════════════════════════════
+            1. HERO — cinematic full-viewport opener
+            ══════════════════════════════════════════════════════════ */}
         <section
           aria-label="Hero"
-          className="relative overflow-hidden bg-bg border-b border-border"
+          className="relative overflow-hidden bg-bg min-h-[85vh] flex items-center"
         >
+          {/* Grid texture */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--color-border)/0.25)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--color-border)/0.25)_1px,transparent_1px)] bg-[size:40px_40px]"
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--color-border)/0.18)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--color-border)/0.18)_1px,transparent_1px)] bg-[size:44px_44px]"
           />
-          <Container className="relative flex flex-col items-center justify-center py-28 sm:py-40 gap-8 text-center">
-            <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-muted">
-              Waipahu, Hawaii · Est. 2026
-            </p>
-            <h1 className="font-display text-[clamp(3.5rem,14vw,9rem)] leading-none tracking-widest text-text">
+
+          {/* Radial glow from bottom-left */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-32 -left-32 w-[600px] h-[600px] rounded-full bg-gold/5 blur-[120px]"
+          />
+
+          <Container className="relative z-10 flex flex-col items-center justify-center py-32 sm:py-40 gap-8 text-center">
+            {/* Location pill */}
+            <div className="flex items-center gap-3">
+              <span className="h-px w-6 bg-gold" aria-hidden="true" />
+              <p className="font-mono text-[10px] uppercase tracking-[0.55em] text-gold">
+                Waipahu, Hawaii · Est. 2026
+              </p>
+              <span className="h-px w-6 bg-gold" aria-hidden="true" />
+            </div>
+
+            {/* Main wordmark */}
+            <h1 className="font-display text-[clamp(4rem,16vw,10.5rem)] leading-none tracking-[0.06em] text-text">
               {SITE.name}
             </h1>
-            <p className="font-serif italic text-xl sm:text-2xl md:text-3xl text-subtle max-w-lg">
+
+            {/* Italic tagline */}
+            <p className="font-serif italic text-xl sm:text-2xl md:text-3xl text-subtle max-w-lg leading-relaxed">
               Reborn 1n Paradise
             </p>
-            <div className="flex flex-wrap gap-4 justify-center mt-2">
-              <Link href={ROUTES.shop} className={buttonVariants({ size: "lg" })}>
-                Shop Now
+
+            {/* CTAs */}
+            <div className="flex flex-wrap gap-4 justify-center mt-4">
+              <Link
+                href={ROUTES.shop}
+                className="relative overflow-hidden inline-flex items-center justify-center gap-2 h-14 px-10 font-semibold text-sm uppercase tracking-widest text-bg bg-[linear-gradient(170deg,#D4AF55_0%,#C9A84C_45%,#9A7C2C_100%)] before:absolute before:inset-0 before:bg-[linear-gradient(170deg,rgba(255,255,255,0.3)_0%,transparent_60%)] before:pointer-events-none hover:brightness-110 transition-[filter] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+              >
+                Shop the Drop
               </Link>
-              <Link href={ROUTES.category("tees")} className={buttonVariants({ variant: "outline", size: "lg" })}>
+              <Link
+                href={ROUTES.category("tees")}
+                className={buttonVariants({ variant: "outline", size: "lg" })}
+              >
                 Browse Tees
               </Link>
+            </div>
+
+            {/* Scroll hint */}
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 animate-bounce opacity-40" aria-hidden="true">
+              <div className="w-px h-8 bg-gold" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="size-4 text-gold">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+              </svg>
             </div>
           </Container>
         </section>
 
-        {/* ── Marquee ──────────────────────────────────────────────── */}
+        {/* ══════════════════════════════════════════════════════════
+            2. TICKER MARQUEE — thin band of brand identity
+            ══════════════════════════════════════════════════════════ */}
         <Marquee />
 
-        {/* ── Featured products ────────────────────────────────────── */}
-        {featured.length > 0 && (
-          <section aria-labelledby="featured-heading" className="py-20 sm:py-28">
+        {/* ══════════════════════════════════════════════════════════
+            3. TRUST BAR — 5 signals in gold
+            ══════════════════════════════════════════════════════════ */}
+        <TrustBar />
+
+        {/* ══════════════════════════════════════════════════════════
+            4. PRODUCT SPOTLIGHT — hero feature of the first drop
+            ══════════════════════════════════════════════════════════ */}
+        {spotlightProduct && (
+          <ProductSpotlight
+            product={spotlightProduct}
+            tagline="Featured Drop"
+            subtext="Vintage wash. Limited quantities. Once it's gone, it's gone."
+            layout="image-left"
+          />
+        )}
+
+        {/* ══════════════════════════════════════════════════════════
+            5. STATEMENT MARQUEE #1 — oversized scrolling type
+            ══════════════════════════════════════════════════════════ */}
+        <StatementMarquee
+          items={[
+            { text: "Reborn 1n Paradise", style: "filled" },
+            { text: "Ohana Forever", style: "outline" },
+            { text: "24H Drops Only", style: "gold" },
+            { text: "Waipahu, HI", style: "gold-outline" },
+            { text: "Discipline Club", style: "filled" },
+            { text: "R1P Fitness", style: "outline" },
+          ]}
+          speedSeconds={24}
+          direction="left"
+        />
+
+        {/* ══════════════════════════════════════════════════════════
+            6. NEW ARRIVALS GRID — 4 products
+            ══════════════════════════════════════════════════════════ */}
+        {gridProducts.length > 0 && (
+          <section aria-labelledby="new-arrivals-heading" className="py-20 sm:py-28 bg-bg">
             <Container>
               <div className="flex items-end justify-between mb-10">
                 <div>
-                  <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-muted">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-gold mb-2">
                     New Arrivals
                   </p>
                   <h2
-                    id="featured-heading"
-                    className="mt-1 font-display text-3xl sm:text-4xl tracking-wider text-text"
+                    id="new-arrivals-heading"
+                    className="font-display text-[clamp(1.75rem,5vw,3rem)] leading-none tracking-wider text-text"
                   >
-                    Latest Drop
+                    LATEST DROPS
                   </h2>
                 </div>
                 <Link
                   href={ROUTES.shop}
-                  className="hidden sm:inline font-mono text-[10px] uppercase tracking-[0.25em] text-muted underline hover:text-text transition-colors"
+                  className="hidden sm:inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-muted hover:text-gold transition-colors"
                 >
-                  View all &#8594;
+                  View all <span aria-hidden="true">&#8594;</span>
                 </Link>
               </div>
 
-              <ProductGrid items={featured} />
+              <ProductGrid items={gridProducts.slice(0, 4)} />
 
-              <div className="mt-10 flex justify-center sm:hidden">
-                <Link href={ROUTES.shop} className={buttonVariants({ variant: "outline", size: "sm" })}>
+              <div className="mt-10 flex justify-center">
+                <Link href={ROUTES.shop} className={buttonVariants({ variant: "outline", size: "md" })}>
                   View all products
                 </Link>
               </div>
@@ -102,65 +184,90 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* ── Manifesto ────────────────────────────────────────────── */}
-        <section
-          aria-label="Manifesto"
-          className="border-t border-b border-border py-20 sm:py-28"
-        >
-          <Container size="md">
-            <Manifesto />
-          </Container>
-        </section>
+        {/* ══════════════════════════════════════════════════════════
+            7. SPLIT BANNERS — editorial category pair (Tees / Hoodies)
+            ══════════════════════════════════════════════════════════ */}
+        <SplitBanners items={DEFAULT_SPLIT_BANNERS} />
 
-        {/* ── Brand story ──────────────────────────────────────────── */}
-        <section aria-labelledby="story-heading" className="py-20 sm:py-28">
+        {/* ══════════════════════════════════════════════════════════
+            8. SECOND STATEMENT MARQUEE — reversed direction
+            ══════════════════════════════════════════════════════════ */}
+        <StatementMarquee
+          items={[
+            { text: "Iron Will", style: "gold" },
+            { text: "Frozen Fury", style: "outline" },
+            { text: "Regal Rage", style: "filled" },
+            { text: "Shadow Hunter", style: "gold-outline" },
+            { text: "Reborn Strong", style: "filled" },
+            { text: "Never Fold", style: "gold" },
+          ]}
+          speedSeconds={20}
+          direction="right"
+        />
+
+        {/* ══════════════════════════════════════════════════════════
+            9. CATEGORY GRID — Shop by category visual strip
+            ══════════════════════════════════════════════════════════ */}
+        <CategoryGrid />
+
+        {/* ══════════════════════════════════════════════════════════
+            10. BRAND STORY — text + stat grid
+            ══════════════════════════════════════════════════════════ */}
+        <section aria-labelledby="story-heading" className="py-20 sm:py-28 border-t border-border">
           <Container>
-            <div className="grid gap-12 lg:grid-cols-2 lg:gap-20 items-center">
+            <div className="grid gap-12 lg:grid-cols-2 lg:gap-24 items-center">
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-muted">
-                  Our Story
-                </p>
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="h-px w-8 bg-gold" aria-hidden="true" />
+                  <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-gold">
+                    Our Story
+                  </p>
+                </div>
                 <h2
                   id="story-heading"
-                  className="mt-2 font-display text-4xl sm:text-5xl tracking-wider text-text"
+                  className="font-display text-[clamp(2.5rem,7vw,4.5rem)] leading-none tracking-wide text-text"
                 >
-                  Born in Waipahu.
+                  BORN IN WAIPAHU.
                   <br />
-                  Built for the Grind.
+                  BUILT FOR THE GRIND.
                 </h2>
                 <p className="mt-6 font-serif italic text-lg text-subtle leading-relaxed">
                   R1P FITNESS started as a garage gym and a dream. Every piece we
-                  drop carries the spirit of our &lsquo;ohana &mdash; the early mornings,
+                  drop carries the spirit of our &lsquo;ohana — the early mornings,
                   the heavy sets, and the fire that keeps us going.
                 </p>
-                <p className="mt-4 font-serif text-sm text-faint leading-relaxed">
+                <p className="mt-4 text-sm text-faint leading-relaxed">
                   We don&apos;t do restocks. Each design is a 24-hour limited drop. Miss it
                   and it&apos;s gone forever. That&apos;s the R1P way.
                 </p>
-                <div className="mt-8">
-                  <Link href={ROUTES.shop} className={buttonVariants({ variant: "ghost", size: "sm" })}>
-                    Shop the collection &#8594;
+                <div className="mt-10">
+                  <Link
+                    href={ROUTES.shop}
+                    className="relative overflow-hidden inline-flex items-center justify-center gap-2 h-11 px-7 font-semibold text-xs uppercase tracking-widest text-bg bg-[linear-gradient(170deg,#D4AF55_0%,#C9A84C_45%,#9A7C2C_100%)] before:absolute before:inset-0 before:bg-[linear-gradient(170deg,rgba(255,255,255,0.3)_0%,transparent_60%)] before:pointer-events-none hover:brightness-110 transition-[filter] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                  >
+                    Shop the collection
                   </Link>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 {(
                   [
-                    { number: "24H", label: "Drop window" },
+                    { number: "24H", label: "Drop window only" },
                     { number: "100%", label: "Limited edition" },
                     { number: "HI", label: "Made with aloha" },
-                    { number: "\u221e", label: "Ohana always" },
+                    { number: "∞", label: "Ohana always" },
                   ] as const
                 ).map((stat) => (
                   <div
                     key={stat.label}
-                    className="border border-border p-6 flex flex-col gap-2"
+                    className="border border-border bg-surface-1 p-8 flex flex-col gap-3"
                   >
-                    <span className="font-display text-4xl tracking-wider text-text">
+                    <span className="font-display text-5xl leading-none tracking-wider text-text">
                       {stat.number}
                     </span>
-                    <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted">
+                    <div className="h-px w-6 bg-gold" aria-hidden="true" />
+                    <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-muted">
                       {stat.label}
                     </span>
                   </div>
@@ -170,50 +277,40 @@ export default async function HomePage() {
           </Container>
         </section>
 
-        {/* ── Newsletter ───────────────────────────────────────────── */}
-        <section
-          aria-labelledby="newsletter-heading"
-          className="border-t border-border bg-bg/60 py-20 sm:py-24"
-        >
-          <Container size="md" className="text-center">
-            <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-muted">
-              Stay Connected
-            </p>
-            <h2
-              id="newsletter-heading"
-              className="mt-2 font-display text-3xl sm:text-4xl tracking-wider text-text"
-            >
-              Get Drop Alerts
-            </h2>
-            <p className="mt-3 font-serif italic text-subtle">
-              Be the first to know when new drops go live. No spam, ever.
-            </p>
-            <form
-              action="https://manage.kmail-lists.com/subscriptions/subscribe"
-              method="POST"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-8 flex gap-2 max-w-sm mx-auto"
-            >
-              <input type="hidden" name="g" value="KLAVIYO_LIST_ID" />
-              <label htmlFor="newsletter-email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="newsletter-email"
-                name="email"
-                type="email"
-                required
-                autoComplete="email"
-                placeholder="your@email.com"
-                className="flex-1 bg-bg border border-border px-4 py-2.5 font-mono text-sm text-text placeholder:text-faint focus:outline-none focus:ring-2 focus:ring-accent"
-              />
-              <button type="submit" className={buttonVariants({ size: "sm" })}>
-                Join
-              </button>
-            </form>
-          </Container>
-        </section>
+        {/* ══════════════════════════════════════════════════════════
+            11. TESTIMONIALS — community reviews
+            ══════════════════════════════════════════════════════════ */}
+        <Testimonials />
+
+        {/* ══════════════════════════════════════════════════════════
+            12. BEST SELLERS — additional 4-product row
+            ══════════════════════════════════════════════════════════ */}
+        {bestSellers.length > 0 && (
+          <section aria-labelledby="best-sellers-heading" className="py-20 sm:py-28 border-t border-border bg-bg">
+            <Container>
+              <div className="flex items-end justify-between mb-10">
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-gold mb-2">
+                    Fan Favourites
+                  </p>
+                  <h2
+                    id="best-sellers-heading"
+                    className="font-display text-[clamp(1.75rem,5vw,3rem)] leading-none tracking-wider text-text"
+                  >
+                    BEST SELLERS
+                  </h2>
+                </div>
+                <Link
+                  href={ROUTES.shop}
+                  className="hidden sm:inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-muted hover:text-gold transition-colors"
+                >
+                  View all <span aria-hidden="true">&#8594;</span>
+                </Link>
+              </div>
+              <ProductGrid items={bestSellers} />
+            </Container>
+          </section>
+        )}
       </main>
 
       <SiteFooter />
