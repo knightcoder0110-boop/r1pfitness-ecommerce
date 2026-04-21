@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductGallery, ProductPurchase, RelatedProducts } from "@/components/product";
+import { ProductAddons } from "@/components/product/product-addons";
+import { DescriptionReadMore } from "@/components/product/description-read-more";
 import { Badge } from "@/components/ui/badge";
 import { Container } from "@/components/ui/container";
 import { Heading } from "@/components/ui/heading";
@@ -86,12 +88,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
             />
           ) : null}
 
+          {/* Complete the Look — add-on products */}
+          <ProductAddons currentProduct={product} />
+
           <ProductPurchase product={product} />
 
-          <section
-            className="prose prose-invert max-w-none font-serif text-muted"
-            dangerouslySetInnerHTML={{ __html: product.description }}
-          />
+          {product.description ? (
+            <DescriptionReadMore html={product.description} />
+          ) : null}
 
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 border-t border-border pt-6 font-mono text-xs uppercase tracking-[0.2em]">
             {product.meta.fitType ? (

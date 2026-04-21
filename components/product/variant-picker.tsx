@@ -55,7 +55,7 @@ export function VariantPicker({ attributes, value, onChange }: VariantPickerProp
                     aria-checked={isSelected}
                     onClick={() => update(attr.id, option)}
                     className={cn(
-                      "min-w-[44px] rounded-sm border px-4 py-2 font-mono text-xs uppercase tracking-[0.2em] transition-colors",
+                      "min-w-[44px] rounded-sm border px-4 py-2 font-mono text-xs uppercase tracking-[0.2em] transition-colors cursor-pointer",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
                       isSelected
                         ? "border-gold bg-gold/10 text-gold"

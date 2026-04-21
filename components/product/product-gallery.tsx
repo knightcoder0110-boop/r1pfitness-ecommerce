@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { cn } from "@/lib/utils/cn";
+import { useActiveVariationStore } from "@/lib/active-variation-store";
 import type { ImageRef } from "@/lib/woo/types";
 
 export interface ProductGalleryProps {
@@ -15,10 +16,22 @@ export interface ProductGalleryProps {
  *
  * Client component — state is local (selected thumbnail). Main image is
  * eager/priority so LCP is the hero. Thumbnails lazy-load.
+ *
+ * When a product variation with an image is selected (via useActiveVariationStore),
+ * it is prepended to the gallery and automatically shown as the active image.
  */
 export function ProductGallery({ images, productName }: ProductGalleryProps) {
-  const [index, setIndex] = useState(0);
-  const active = images[index] ?? images[0];
+  const [manualIndex, setManualIndex] = useState<number | null>(null);
+  const variantImage = useActiveVariationStore((s) => s.variantImage);
+
+  // Build the full image list: variant image (if any) + product images (deduped).
+  const allImages: ImageRef[] = variantImage
+    ? [variantImage, ...images.filter((img) => img.id !== variantImage.id)]
+    : images;
+
+  // When a variant image appears, jump to index 0 automatically.
+  const activeIndex = variantImage ? 0 : (manualIndex ?? 0);
+  const active = allImages[activeIndex] ?? allImages[0];
 
   if (!active) {
     return (
@@ -40,10 +53,10 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
         />
       </div>
 
-      {images.length > 1 ? (
+      {allImages.length > 1 ? (
         <ul className="grid grid-cols-5 gap-2" role="tablist" aria-label={`${productName} images`}>
-          {images.map((img, i) => {
-            const selected = i === index;
+          {allImages.map((img, i) => {
+            const selected = i === activeIndex;
             return (
               <li key={img.id}>
                 <button
@@ -51,9 +64,9 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                   role="tab"
                   aria-selected={selected}
                   aria-label={`Show image ${i + 1}`}
-                  onClick={() => setIndex(i)}
+                  onClick={() => setManualIndex(i)}
                   className={cn(
-                    "relative aspect-square w-full overflow-hidden rounded-sm border transition-colors",
+                    "relative aspect-square w-full overflow-hidden rounded-sm border transition-colors cursor-pointer",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold",
                     selected ? "border-gold" : "border-border hover:border-muted",
                   )}

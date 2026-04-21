@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { VariantPicker } from "@/components/product/variant-picker";
 import { SizeGuideModal } from "@/components/product/size-guide-modal";
 import { BackInStockForm } from "@/components/product/back-in-stock-form";
 import { Button } from "@/components/ui/button";
 import { useServerCart } from "@/lib/cart";
 import { useToastStore } from "@/lib/toast";
+import { useActiveVariationStore } from "@/lib/active-variation-store";
 import { trackAddToCart } from "@/lib/analytics";
 import type { Product, ProductVariation } from "@/lib/woo/types";
 
@@ -29,6 +30,7 @@ export interface ProductPurchaseProps {
 export function ProductPurchase({ product }: ProductPurchaseProps) {
   const { addItem, open: openCart } = useServerCart();
   const showToast = useToastStore((s) => s.show);
+  const setVariantImage = useActiveVariationStore((s) => s.setVariantImage);
   const [isPending, setIsPending] = useState(false);
 
   // Required variation-producing attributes.
@@ -54,6 +56,11 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
   const productOutOfStock = product.stockStatus === "out_of_stock";
   const variationOutOfStock =
     matchingVariation?.stockStatus === "out_of_stock";
+
+  // Sync variation image into gallery whenever the resolved variation changes.
+  useEffect(() => {
+    setVariantImage(matchingVariation?.image);
+  }, [matchingVariation, setVariantImage]);
 
   // Disabled when: no stock; OR has variations but selection incomplete;
   // OR selection complete but variation itself is OOS.

@@ -23,6 +23,7 @@ const buttonVariants = cva(
   [
     "inline-flex items-center justify-center gap-2 whitespace-nowrap",
     "font-semibold uppercase tracking-wider",
+    "cursor-pointer",
     "transition-colors duration-200 ease-out",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
     "disabled:pointer-events-none disabled:opacity-50",
@@ -35,9 +36,9 @@ const buttonVariants = cva(
         secondary:
           "bg-text text-bg hover:bg-text/90 focus-visible:ring-text",
         outline:
-          "border border-border-strong bg-transparent text-text hover:bg-surface-2 focus-visible:ring-text",
+          "border border-border-strong bg-surface-1 text-text hover:bg-surface-2 focus-visible:ring-text",
         ghost:
-          "bg-transparent text-text hover:bg-surface-2 focus-visible:ring-text",
+          "bg-surface-1 text-text hover:bg-surface-2 focus-visible:ring-text",
         link: "bg-transparent text-gold underline-offset-4 hover:underline focus-visible:ring-gold",
       },
       size: {

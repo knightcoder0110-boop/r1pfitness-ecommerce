@@ -79,24 +79,34 @@ export function TrustBar({ items = DEFAULT_ITEMS, className }: TrustBarProps) {
         className,
       )}
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      {/* Mobile: single horizontal snap-scroll row. md+: evenly divided 5-col strip. */}
+      <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <ul
           className={cn(
-            "grid grid-cols-2 gap-6",
-            "md:grid-cols-5 md:gap-0 md:divide-x md:divide-border",
+            "flex snap-x snap-mandatory",
+            "divide-x divide-border",
+            "min-w-max md:min-w-0 md:w-full",
+            "mx-auto max-w-7xl px-4 sm:px-6 lg:px-8",
           )}
           role="list"
         >
           {items.map((item, i) => (
             <li
               key={i}
-              className="flex flex-col items-center gap-2 text-center md:px-6 md:first:pl-0 md:last:pr-0"
+              className={cn(
+                "snap-start shrink-0",
+                "flex flex-col items-center gap-1.5 text-center",
+                "w-[42vw] sm:w-auto sm:flex-1",
+                "px-4 py-3 sm:py-2 md:px-6",
+              )}
             >
-              <span className="text-gold">{item.icon}</span>
-              <span className="font-display text-lg tracking-widest text-text leading-none">
+              <span className="text-gold [&>svg]:size-5 sm:[&>svg]:size-6 md:[&>svg]:size-7">
+                {item.icon}
+              </span>
+              <span className="font-display text-base sm:text-lg tracking-widest text-text leading-none">
                 {item.stat}
               </span>
-              <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted leading-tight">
+              <span className="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.25em] text-muted leading-tight">
                 {item.label}
               </span>
             </li>
