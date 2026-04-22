@@ -38,7 +38,13 @@ export default async function HomePage() {
   ]);
 
   // First product becomes the spotlight hero; remaining 4 fill the grid.
-  const [spotlightProduct, ...gridProducts] = allFeatured;
+  const [spotlightSummary, ...gridProducts] = allFeatured;
+
+  // Fetch the full product (with variations + attributes) for the spotlight.
+  // We need the complete data for the inline variant picker + add-to-cart.
+  const spotlightProduct = spotlightSummary
+    ? await catalog.getProductBySlug(spotlightSummary.slug)
+    : null;
 
   return (
     <>
@@ -186,7 +192,6 @@ export default async function HomePage() {
           <ProductSpotlight
             product={spotlightProduct}
             tagline="Featured Drop"
-            subtext="Vintage wash. Limited quantities. Once it's gone, it's gone."
             layout="image-left"
           />
         )}
