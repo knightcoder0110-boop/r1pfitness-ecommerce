@@ -36,16 +36,23 @@ function InstagramIcon({ className }: { className?: string }) {
 /* ─── Newsletter row — uses the live Klaviyo client form ─────────────────── */
 function NewsletterRow() {
   return (
-    <div className="border-t border-border pt-10 mt-10">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+    <div className="border-t border-border-strong pt-12 mt-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-gold mb-2">
+          <p
+            className="font-mono uppercase text-gold mb-3"
+            style={{
+              fontSize:      "var(--footer-heading-size)",
+              letterSpacing: "0.45em",
+              fontWeight:    600,
+            }}
+          >
             Stay in the loop
           </p>
-          <h3 className="font-display text-2xl sm:text-3xl leading-none tracking-widest text-text">
+          <h3 className="font-display text-3xl sm:text-4xl leading-none tracking-[0.18em] text-text">
             JOIN THE OHANA
           </h3>
-          <p className="text-subtle text-sm mt-2 max-w-xs">
+          <p className="font-serif text-base text-subtle mt-4 max-w-sm leading-relaxed">
             Limited drops, exclusive early access, and Waipahu culture — direct to your inbox.
           </p>
         </div>
@@ -75,23 +82,30 @@ export function SiteFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-border bg-surface-1 pt-16 pb-8">
+    <footer className="border-t border-border-strong bg-surface-1 pt-20 pb-10">
       <Container>
         {/* ── Column grid ─────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 gap-x-8 gap-y-12 sm:grid-cols-4 lg:grid-cols-4 mb-2">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-14 sm:grid-cols-4 lg:grid-cols-4 mb-2">
           {/* Brand */}
-          <div className="col-span-2 sm:col-span-4 lg:col-span-1 flex flex-col gap-4">
+          <div className="col-span-2 sm:col-span-4 lg:col-span-1 flex flex-col gap-5">
             <Link
               href="/"
-              className="font-display text-3xl tracking-[0.15em] text-text hover:text-gold transition-colors leading-none"
+              className="font-display text-4xl tracking-[0.15em] text-text hover:text-gold cursor-pointer transition-colors leading-none"
               aria-label={SITE.name}
             >
               {SITE.name}
             </Link>
-            <p className="font-mono text-[9px] uppercase tracking-[0.4em] text-gold">
+            <p
+              className="font-mono uppercase text-gold"
+              style={{
+                fontSize:      "0.75rem",
+                letterSpacing: "0.45em",
+                fontWeight:    600,
+              }}
+            >
               {SITE.tagline}
             </p>
-            <p className="text-subtle text-sm leading-relaxed max-w-xs">
+            <p className="font-serif text-base text-subtle leading-relaxed max-w-xs">
               Hawaiian streetwear & fitness apparel. Designed and dropped from Waipahu, HI.
             </p>
             <a
@@ -99,7 +113,12 @@ export function SiteFooter() {
               target="_blank"
               rel="noreferrer"
               aria-label="Follow R1P FITNESS on Instagram"
-              className="inline-flex items-center gap-2 text-muted hover:text-gold transition-colors text-xs font-mono uppercase tracking-widest mt-auto"
+              className="inline-flex items-center gap-2.5 text-text hover:text-gold cursor-pointer transition-colors font-mono uppercase mt-auto"
+              style={{
+                fontSize:      "var(--footer-link-size)",
+                letterSpacing: "0.2em",
+                fontWeight:    500,
+              }}
             >
               <InstagramIcon className="size-5" />
               @r1pfitness
@@ -107,16 +126,28 @@ export function SiteFooter() {
           </div>
 
           {/* Shop */}
-          <div className="flex flex-col gap-4">
-            <p className="font-mono text-[9px] uppercase tracking-[0.4em] text-gold">
+          <div className="flex flex-col gap-5">
+            <p
+              className="font-mono uppercase text-gold"
+              style={{
+                fontSize:      "var(--footer-heading-size)",
+                letterSpacing: "var(--footer-heading-tracking)",
+                fontWeight:    600,
+              }}
+            >
               Shop
             </p>
-            <ul className="flex flex-col gap-2.5" role="list">
+            <ul className="flex flex-col gap-3" role="list">
               {SHOP_LINKS.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="font-mono text-[10px] uppercase tracking-[0.2em] text-subtle hover:text-text transition-colors"
+                    className="font-mono uppercase text-text/85 hover:text-gold cursor-pointer transition-colors"
+                    style={{
+                      fontSize:      "var(--footer-link-size)",
+                      letterSpacing: "var(--footer-link-tracking)",
+                      fontWeight:    500,
+                    }}
                   >
                     {link.label}
                   </Link>
@@ -126,16 +157,28 @@ export function SiteFooter() {
           </div>
 
           {/* Info */}
-          <div className="flex flex-col gap-4">
-            <p className="font-mono text-[9px] uppercase tracking-[0.4em] text-gold">
+          <div className="flex flex-col gap-5">
+            <p
+              className="font-mono uppercase text-gold"
+              style={{
+                fontSize:      "var(--footer-heading-size)",
+                letterSpacing: "var(--footer-heading-tracking)",
+                fontWeight:    600,
+              }}
+            >
               Info
             </p>
-            <ul className="flex flex-col gap-2.5" role="list">
+            <ul className="flex flex-col gap-3" role="list">
               {INFO_LINKS.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="font-mono text-[10px] uppercase tracking-[0.2em] text-subtle hover:text-text transition-colors"
+                    className="font-mono uppercase text-text/85 hover:text-gold cursor-pointer transition-colors"
+                    style={{
+                      fontSize:      "var(--footer-link-size)",
+                      letterSpacing: "var(--footer-link-tracking)",
+                      fontWeight:    500,
+                    }}
                   >
                     {link.label}
                   </Link>
@@ -145,17 +188,29 @@ export function SiteFooter() {
           </div>
 
           {/* Connect */}
-          <div className="flex flex-col gap-4">
-            <p className="font-mono text-[9px] uppercase tracking-[0.4em] text-gold">
+          <div className="flex flex-col gap-5">
+            <p
+              className="font-mono uppercase text-gold"
+              style={{
+                fontSize:      "var(--footer-heading-size)",
+                letterSpacing: "var(--footer-heading-tracking)",
+                fontWeight:    600,
+              }}
+            >
               Connect
             </p>
-            <ul className="flex flex-col gap-2.5" role="list">
+            <ul className="flex flex-col gap-3" role="list">
               <li>
                 <a
                   href={SITE.social.instagram}
                   target="_blank"
                   rel="noreferrer"
-                  className="font-mono text-[10px] uppercase tracking-[0.2em] text-subtle hover:text-text transition-colors"
+                  className="font-mono uppercase text-text/85 hover:text-gold cursor-pointer transition-colors"
+                  style={{
+                    fontSize:      "var(--footer-link-size)",
+                    letterSpacing: "var(--footer-link-tracking)",
+                    fontWeight:    500,
+                  }}
                 >
                   Instagram
                 </a>
@@ -163,17 +218,29 @@ export function SiteFooter() {
               <li>
                 <a
                   href="mailto:r1pfitness@gmail.com"
-                  className="font-mono text-[10px] uppercase tracking-[0.2em] text-subtle hover:text-text transition-colors"
+                  className="font-mono uppercase text-text/85 hover:text-gold cursor-pointer transition-colors"
+                  style={{
+                    fontSize:      "var(--footer-link-size)",
+                    letterSpacing: "var(--footer-link-tracking)",
+                    fontWeight:    500,
+                  }}
                 >
                   Email Us
                 </a>
               </li>
             </ul>
-            <div className="mt-4 flex flex-col gap-1">
-              <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-muted">
+            <div className="mt-5 flex flex-col gap-2">
+              <p
+                className="font-mono uppercase text-gold"
+                style={{
+                  fontSize:      "0.6875rem",
+                  letterSpacing: "0.3em",
+                  fontWeight:    600,
+                }}
+              >
                 Location
               </p>
-              <address className="not-italic font-mono text-[9px] uppercase tracking-[0.2em] text-subtle leading-relaxed">
+              <address className="not-italic font-serif text-sm text-subtle leading-relaxed">
                 {SITE.address.street}<br />
                 {SITE.address.city}, {SITE.address.region} {SITE.address.postalCode}
               </address>
@@ -185,24 +252,37 @@ export function SiteFooter() {
         <NewsletterRow />
 
         {/* ── Legal bar ───────────────────────────────────────────────── */}
-        <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-faint">
+        <div className="mt-12 pt-8 border-t border-border-strong flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p
+            className="font-mono uppercase text-subtle"
+            style={{
+              fontSize:      "0.6875rem",
+              letterSpacing: "0.25em",
+            }}
+          >
             © {year} {SITE.legalName}. All rights reserved.
           </p>
           <nav aria-label="Legal links">
-            <ul className="flex flex-wrap gap-x-5 gap-y-1 font-mono text-[9px] uppercase tracking-[0.2em] text-faint" role="list">
+            <ul
+              className="flex flex-wrap gap-x-6 gap-y-1 font-mono uppercase"
+              style={{
+                fontSize:      "0.6875rem",
+                letterSpacing: "0.25em",
+              }}
+              role="list"
+            >
               <li>
-                <Link href="#" className="hover:text-subtle transition-colors">
+                <Link href="#" className="text-subtle hover:text-gold cursor-pointer transition-colors">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-subtle transition-colors">
+                <Link href="#" className="text-subtle hover:text-gold cursor-pointer transition-colors">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-subtle transition-colors">
+                <Link href="#" className="text-subtle hover:text-gold cursor-pointer transition-colors">
                   Refund Policy
                 </Link>
               </li>

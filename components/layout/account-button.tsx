@@ -22,7 +22,7 @@ export async function AccountButton() {
       <Link
         href={ROUTES.account}
         aria-label="My account"
-        className="flex h-7 w-7 items-center justify-center rounded-full bg-accent/10 ring-1 ring-accent/30 font-mono text-[10px] text-accent hover:ring-accent transition-all"
+        className="flex h-7 w-7 items-center justify-center rounded-full bg-accent/10 ring-1 ring-accent/30 font-mono text-[10px] text-accent hover:ring-accent cursor-pointer transition-all"
       >
         {initials}
       </Link>
@@ -33,9 +33,12 @@ export async function AccountButton() {
     <Link
       href={ROUTES.login}
       aria-label="Sign in"
-      className="flex h-8 w-8 items-center justify-center rounded-full text-text/70 hover:text-text hover:bg-surface-2 transition-colors"
+      className="inline-flex h-10 w-10 items-center justify-center text-text hover:text-gold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
     >
-      <UserRound className="h-4.5 w-4.5" strokeWidth={1.5} />
+      <UserRound
+        style={{ width: "var(--icon-size)", height: "var(--icon-size)" }}
+        strokeWidth={2}
+      />
     </Link>
   );
 }

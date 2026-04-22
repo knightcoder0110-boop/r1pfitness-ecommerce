@@ -114,6 +114,7 @@ export async function CategoryGrid({ className }: CategoryGridProps) {
       aria-labelledby="cat-grid-heading"
       spacing="lg"
       bordered="y"
+      containerSize="xl"
       className={className}
     >
       <SectionHeader

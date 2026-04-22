@@ -100,7 +100,46 @@
   --aspect-banner:   4 / 5;   /* split banner tiles                                 */
   --aspect-wide:     16 / 9;  /* video / hero stills                                */
 
-  /* ── Z-index stack ────────────────────────────────────── */
+  /* ── Navigation & Footer typography (modular, single source of truth) ──
+     Change any value here and every nav/footer/search surface updates.
+     Sizes are tuned for readability on a dark background. */
+
+  /* Top-level desktop nav links */
+  --nav-link-size:        0.8125rem;   /* 13px */
+  --nav-link-tracking:    0.22em;
+  --nav-link-weight:      500;
+
+  /* Mega-menu group heading (gold eyebrow) */
+  --mega-heading-size:    0.75rem;     /* 12px */
+  --mega-heading-tracking:0.35em;
+
+  /* Mega-menu sub-link (main label) */
+  --mega-link-size:       0.9375rem;   /* 15px */
+  --mega-link-tracking:   0.12em;
+  --mega-link-weight:     500;
+
+  /* Mega-menu sub-link description */
+  --mega-desc-size:       0.8125rem;   /* 13px */
+  --mega-desc-tracking:   0.02em;
+
+  /* Mega-menu featured display title */
+  --mega-featured-size:     2rem;      /* 32px */
+  --mega-featured-sub:      0.75rem;   /* 12px */
+
+  /* Footer column heading */
+  --footer-heading-size:  0.75rem;     /* 12px */
+  --footer-heading-tracking: 0.35em;
+
+  /* Footer link */
+  --footer-link-size:     0.8125rem;   /* 13px */
+  --footer-link-tracking: 0.04em;
+
+  /* Header icon color parity (search/account match cart) */
+  --icon-color:           var(--color-text);
+  --icon-color-hover:     var(--color-gold);
+  --icon-size:            1.25rem;     /* 20px — unified header icon size */
+
+  /* Z-index stack */
   --z-header:  40;
   --z-overlay: 50;
   --z-modal:   60;

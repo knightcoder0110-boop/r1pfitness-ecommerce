@@ -24,11 +24,14 @@ export function CartButton({ className }: CartButtonProps) {
       onClick={open}
       aria-label={`Open cart${showBadge ? `, ${count} item${count === 1 ? "" : "s"}` : ""}`}
       className={cn(
-        "relative inline-flex h-10 w-10 items-center justify-center text-text transition-colors hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold",
+        "relative inline-flex h-10 w-10 items-center justify-center text-text hover:text-gold cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold",
         className,
       )}
     >
-      <ShoppingBag className="h-5 w-5" />
+      <ShoppingBag
+        style={{ width: "var(--icon-size)", height: "var(--icon-size)" }}
+        strokeWidth={2}
+      />
       {showBadge ? (
         <span
           aria-hidden
