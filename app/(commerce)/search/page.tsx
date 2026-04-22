@@ -226,7 +226,7 @@ function SearchSkeleton() {
         <Skeleton className="h-8 w-28" />
       </div>
       {/* Grid skeleton */}
-      <ul className="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+      <ul className="grid grid-cols-2 gap-x-5 gap-y-12 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {Array.from({ length: 8 }).map((_, i) => (
           <li key={i} className="flex flex-col gap-3">
             <Skeleton className="aspect-card w-full" />
@@ -249,7 +249,7 @@ export default async function SearchPage(props: SearchPageProps) {
   const suspenseKey = `${raw.q ?? ""}:${raw.sort ?? ""}:${raw.page ?? ""}`;
 
   return (
-    <Container as="section" className="py-10 sm:py-16">
+    <Container as="section" size="xl" className="py-10 sm:py-16">
       {/* Page header */}
       <header className="mb-10 sm:mb-14">
         <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-muted mb-3">

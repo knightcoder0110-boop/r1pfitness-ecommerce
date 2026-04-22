@@ -80,7 +80,7 @@ async function ShopProducts({ searchParams }: ShopPageProps) {
 
 function ShopSkeleton() {
   return (
-    <ul className="mt-8 grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
+    <ul className="mt-8 grid grid-cols-2 gap-x-5 gap-y-12 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {Array.from({ length: 8 }).map((_, i) => (
         <li key={i} className="flex flex-col gap-3">
           <Skeleton className="aspect-card w-full" />
@@ -97,7 +97,7 @@ export default async function ShopPage(props: ShopPageProps) {
   const suspenseKey = JSON.stringify(await props.searchParams);
 
   return (
-    <Container as="main" className="py-10 sm:py-16">
+    <Container as="main" size="xl" className="py-10 sm:py-16">
       <header className="mb-8 sm:mb-10">
         <Heading level={1} size="xl" className="text-4xl sm:text-5xl lg:text-6xl">
           Shop

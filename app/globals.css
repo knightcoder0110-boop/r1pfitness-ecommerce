@@ -96,9 +96,9 @@
   --space-section-lg-lg: 9rem;   /* 144px — spacious (desktop)                         */
 
   /* ── Card / image aspect ratios (single source of truth) ───── */
-  --aspect-card:     3 / 4;   /* product cards, category cards, spotlight     */
-  --aspect-banner:   4 / 5;   /* split banner tiles                            */
-  --aspect-wide:     16 / 9;  /* video / hero stills                           */
+  --aspect-card:     2 / 3;   /* product & category cards — tall editorial portrait */
+  --aspect-banner:   4 / 5;   /* split banner tiles                                 */
+  --aspect-wide:     16 / 9;  /* video / hero stills                                */
 
   /* ── Z-index stack ────────────────────────────────────── */
   --z-header:  40;

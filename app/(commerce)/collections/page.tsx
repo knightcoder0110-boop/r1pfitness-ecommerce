@@ -22,7 +22,7 @@ export default async function CollectionsPage() {
   const displayCategories = categories.filter((c) => c.slug !== "uncategorized");
 
   return (
-    <Container as="main" className="py-12 sm:py-20">
+    <Container as="main" size="xl" className="py-12 sm:py-20">
       {/* ── Header ────────────────────────────────────────────────────── */}
       <header className="mb-12 sm:mb-16">
         <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-muted mb-3">

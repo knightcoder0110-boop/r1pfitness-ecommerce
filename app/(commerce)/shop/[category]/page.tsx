@@ -49,7 +49,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   });
 
   return (
-    <Container as="main" className="py-10 sm:py-16">
+    <Container as="main" size="xl" className="py-10 sm:py-16">
       <header className="mb-8 sm:mb-10">
         <Eyebrow>Category</Eyebrow>
         <Heading level={1} size="xl" className="mt-2 text-4xl sm:text-5xl lg:text-6xl">

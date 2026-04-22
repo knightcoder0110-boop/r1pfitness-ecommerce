@@ -16,6 +16,7 @@ const containerVariants = cva("mx-auto w-full px-4 sm:px-6 lg:px-8", {
       sm: "max-w-3xl",
       md: "max-w-5xl",
       lg: "max-w-7xl",
+      xl: "max-w-screen-2xl",   // 1536px — used by product grid pages
       prose: "max-w-prose",
       full: "max-w-none",
     },
