@@ -182,7 +182,7 @@ export function ProductSpotlight({
         </div>
 
         {/* ── Product title ──────────────────────────────────── */}
-        <h2 className="font-display text-[clamp(2.25rem,5.5vw,4.5rem)] leading-none tracking-wide text-text">
+        <h2 className="font-display text-[clamp(2.25rem,5.5vw,4.5rem)] leading-none tracking-wide text-text text-left">
           {product.name.toUpperCase()}
         </h2>
 

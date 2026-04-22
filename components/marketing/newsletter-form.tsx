@@ -80,8 +80,8 @@ export function NewsletterForm({
     <form
       onSubmit={handleSubmit}
       className={`group relative flex items-stretch gap-0 ${SIZE_CLASS[size]} ${size === "full" ? "" : "mx-auto"} ${className ?? ""}
-        rounded-md bg-surface-1 ring-1 ring-border-strong transition-[background-color,box-shadow,ring]
-        hover:bg-surface-2 focus-within:ring-gold focus-within:shadow-focus focus-within:bg-surface-2`}
+        rounded-md overflow-hidden ring-1 ring-border-strong transition-[box-shadow,ring]
+        focus-within:ring-gold focus-within:shadow-focus`}
       noValidate
     >
       <label htmlFor="newsletter-email" className="sr-only">
@@ -98,7 +98,7 @@ export function NewsletterForm({
         /* Override the global input styling — form wrapper owns the border now. */
         className="flex-1 min-w-0 h-14 bg-transparent !border-0 !ring-0 !shadow-none px-5 font-mono text-sm text-text placeholder:text-faint/90 focus:outline-none disabled:opacity-50 transition-opacity !rounded-none"
       />
-      <Button type="submit" size="md" loading={state === "loading"} className="m-1.5 shrink-0">
+      <Button type="submit" size="md" loading={state === "loading"} className="shrink-0 !rounded-none">
         {buttonLabel}
       </Button>
 

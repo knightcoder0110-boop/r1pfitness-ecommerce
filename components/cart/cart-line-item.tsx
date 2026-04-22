@@ -55,7 +55,7 @@ export function CartLineItem({ item, compact = false }: CartLineItemProps) {
             type="button"
             onClick={() => removeItem(item.key)}
             aria-label={`Remove ${item.name}`}
-            className="-mr-1 -mt-1 p-1 text-subtle transition-colors hover:text-text"
+            className="-mr-1 -mt-1 p-1 text-subtle transition-colors hover:text-text cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>

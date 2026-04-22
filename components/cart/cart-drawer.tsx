@@ -95,7 +95,7 @@ export function CartDrawer() {
             type="button"
             onClick={close}
             aria-label="Close cart"
-            className="p-1 text-muted transition-colors hover:text-text"
+            className="p-1 text-muted transition-colors hover:text-text cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>

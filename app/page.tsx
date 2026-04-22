@@ -60,7 +60,7 @@ export default async function HomePage() {
             ══════════════════════════════════════════════════════════ */}
         <section
           aria-label="Hero"
-          className="relative overflow-hidden bg-bg min-h-[85vh] flex items-center pt-[var(--size-header)]"
+          className="relative overflow-hidden bg-bg min-h-[85vh] flex items-center"
         >
           {/* Hero background image */}
           <Image

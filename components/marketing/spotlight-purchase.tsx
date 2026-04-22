@@ -108,14 +108,14 @@ export function SpotlightPurchase({ product }: SpotlightPurchaseProps) {
       )}
 
       {/* Add to cart — gold lustre primary button */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-col gap-2">
         <button
           ref={addBtnRef}
           type="button"
           disabled={disabled}
           onClick={handleAdd}
           className={cn(
-            "relative overflow-hidden inline-flex items-center justify-center gap-2",
+            "relative overflow-hidden w-full inline-flex items-center justify-center gap-2",
             "h-13 px-8 font-semibold text-sm uppercase tracking-widest",
             "transition-[filter,opacity] duration-200",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold",
@@ -156,9 +156,9 @@ export function SpotlightPurchase({ product }: SpotlightPurchaseProps) {
           )}
         </button>
 
-        {/* Success micro-copy when pending resolves — optional subtle hint */}
+        {/* Success micro-copy — sits below the full-width button */}
         {!disabled && !isPending && (
-          <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-muted">
+          <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-muted text-center">
             Free US shipping
           </p>
         )}

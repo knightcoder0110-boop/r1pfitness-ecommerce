@@ -144,12 +144,36 @@ export function CommunityUgc({ className }: CommunityUgcProps) {
         Tag us <strong className="text-gold not-italic font-semibold">@r1pfitness</strong> to get featured on the wall.
       </p>
 
+      {/* Mobile: horizontally-scrollable snap row.  sm+: standard grid. */}
       <ul
         role="list"
-        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5"
+        className={[
+          /* Mobile snap-scroll row */
+          "flex gap-4 overflow-x-auto snap-x snap-mandatory pb-3",
+          /* Hide scrollbar cross-browser */
+          "[scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+          /* sm+ grid */
+          "sm:grid sm:grid-cols-3 sm:overflow-x-visible sm:pb-0",
+          /* lg wide grid */
+          "lg:grid-cols-6",
+          /* grid gap on sm+ */
+          "sm:gap-5",
+        ].join(" ")}
       >
         {TILES.map((tile, i) => (
-          <li key={i} className={i === 0 ? "col-span-2 row-span-2 lg:col-span-2 lg:row-span-2" : ""}>
+          <li
+            key={i}
+            className={[
+              /* Mobile: fixed-width snap card — first tile a touch wider */
+              i === 0
+                ? "flex-none w-[75vw] snap-start"
+                : "flex-none w-[68vw] snap-start",
+              /* sm+ grid spanning */
+              i === 0
+                ? "sm:w-auto sm:col-span-2 sm:row-span-2 lg:col-span-2 lg:row-span-2"
+                : "sm:w-auto",
+            ].join(" ")}
+          >
             <UgcCard tile={tile} />
           </li>
         ))}
