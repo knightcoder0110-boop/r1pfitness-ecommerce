@@ -72,9 +72,9 @@ export function AnnouncementBar() {
         type="button"
         onClick={dismiss}
         aria-label="Dismiss announcement"
-        className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center size-5 rounded-full text-[#0D0D0D]/60 hover:text-[#0D0D0D] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D0D0D]"
+        className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center size-6 rounded-full bg-[#0D0D0D] text-[#C9A84C] hover:bg-[#1a1a1a] hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
       >
-        <svg aria-hidden viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={2} className="size-3">
+        <svg aria-hidden viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={2.5} className="size-3">
           <path d="m3 3 10 10M13 3 3 13" strokeLinecap="round" />
         </svg>
       </button>

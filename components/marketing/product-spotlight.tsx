@@ -187,10 +187,20 @@ export function ProductSpotlight({
         </h2>
 
         {/* ── Subtext / description snippet ─────────────────── */}
+        {/* shortDescription comes from WooCommerce as raw HTML (e.g. <p>…</p>),
+            so we use dangerouslySetInnerHTML to render it correctly. */}
         {(subtext ?? product.shortDescription) && (
-          <p className="text-subtle text-sm sm:text-base max-w-sm leading-relaxed -mt-2">
-            {subtext ?? product.shortDescription}
-          </p>
+          subtext ? (
+            <p className="text-subtle text-sm sm:text-base max-w-sm leading-relaxed -mt-2">
+              {subtext}
+            </p>
+          ) : (
+            <div
+              className="text-subtle text-sm sm:text-base max-w-sm leading-relaxed -mt-2 [&_p]:mb-0 [&_a]:text-gold [&_a]:underline"
+              // WooCommerce short_description is server-sanitized HTML — safe to render.
+              dangerouslySetInnerHTML={{ __html: product.shortDescription }}
+            />
+          )
         )}
 
         {/* ── Price row ─────────────────────────────────────── */}
