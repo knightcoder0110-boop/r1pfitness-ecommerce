@@ -10,7 +10,7 @@ export default function ShopLoading() {
       <ul className="grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 lg:grid-cols-4">
         {Array.from({ length: 8 }).map((_, i) => (
           <li key={i} className="flex flex-col gap-3">
-            <Skeleton className="aspect-[4/5] w-full" />
+            <Skeleton className="aspect-card w-full" />
             <Skeleton className="h-5 w-3/4" />
             <Skeleton className="h-4 w-1/3" />
           </li>

@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { getCatalog } from "@/lib/catalog";
-import { ProductGrid } from "@/components/product/product-grid";
+import { ProductRail } from "@/components/product/product-rail";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { Container } from "@/components/ui/container";
+import { Section } from "@/components/ui/section";
 import { buttonVariants } from "@/components/ui/button";
 import Marquee from "@/components/marquee";
 import { StatementMarquee } from "@/components/marketing/statement-marquee";
@@ -143,11 +144,12 @@ export default async function HomePage() {
             2b. DROP COUNTDOWN — shown only when nextDropDate is set
             ══════════════════════════════════════════════════════════ */}
         {siteConfig.nextDropDate && (
-          <section
+          <Section
             aria-labelledby="countdown-heading"
-            className="border-b border-border bg-bg py-16 sm:py-20"
+            spacing="md"
+            bordered="bottom"
           >
-            <Container className="flex flex-col items-center gap-8 text-center">
+            <div className="flex flex-col items-center gap-8 text-center">
               <div>
                 <p
                   id="countdown-heading"
@@ -168,8 +170,8 @@ export default async function HomePage() {
               >
                 Browse current drop →
               </Link>
-            </Container>
-          </section>
+            </div>
+          </Section>
         )}
 
         {/* ══════════════════════════════════════════════════════════
@@ -209,37 +211,13 @@ export default async function HomePage() {
             6. NEW ARRIVALS GRID — 4 products
             ══════════════════════════════════════════════════════════ */}
         {gridProducts.length > 0 && (
-          <section aria-labelledby="new-arrivals-heading" className="py-20 sm:py-28 bg-bg">
-            <Container>
-              <div className="flex items-end justify-between mb-10">
-                <div>
-                  <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-gold mb-2">
-                    New Arrivals
-                  </p>
-                  <h2
-                    id="new-arrivals-heading"
-                    className="font-display text-[clamp(1.75rem,5vw,3rem)] leading-none tracking-wider text-text"
-                  >
-                    LATEST DROPS
-                  </h2>
-                </div>
-                <Link
-                  href={ROUTES.shop}
-                  className="hidden sm:inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-muted hover:text-gold transition-colors"
-                >
-                  View all <span aria-hidden="true">&#8594;</span>
-                </Link>
-              </div>
-
-              <ProductGrid items={gridProducts.slice(0, 4)} />
-
-              <div className="mt-10 flex justify-center">
-                <Link href={ROUTES.shop} className={buttonVariants({ variant: "outline", size: "md" })}>
-                  View all products
-                </Link>
-              </div>
-            </Container>
-          </section>
+          <ProductRail
+            eyebrow="New Arrivals"
+            title="Latest Drops"
+            viewAllHref={ROUTES.shop}
+            items={gridProducts.slice(0, 4)}
+            showFooterCta
+          />
         )}
 
         {/* ══════════════════════════════════════════════════════════
@@ -271,9 +249,12 @@ export default async function HomePage() {
         {/* ══════════════════════════════════════════════════════════
             10. BRAND STORY — text + stat grid
             ══════════════════════════════════════════════════════════ */}
-        <section aria-labelledby="story-heading" className="py-20 sm:py-28 border-t border-border">
-          <Container>
-            <div className="grid gap-12 lg:grid-cols-2 lg:gap-24 items-center">
+        <Section
+          aria-labelledby="story-heading"
+          spacing="lg"
+          bordered="top"
+        >
+          <div className="grid gap-12 lg:grid-cols-2 lg:gap-24 items-center">
               <div>
                 <div className="flex items-center gap-3 mb-4">
                   <span className="h-px w-8 bg-gold" aria-hidden="true" />
@@ -332,8 +313,7 @@ export default async function HomePage() {
                 ))}
               </div>
             </div>
-          </Container>
-        </section>
+        </Section>
 
         {/* ══════════════════════════════════════════════════════════
             11. TESTIMONIALS — community reviews
@@ -344,30 +324,13 @@ export default async function HomePage() {
             12. BEST SELLERS — additional 4-product row
             ══════════════════════════════════════════════════════════ */}
         {bestSellers.length > 0 && (
-          <section aria-labelledby="best-sellers-heading" className="py-20 sm:py-28 border-t border-border bg-bg">
-            <Container>
-              <div className="flex items-end justify-between mb-10">
-                <div>
-                  <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-gold mb-2">
-                    Fan Favourites
-                  </p>
-                  <h2
-                    id="best-sellers-heading"
-                    className="font-display text-[clamp(1.75rem,5vw,3rem)] leading-none tracking-wider text-text"
-                  >
-                    BEST SELLERS
-                  </h2>
-                </div>
-                <Link
-                  href={ROUTES.shop}
-                  className="hidden sm:inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-muted hover:text-gold transition-colors"
-                >
-                  View all <span aria-hidden="true">&#8594;</span>
-                </Link>
-              </div>
-              <ProductGrid items={bestSellers} />
-            </Container>
-          </section>
+          <ProductRail
+            eyebrow="Fan Favourites"
+            title="Best Sellers"
+            viewAllHref={ROUTES.shop}
+            items={bestSellers}
+            bordered="top"
+          />
         )}
       </main>
 

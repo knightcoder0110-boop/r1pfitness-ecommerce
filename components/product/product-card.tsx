@@ -34,7 +34,7 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
       className={cn("group relative flex flex-col gap-3", className)}
     >
       {/* ── Image block ─────────────────────────────────────────────── */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-sm bg-surface-1">
+      <div className="relative aspect-card w-full overflow-hidden rounded-sm bg-surface-1">
 
         {/* Primary image */}
         {product.image ? (

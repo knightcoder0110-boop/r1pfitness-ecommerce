@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCatalog } from "@/lib/catalog";
-import { Container } from "@/components/ui/container";
+import { Section } from "@/components/ui/section";
+import { SectionHeader } from "@/components/ui/section-header";
 import { cn } from "@/lib/utils/cn";
 
 /**
@@ -48,21 +49,17 @@ export async function CategoryGrid({ compact = false, className }: CategoryGridP
   if (filtered.length === 0) return null;
 
   return (
-    <section aria-labelledby="category-grid-heading" className={cn("py-16 sm:py-24 bg-bg", className)}>
-      <Container>
-        {/* Section header */}
-        <div className="flex flex-col items-center gap-3 mb-10 text-center">
-          <span className="font-mono text-[10px] uppercase tracking-[0.5em] text-gold">
-            Collections
-          </span>
-          <h2
-            id="category-grid-heading"
-            className="font-display text-[clamp(2rem,6vw,4rem)] leading-none tracking-wide text-text"
-          >
-            SHOP BY CATEGORY
-          </h2>
-          <div className="h-px w-16 bg-gold opacity-60 mt-1" aria-hidden="true" />
-        </div>
+    <Section
+      aria-labelledby="category-grid-heading"
+      spacing="md"
+      className={className}
+    >
+      <SectionHeader
+        id="category-grid-heading"
+        eyebrow="Collections"
+        title="Shop by category"
+        align="center"
+      />
 
         {/* Grid */}
         <ul
@@ -80,7 +77,7 @@ export async function CategoryGrid({ compact = false, className }: CategoryGridP
                 href={`/shop?category=${cat.slug}`}
                 className={cn(
                   "group relative flex overflow-hidden bg-surface-2",
-                  compact ? "aspect-square" : "aspect-[3/4]",
+                  compact ? "aspect-square" : "aspect-card",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
                 )}
                 aria-label={`Shop ${cat.name}`}
@@ -119,7 +116,6 @@ export async function CategoryGrid({ compact = false, className }: CategoryGridP
             </li>
           ))}
         </ul>
-      </Container>
-    </section>
+    </Section>
   );
 }

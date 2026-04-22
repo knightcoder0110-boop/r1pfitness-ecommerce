@@ -12,3 +12,7 @@ export { QuantityStepper } from "./quantity-stepper";
 export type { QuantityStepperProps } from "./quantity-stepper";
 export { Skeleton } from "./skeleton";
 export type { SkeletonProps } from "./skeleton";
+export { Section } from "./section";
+export type { SectionProps } from "./section";
+export { SectionHeader } from "./section-header";
+export type { SectionHeaderProps } from "./section-header";

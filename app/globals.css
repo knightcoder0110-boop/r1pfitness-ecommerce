@@ -83,6 +83,23 @@
   --size-container: 80rem; /*1280px — page container        */
   --size-prose:     48rem; /* 768px — long-form text        */
 
+  /* ── Section vertical rhythm (Shopify-style section padding) ──
+     Standardized so every section uses one of four spacings.
+     Apply via utilities: py-section-xs / py-section-sm / py-section-md / py-section-lg */
+  --space-section-xs: 1.5rem;  /*  24px — trust bars, announcement strips (mobile)   */
+  --space-section-sm: 3rem;   /*  48px — tight bands (Marquee)                         */
+  --space-section-md: 5rem;   /*  80px — default section (mobile)                      */
+  --space-section-lg: 7rem;   /* 112px — spacious sections (mobile)                    */
+  --space-section-xs-lg: 2rem;   /*  32px — tight strip (desktop)                      */
+  --space-section-sm-lg: 4rem;   /*  64px — tight bands (desktop)                      */
+  --space-section-md-lg: 7rem;   /* 112px — default (desktop)                          */
+  --space-section-lg-lg: 9rem;   /* 144px — spacious (desktop)                         */
+
+  /* ── Card / image aspect ratios (single source of truth) ───── */
+  --aspect-card:     3 / 4;   /* product cards, category cards, spotlight     */
+  --aspect-banner:   4 / 5;   /* split banner tiles                            */
+  --aspect-wide:     16 / 9;  /* video / hero stills                           */
+
   /* ── Z-index stack ────────────────────────────────────── */
   --z-header:  40;
   --z-overlay: 50;
@@ -133,6 +150,27 @@
 
   --ease-out: var(--ease-out);
   --ease-in:  var(--ease-in);
+
+  /* Aspect ratios as Tailwind utilities: aspect-card, aspect-banner, aspect-wide */
+  --aspect-card:   var(--aspect-card);
+  --aspect-banner: var(--aspect-banner);
+  --aspect-wide:   var(--aspect-wide);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION RHYTHM UTILITIES
+   ═══════════════════════════════════════════════════════════════════ */
+/* Four standardized section paddings. Use via `py-section-xs|sm|md|lg`.
+   Each scales up from mobile to desktop automatically. */
+.py-section-xs { padding-block: var(--space-section-xs); }
+.py-section-sm { padding-block: var(--space-section-sm); }
+.py-section-md { padding-block: var(--space-section-md); }
+.py-section-lg { padding-block: var(--space-section-lg); }
+@media (min-width: 768px) {
+  .py-section-xs { padding-block: var(--space-section-xs-lg); }
+  .py-section-sm { padding-block: var(--space-section-sm-lg); }
+  .py-section-md { padding-block: var(--space-section-md-lg); }
+  .py-section-lg { padding-block: var(--space-section-lg-lg); }
 }
 
 /* ═══════════════════════════════════════════════════════════════════

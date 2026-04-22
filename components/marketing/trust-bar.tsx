@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils/cn";
+import { Section } from "@/components/ui/section";
 
 /* ─── Trust Item Definition ─────────────────────────────────────────────── */
 export interface TrustItem {
@@ -72,12 +73,13 @@ export interface TrustBarProps {
  */
 export function TrustBar({ items = DEFAULT_ITEMS, className }: TrustBarProps) {
   return (
-    <section
+    <Section
       aria-label="Why shop with us"
-      className={cn(
-        "w-full bg-surface-1 border-y border-border py-6 sm:py-8",
-        className,
-      )}
+      spacing="xs"
+      tone="muted"
+      bordered="y"
+      bleed
+      className={className}
     >
       {/* Mobile: single horizontal snap-scroll row. md+: evenly divided 5-col strip. */}
       <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -113,6 +115,6 @@ export function TrustBar({ items = DEFAULT_ITEMS, className }: TrustBarProps) {
           ))}
         </ul>
       </div>
-    </section>
+    </Section>
   );
 }

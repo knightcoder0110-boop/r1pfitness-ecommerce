@@ -68,7 +68,7 @@ export function StatementMarquee({
     >
       <div
         className={cn(
-          "r1p-statement-track flex items-center whitespace-nowrap py-8 sm:py-10 will-change-transform",
+          "r1p-statement-track flex items-center whitespace-nowrap py-section-sm will-change-transform",
           direction === "left" ? "r1p-sm-left" : "r1p-sm-right",
         )}
       >

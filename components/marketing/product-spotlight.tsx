@@ -44,7 +44,7 @@ export function ProductSpotlight({
   const outOfStock = product.stockStatus === "out_of_stock";
 
   const imageCol = (
-    <div className="relative aspect-[3/4] w-full overflow-hidden bg-surface-2">
+    <div className="relative aspect-card w-full overflow-hidden bg-surface-2">
       {image ? (
         <Image
           src={image.url}

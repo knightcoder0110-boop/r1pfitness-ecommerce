@@ -49,7 +49,7 @@ export default async function CollectionsPage() {
                 className="group relative flex flex-col overflow-hidden border border-border hover:border-gold/40 transition-colors duration-300"
               >
                 {/* Category placeholder image */}
-                <div className="relative aspect-[4/5] bg-[#1A1A1A] overflow-hidden flex items-center justify-center">
+                <div className="relative aspect-card bg-[#1A1A1A] overflow-hidden flex items-center justify-center">
                   <span className="font-display text-6xl tracking-wider text-text/10 select-none">
                     {cat.name.charAt(0).toUpperCase()}
                   </span>

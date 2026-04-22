@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getCatalog } from "@/lib/catalog";
 import { Container } from "@/components/ui/container";
+import { Section } from "@/components/ui/section";
+import { SectionHeader } from "@/components/ui/section-header";
 import { ROUTES } from "@/lib/constants";
 
 /**
@@ -29,46 +31,20 @@ export async function CategoryScroller() {
   if (filtered.length === 0) return null;
 
   return (
-    <section
+    <Section
       aria-labelledby="category-scroller-heading"
-      className="py-16 sm:py-24 bg-bg overflow-hidden"
+      spacing="md"
+      bleed
+      className="overflow-hidden"
     >
       {/* ── Header ─────────────────────────────────────────────── */}
       <Container>
-        <div className="flex items-end justify-between mb-8 sm:mb-10">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <span className="h-px w-6 bg-gold" aria-hidden="true" />
-              <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-gold">
-                Collections
-              </p>
-            </div>
-            <h2
-              id="category-scroller-heading"
-              className="font-display text-[clamp(2rem,6vw,3.5rem)] leading-none tracking-wide text-text"
-            >
-              SHOP BY CATEGORY
-            </h2>
-          </div>
-
-          <Link
-            href={ROUTES.collections}
-            className="hidden sm:inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-muted hover:text-gold transition-colors"
-            aria-label="View all collections"
-          >
-            View all
-            <svg
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.5}
-              className="size-3"
-              aria-hidden="true"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 8h10M9 4l4 4-4 4" />
-            </svg>
-          </Link>
-        </div>
+        <SectionHeader
+          id="category-scroller-heading"
+          eyebrow="Collections"
+          title="Shop by category"
+          viewAllHref={ROUTES.collections}
+        />
       </Container>
 
       {/* ── Scroll track — full-bleed, snaps on mobile ──────────── */}
@@ -98,7 +74,7 @@ export async function CategoryScroller() {
                   href={`/shop?category=${cat.slug}`}
                   className="
                     group relative flex flex-col justify-end
-                    w-full aspect-[3/4] overflow-hidden
+                    w-full aspect-card overflow-hidden
                     border border-white/[0.07]
                     hover:border-gold/40
                     transition-[border-color] duration-300
@@ -183,7 +159,7 @@ export async function CategoryScroller() {
               href={ROUTES.collections}
               className="
                 group relative flex flex-col items-center justify-center
-                w-full aspect-[3/4] overflow-hidden
+                w-full aspect-card overflow-hidden
                 border border-gold/20
                 hover:border-gold/50
                 transition-[border-color] duration-300
@@ -230,6 +206,6 @@ export async function CategoryScroller() {
       >
         ← swipe to explore →
       </p>
-    </section>
+    </Section>
   );
 }

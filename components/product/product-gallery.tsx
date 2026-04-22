@@ -35,13 +35,13 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
 
   if (!active) {
     return (
-      <div className="aspect-[4/5] w-full rounded-sm bg-surface-1" aria-hidden />
+      <div className="aspect-card w-full rounded-sm bg-surface-1" aria-hidden />
     );
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-sm bg-surface-1">
+      <div className="relative aspect-card w-full overflow-hidden rounded-sm bg-surface-1">
         <Image
           key={active.id}
           src={active.url}

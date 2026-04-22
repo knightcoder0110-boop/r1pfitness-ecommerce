@@ -99,7 +99,7 @@ function BannerCard({
     <Link
       href={item.ctaHref}
       className={cn(
-        "group relative flex min-h-[400px] sm:min-h-[520px] overflow-hidden",
+        "group relative flex aspect-banner overflow-hidden",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-inset",
       )}
       aria-label={item.title}
@@ -182,7 +182,7 @@ function BannerRow({
       {/* Image column */}
       <div
         className={cn(
-          "relative min-h-[320px] md:min-h-[420px] overflow-hidden",
+          "relative aspect-banner md:aspect-[16/10] overflow-hidden",
           flip && "md:order-last",
         )}
       >

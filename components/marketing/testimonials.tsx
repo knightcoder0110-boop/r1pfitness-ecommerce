@@ -1,4 +1,5 @@
-import { Container } from "@/components/ui/container";
+import { Section } from "@/components/ui/section";
+import { SectionHeader } from "@/components/ui/section-header";
 import { cn } from "@/lib/utils/cn";
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
@@ -100,24 +101,19 @@ export function Testimonials({
   if (items.length === 0) return null;
 
   return (
-    <section
+    <Section
       aria-labelledby="testimonials-heading"
-      className={cn("py-16 sm:py-24 bg-surface-1 border-y border-border", className)}
+      spacing="md"
+      tone="muted"
+      bordered="y"
+      className={className}
     >
-      <Container>
-        {/* Header */}
-        <div className="flex flex-col items-center gap-3 mb-12 text-center">
-          <span className="font-mono text-[10px] uppercase tracking-[0.5em] text-gold">
-            Ohana Reviews
-          </span>
-          <h2
-            id="testimonials-heading"
-            className="font-display text-[clamp(2rem,6vw,4rem)] leading-none tracking-wide text-text"
-          >
-            WHAT THE TRIBE SAYS
-          </h2>
-          <div className="h-px w-16 bg-gold opacity-60 mt-1" aria-hidden="true" />
-        </div>
+      <SectionHeader
+        id="testimonials-heading"
+        eyebrow="Ohana Reviews"
+        title="What the tribe says"
+        align="center"
+      />
 
         {/* Cards — horizontal snap scroll on mobile, 3-col grid on md+ */}
         <ul
@@ -159,7 +155,6 @@ export function Testimonials({
             </li>
           ))}
         </ul>
-      </Container>
-    </section>
+    </Section>
   );
 }
