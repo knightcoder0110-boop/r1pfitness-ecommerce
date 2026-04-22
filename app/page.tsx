@@ -14,7 +14,7 @@ import { StatementMarquee } from "@/components/marketing/statement-marquee";
 import { TrustBar } from "@/components/marketing/trust-bar";
 import { ProductSpotlight } from "@/components/marketing/product-spotlight";
 import { CategoryScroller } from "@/components/marketing/category-scroller";
-import { SplitBanners, DEFAULT_SPLIT_BANNERS } from "@/components/marketing/split-banners";
+import { CategoryGrid } from "@/components/marketing/category-grid";
 import { Testimonials } from "@/components/marketing/testimonials";
 import { CampaignCountdown } from "@/components/campaign/campaign-countdown";
 import { siteConfig } from "@/lib/siteConfig";
@@ -225,9 +225,9 @@ export default async function HomePage() {
         )}
 
         {/* ══════════════════════════════════════════════════════════
-            7. SPLIT BANNERS — editorial category pair (Tees / Hoodies)
+            7. CATEGORY BENTO GRID — shop by category
             ══════════════════════════════════════════════════════════ */}
-        <SplitBanners items={DEFAULT_SPLIT_BANNERS} />
+        <CategoryGrid />
 
         {/* ══════════════════════════════════════════════════════════
             8. SECOND STATEMENT MARQUEE — reversed direction

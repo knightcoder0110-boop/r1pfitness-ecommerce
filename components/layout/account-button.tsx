@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { UserRound } from "lucide-react";
 import { auth } from "@/auth";
 import { ROUTES } from "@/lib/constants";
 
@@ -32,9 +33,9 @@ export async function AccountButton() {
     <Link
       href={ROUTES.login}
       aria-label="Sign in"
-      className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted hover:text-text transition-colors"
+      className="flex h-8 w-8 items-center justify-center rounded-full text-text/70 hover:text-text hover:bg-surface-2 transition-colors"
     >
-      Sign In
+      <UserRound className="h-4.5 w-4.5" strokeWidth={1.5} />
     </Link>
   );
 }
