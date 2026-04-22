@@ -216,7 +216,6 @@ export default async function HomePage() {
             title="Latest Drops"
             viewAllHref={ROUTES.shop}
             items={gridProducts.slice(0, 4)}
-            showFooterCta
           />
         )}
 
