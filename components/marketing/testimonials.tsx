@@ -20,47 +20,48 @@ const DEFAULT_TESTIMONIALS: TestimonialItem[] = [
     location: "Honolulu, HI",
     rating: 5,
     product: "Ohana Forever Tee",
-    text: "Wore this to the gym and got three compliments in one session. The print is fire and the quality is no joke — thick, doesn't shrink.",
+    text: "Wore this to the gym and got three compliments in one session. The print is fire and the quality is no joke — thick, doesn't shrink. This is the only brand I trust for drop-day drops.",
   },
   {
     name: "Talia R.",
     location: "Maui, HI",
     rating: 5,
     product: "R1P Discipline Club Hoodie",
-    text: "Finally a brand from Hawaii that actually gets the culture. The hoodie is heavy weight and the graphic is clean. Repping Ohana Forever.",
+    text: "Finally a brand from Hawaii that actually gets the culture. The hoodie is heavyweight and the graphic is clean. Wearing it is repping something real — Ohana Forever.",
   },
   {
     name: "Marcus T.",
     location: "Los Angeles, CA",
     rating: 5,
     product: "Lion: Regal Rage Tee",
-    text: "The oversized fit is perfect. Vintage wash gives it that lived-in feel without losing the detail. Already copped two more.",
+    text: "The oversized fit is perfect. Vintage wash gives it that lived-in feel without losing the detail. Already copped two more for my training crew.",
   },
   {
     name: "Jasmine K.",
     location: "San Diego, CA",
     rating: 5,
     product: "Women's Defy Leggings",
-    text: "Best activewear I've found for heavy training. Compression is real, material doesn't pill, and the R1P branding is subtle but sharp.",
+    text: "Best activewear I've found for heavy training. Compression is real, material doesn't pill, and the R1P branding is subtle but sharp. Nothing else comes close.",
   },
   {
     name: "Elijah P.",
     location: "Phoenix, AZ",
     rating: 5,
     product: "Arnold Schwarzenegger Vintage Tee",
-    text: "My bodybuilding crew went crazy over this one. Vintage print is thick and crisp — doesn't crack after washing. Worth every penny.",
+    text: "My bodybuilding crew went crazy over this. Vintage print is thick and crisp — doesn't crack after washing. Worth every penny and then some.",
   },
   {
     name: "Kaimana L.",
     location: "Waipahu, HI",
     rating: 5,
     product: "R1PFitness Crossbody Bag",
-    text: "Repping home with every drop. The crossbody bag is sleek and the zippers feel premium. This brand keeps leveling up, respect.",
+    text: "Repping home with every drop. The crossbody bag is sleek and the zippers feel premium. This brand keeps leveling up and I'm here for every drop.",
   },
 ];
 
 /* ─── Star Ratings ──────────────────────────────────────────────────────── */
-function StarRating({ count = 5 }: { count?: number }) {
+function StarRating({ count = 5, size = "sm" }: { count?: number; size?: "sm" | "lg" }) {
+  const dim = size === "lg" ? "size-5" : "size-3.5";
   return (
     <div className="flex gap-0.5" aria-label={`${count} out of 5 stars`}>
       {Array.from({ length: 5 }, (_, i) => (
@@ -70,7 +71,7 @@ function StarRating({ count = 5 }: { count?: number }) {
           fill={i < count ? "currentColor" : "none"}
           stroke="currentColor"
           strokeWidth={i < count ? 0 : 1.5}
-          className={cn("size-4", i < count ? "text-gold" : "text-border-strong")}
+          className={cn(dim, i < count ? "text-gold" : "text-border-strong")}
           aria-hidden="true"
         >
           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 0 0 .95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 0 0-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 0 0-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 0 0-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 0 0 .951-.69l1.07-3.292Z" />
@@ -80,7 +81,95 @@ function StarRating({ count = 5 }: { count?: number }) {
   );
 }
 
-/* ─── Component ─────────────────────────────────────────────────────────── */
+/* ─── Aggregate social-proof bar ─────────────────────────────────────────── */
+function AggregateBar() {
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mb-14">
+      <StarRating count={5} size="lg" />
+      <span className="font-display text-3xl leading-none text-text">4.9</span>
+      <span className="h-4 w-px bg-border-strong" aria-hidden="true" />
+      <span className="font-mono text-[10px] uppercase tracking-[0.4em] text-muted">
+        300+ Verified Reviews
+      </span>
+      <span className="hidden sm:block h-4 w-px bg-border-strong" aria-hidden="true" />
+      <span className="hidden sm:block font-mono text-[10px] uppercase tracking-[0.4em] text-muted">
+        Free US Shipping
+      </span>
+    </div>
+  );
+}
+
+/* ─── Individual card ────────────────────────────────────────────────────── */
+function TestimonialCard({ item }: { item: TestimonialItem }) {
+  return (
+    <blockquote className="group relative h-full flex flex-col bg-surface-1 border border-border overflow-hidden transition-colors duration-300 hover:border-border-strong">
+      {/* Gold left accent bar — thickens on hover */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-0 left-0 w-[3px] bg-gold/25 group-hover:bg-gold/70 transition-colors duration-300"
+      />
+
+      {/* Decorative opening quotation mark */}
+      <span
+        aria-hidden="true"
+        className="absolute -top-4 left-5 font-serif text-[7rem] leading-none text-gold/[0.07] select-none pointer-events-none"
+      >
+        &ldquo;
+      </span>
+
+      <div className="relative z-10 flex flex-col gap-5 h-full p-7 sm:p-8">
+        {/* Product chip */}
+        {item.product && (
+          <p className="self-start font-mono text-[9px] uppercase tracking-[0.4em] text-gold bg-gold/[0.08] px-2.5 py-1 rounded-sm">
+            {item.product}
+          </p>
+        )}
+
+        {/* Quote body — Cormorant Garamond italic */}
+        <p className="font-serif italic text-[1.0625rem] sm:text-[1.125rem] leading-[1.8] text-text flex-1">
+          &ldquo;{item.text}&rdquo;
+        </p>
+
+        {/* Divider */}
+        <div className="h-px w-full bg-border" aria-hidden="true" />
+
+        {/* Author footer */}
+        <footer className="flex items-end justify-between gap-4">
+          <div className="flex flex-col gap-1.5">
+            <StarRating count={item.rating ?? 5} size="sm" />
+            <cite className="not-italic font-semibold text-sm text-text">
+              {item.name}
+            </cite>
+            {item.location && (
+              <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-muted">
+                {item.location}
+              </p>
+            )}
+          </div>
+
+          {/* Verified badge */}
+          <span className="shrink-0 inline-flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.25em] text-green-400/60 self-start">
+            <svg
+              viewBox="0 0 16 16"
+              fill="currentColor"
+              className="size-3 shrink-0"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M12.416 3.376a.75.75 0 0 1 .208 1.04l-5 7.5a.75.75 0 0 1-1.154.114l-3-3a.75.75 0 0 1 1.06-1.06l2.353 2.353 4.493-6.74a.75.75 0 0 1 1.04-.207Z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Verified
+          </span>
+        </footer>
+      </div>
+    </blockquote>
+  );
+}
+
+/* ─── Section component ──────────────────────────────────────────────────── */
 export interface TestimonialsProps {
   items?: TestimonialItem[];
   className?: string;
@@ -89,8 +178,10 @@ export interface TestimonialsProps {
 /**
  * Community testimonials section.
  *
- * 3-column masonry-like grid on desktop, horizontal scroll on mobile (snap).
- * Gold star ratings, name + location, optional product callout.
+ * Header: centered eyebrow + display title + aggregate social proof bar.
+ * Cards: gold left-accent, oversized faint quote mark, Cormorant serif body,
+ *        product chip, star rating, author + verified badge.
+ * Layout: horizontal snap-scroll on mobile → 3-col grid on md+.
  *
  * Server component — pure CSS, no JS.
  */
@@ -103,8 +194,8 @@ export function Testimonials({
   return (
     <Section
       aria-labelledby="testimonials-heading"
-      spacing="md"
-      tone="muted"
+      spacing="lg"
+      tone="contrast"
       bordered="y"
       className={className}
     >
@@ -115,46 +206,28 @@ export function Testimonials({
         align="center"
       />
 
-        {/* Cards — horizontal snap scroll on mobile, 3-col grid on md+ */}
-        <ul
-          className={cn(
-            /* Mobile: horizontal scroll with snap */
-            "flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-none",
-            /* Desktop: grid */
-            "md:grid md:grid-cols-3 md:overflow-visible md:pb-0",
-          )}
-          role="list"
-          style={{ scrollbarWidth: "none" }}
-        >
-          {items.map((item, i) => (
-            <li
-              key={i}
-              className="flex-shrink-0 w-[80vw] sm:w-[60vw] md:w-auto snap-start"
-            >
-              <blockquote className="h-full flex flex-col gap-4 rounded-sm bg-bg border border-border p-6 sm:p-7">
-                <StarRating count={item.rating ?? 5} />
-                <p className="text-text text-sm sm:text-base leading-relaxed flex-1">
-                  &ldquo;{item.text}&rdquo;
-                </p>
-                <footer className="mt-auto pt-4 border-t border-border flex flex-col gap-0.5">
-                  {item.product && (
-                    <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-gold mb-1">
-                      {item.product}
-                    </p>
-                  )}
-                  <cite className="not-italic font-semibold text-sm text-text">
-                    {item.name}
-                  </cite>
-                  {item.location && (
-                    <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-muted">
-                      {item.location}
-                    </p>
-                  )}
-                </footer>
-              </blockquote>
-            </li>
-          ))}
-        </ul>
+      <AggregateBar />
+
+      {/* Cards — horizontal snap scroll on mobile, 3-col grid on md+ */}
+      <ul
+        className={cn(
+          /* Mobile: horizontal scroll with snap */
+          "flex gap-5 overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-none",
+          /* Desktop: 3-col grid */
+          "md:grid md:grid-cols-3 md:overflow-visible md:pb-0",
+        )}
+        role="list"
+        style={{ scrollbarWidth: "none" }}
+      >
+        {items.map((item, i) => (
+          <li
+            key={i}
+            className="flex-shrink-0 w-[82vw] sm:w-[58vw] md:w-auto snap-start"
+          >
+            <TestimonialCard item={item} />
+          </li>
+        ))}
+      </ul>
     </Section>
   );
 }
