@@ -49,6 +49,29 @@ export function websiteSchema(siteUrl: string) {
  * Schema.org Product + Offer. Call inside the PDP with the current product and
  * the absolute product URL.
  */
+/**
+ * Schema.org BreadcrumbList — one entry per crumb, 1-indexed position.
+ * Pass absolute URLs (helper builds them via getSiteUrl at the call site).
+ */
+export interface BreadcrumbSchemaItem {
+  name: string;
+  /** Absolute URL. Omit on the last (current) crumb — schema allows this. */
+  url?: string;
+}
+
+export function breadcrumbSchema(items: BreadcrumbSchemaItem[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.name,
+      ...(item.url ? { item: item.url } : {}),
+    })),
+  };
+}
+
 export function productSchema(product: Product, productUrl: string) {
   const availability =
     product.stockStatus === "out_of_stock"

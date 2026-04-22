@@ -75,6 +75,7 @@ export async function CategoryScroller() {
                   className="
                     group relative flex flex-col justify-end
                     w-full aspect-card overflow-hidden
+                    rounded-sm
                     border border-white/[0.07]
                     hover:border-gold/40
                     transition-[border-color] duration-300
@@ -160,6 +161,7 @@ export async function CategoryScroller() {
               className="
                 group relative flex flex-col items-center justify-center
                 w-full aspect-card overflow-hidden
+                rounded-sm
                 border border-gold/20
                 hover:border-gold/50
                 transition-[border-color] duration-300

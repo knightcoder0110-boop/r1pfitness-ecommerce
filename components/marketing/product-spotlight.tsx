@@ -191,12 +191,12 @@ export function ProductSpotlight({
             so we use dangerouslySetInnerHTML to render it correctly. */}
         {(subtext ?? product.shortDescription) && (
           subtext ? (
-            <p className="text-subtle text-sm sm:text-base max-w-sm leading-relaxed -mt-2">
+            <p className="text-muted text-sm sm:text-base max-w-sm leading-relaxed -mt-2">
               {subtext}
             </p>
           ) : (
             <div
-              className="text-subtle text-sm sm:text-base max-w-sm leading-relaxed -mt-2 [&_p]:mb-0 [&_a]:text-gold [&_a]:underline"
+              className="text-muted text-sm sm:text-base max-w-sm leading-relaxed -mt-2 [&_p]:mb-0 [&_a]:text-gold [&_a]:underline"
               // WooCommerce short_description is server-sanitized HTML — safe to render.
               dangerouslySetInnerHTML={{ __html: product.shortDescription }}
             />

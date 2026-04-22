@@ -76,7 +76,7 @@ export function SectionHeader({
         {subtitle && (
           <p
             className={cn(
-              "font-serif italic text-base sm:text-lg text-subtle max-w-xl",
+              "font-serif italic text-base sm:text-lg text-muted max-w-xl",
               centered && "mx-auto",
             )}
           >

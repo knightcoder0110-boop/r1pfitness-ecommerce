@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Price } from "@/components/ui/price";
+import { ColorSwatches } from "@/components/product/color-swatches";
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils/cn";
 import type { ProductSummary } from "@/lib/woo/types";
@@ -154,6 +155,22 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
             →
           </span>
         </div>
+
+        {/* Swatches + size range — one compact row */}
+        {(product.colorOptions?.length || product.sizeOptions?.length) ? (
+          <div className="mt-1.5 flex items-center justify-between gap-2">
+            {product.colorOptions?.length ? (
+              <ColorSwatches options={product.colorOptions} />
+            ) : <span />}
+            {product.sizeOptions?.length ? (
+              <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-muted">
+                {product.sizeOptions.length > 2
+                  ? `${product.sizeOptions[0]}–${product.sizeOptions[product.sizeOptions.length - 1]}`
+                  : product.sizeOptions.join(" / ")}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
       </Link>
     </article>
   );

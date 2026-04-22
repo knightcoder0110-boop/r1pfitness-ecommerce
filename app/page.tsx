@@ -16,6 +16,7 @@ import { ProductSpotlight } from "@/components/marketing/product-spotlight";
 import { CategoryScroller } from "@/components/marketing/category-scroller";
 import { CategoryGrid } from "@/components/marketing/category-grid";
 import { Testimonials } from "@/components/marketing/testimonials";
+import { CommunityUgc } from "@/components/marketing/community-ugc";
 import { CampaignCountdown } from "@/components/campaign/campaign-countdown";
 import { siteConfig } from "@/lib/siteConfig";
 import { ROUTES, SITE } from "@/lib/constants";
@@ -59,7 +60,7 @@ export default async function HomePage() {
             ══════════════════════════════════════════════════════════ */}
         <section
           aria-label="Hero"
-          className="relative overflow-hidden bg-bg min-h-[85vh] flex items-center"
+          className="relative overflow-hidden bg-bg min-h-[85vh] flex items-center pt-[var(--size-header)]"
         >
           {/* Hero background image */}
           <Image
@@ -111,7 +112,7 @@ export default async function HomePage() {
             </h1>
 
             {/* Italic tagline */}
-            <p className="font-serif italic text-xl sm:text-2xl md:text-3xl text-subtle max-w-lg leading-relaxed">
+            <p className="font-serif italic text-xl sm:text-2xl md:text-3xl text-muted max-w-lg leading-relaxed">
               Reborn 1n Paradise
             </p>
 
@@ -119,13 +120,13 @@ export default async function HomePage() {
             <div className="flex flex-wrap gap-4 justify-center mt-4">
               <Link
                 href={ROUTES.shop}
-                className="relative overflow-hidden inline-flex items-center justify-center gap-2 h-14 px-10 font-semibold text-sm uppercase tracking-widest text-bg bg-[linear-gradient(170deg,#D4AF55_0%,#C9A84C_45%,#9A7C2C_100%)] before:absolute before:inset-0 before:bg-[linear-gradient(170deg,rgba(255,255,255,0.3)_0%,transparent_60%)] before:pointer-events-none hover:brightness-110 transition-[filter] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                className={buttonVariants({ size: "lg" })}
               >
                 Shop the Drop
               </Link>
               <Link
                 href={ROUTES.category("tees")}
-                className={buttonVariants({ variant: "outline", size: "lg" })}
+                className={buttonVariants({ variant: "tertiary", size: "lg" })}
               >
                 Browse Tees
               </Link>
@@ -163,7 +164,7 @@ export default async function HomePage() {
                 >
                   Next Drop
                 </p>
-                <p className="font-serif italic text-subtle">
+                <p className="font-serif italic text-muted">
                   Limited run. 24 hours only. You&apos;ve been warned.
                 </p>
               </div>
@@ -274,19 +275,19 @@ export default async function HomePage() {
                   <br />
                   BUILT FOR THE GRIND.
                 </h2>
-                <p className="mt-6 font-serif italic text-lg text-subtle leading-relaxed">
+                <p className="mt-6 font-serif italic text-lg text-muted leading-relaxed">
                   R1P FITNESS started as a garage gym and a dream. Every piece we
                   drop carries the spirit of our &lsquo;ohana — the early mornings,
                   the heavy sets, and the fire that keeps us going.
                 </p>
-                <p className="mt-4 text-sm text-faint leading-relaxed">
+                <p className="mt-4 text-sm text-subtle leading-relaxed">
                   We don&apos;t do restocks. Each design is a 24-hour limited drop. Miss it
                   and it&apos;s gone forever. That&apos;s the R1P way.
                 </p>
                 <div className="mt-10">
                   <Link
                     href={ROUTES.shop}
-                    className="relative overflow-hidden inline-flex items-center justify-center gap-2 h-11 px-7 font-semibold text-xs uppercase tracking-widest text-bg bg-[linear-gradient(170deg,#D4AF55_0%,#C9A84C_45%,#9A7C2C_100%)] before:absolute before:inset-0 before:bg-[linear-gradient(170deg,rgba(255,255,255,0.3)_0%,transparent_60%)] before:pointer-events-none hover:brightness-110 transition-[filter] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                    className={buttonVariants({ size: "md" })}
                   >
                     Shop the collection
                   </Link>
@@ -304,7 +305,7 @@ export default async function HomePage() {
                 ).map((stat) => (
                   <div
                     key={stat.label}
-                    className="border border-border bg-surface-1 p-8 flex flex-col gap-3"
+                    className="border border-border bg-surface-1 p-8 flex flex-col gap-3 rounded-sm"
                   >
                     <span className="font-display text-5xl leading-none tracking-wider text-text">
                       {stat.number}
@@ -323,7 +324,10 @@ export default async function HomePage() {
             11. TESTIMONIALS — community reviews
             ══════════════════════════════════════════════════════════ */}
         <Testimonials />
-
+        {/* ════════════════════════════════════════════════════════
+            11b. COMMUNITY UGC — #r1pfitness Instagram wall
+            ═══════════════════════════════════════════════════════ */}
+        <CommunityUgc />
         {/* ══════════════════════════════════════════════════════════
             12. BEST SELLERS — additional 4-product row
             ══════════════════════════════════════════════════════════ */}

@@ -187,6 +187,8 @@ export function findCategoryBySlug(slug: string): ProductCategory | undefined {
 }
 
 export function toSummary(p: Product): ProductSummary {
+  const colorAttr = p.attributes.find((a) => /colou?r/i.test(a.name));
+  const sizeAttr = p.attributes.find((a) => /^size$/i.test(a.name));
   return {
     id: p.id,
     slug: p.slug,
@@ -194,7 +196,10 @@ export function toSummary(p: Product): ProductSummary {
     price: p.price,
     ...(p.compareAtPrice ? { compareAtPrice: p.compareAtPrice } : {}),
     ...(p.images[0] ? { image: p.images[0] } : {}),
+    ...(p.images[1] ? { hoverImage: p.images[1] } : {}),
     stockStatus: p.stockStatus,
     isLimited: p.meta.isLimited === true,
+    ...(colorAttr?.options.length ? { colorOptions: colorAttr.options } : {}),
+    ...(sizeAttr?.options.length ? { sizeOptions: sizeAttr.options } : {}),
   };
 }

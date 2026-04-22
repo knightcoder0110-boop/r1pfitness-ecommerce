@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Container } from "@/components/ui/container";
 import { Heading } from "@/components/ui/heading";
 import { buttonVariants } from "@/components/ui/button";
@@ -45,7 +46,9 @@ const VALUES = [
 
 export default function AboutPage() {
   return (
-    <Container as="main" className="py-12 sm:py-20">
+    <Container as="main" className="py-8 sm:py-12">
+      <Breadcrumbs items={[{ label: "About" }]} className="mb-8 sm:mb-12" />
+
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <section className="max-w-3xl mb-20 sm:mb-28">
         <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-muted mb-4">

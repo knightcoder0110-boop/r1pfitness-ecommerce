@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductGrid } from "@/components/product";
-import { CategoryChips, Pagination, SortSelect } from "@/components/shop";
+import { Pagination, ShopToolbar } from "@/components/shop";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Container } from "@/components/ui/container";
-import { Eyebrow, Heading } from "@/components/ui/heading";
+import { PageHeader } from "@/components/ui/page-header";
 import { getCatalog } from "@/lib/catalog";
 import { parsePage, parseSort } from "@/lib/shop";
 
@@ -49,22 +50,24 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   });
 
   return (
-    <Container as="main" size="xl" className="py-10 sm:py-16">
-      <header className="mb-8 sm:mb-10">
-        <Eyebrow>Category</Eyebrow>
-        <Heading level={1} size="xl" className="mt-2 text-4xl sm:text-5xl lg:text-6xl">
-          {match.name}
-        </Heading>
-        <p className="mt-2 font-mono text-xs uppercase tracking-[0.3em] text-muted">
-          {total} {total === 1 ? "piece" : "pieces"}
-        </p>
-      </header>
+    <Container as="main" className="py-8 sm:py-10">
+      <Breadcrumbs
+        items={[
+          { label: "Shop", href: "/shop" },
+          { label: match.name },
+        ]}
+        className="mb-6"
+      />
+
+      <PageHeader
+        eyebrow="Category"
+        title={match.name}
+        meta={<>{total} {total === 1 ? "piece" : "pieces"}</>}
+        className="mb-8 sm:mb-10"
+      />
 
       <div className="flex flex-col gap-4">
-        <CategoryChips activeSlug={match.slug} />
-        <div className="flex items-center justify-end">
-          <SortSelect />
-        </div>
+        <ShopToolbar activeSlug={match.slug} />
       </div>
 
       <div className="mt-8">

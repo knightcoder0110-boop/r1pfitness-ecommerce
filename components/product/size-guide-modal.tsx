@@ -55,11 +55,11 @@ type Tab = (typeof TABS)[number];
 function TableHead({ cols }: { cols: string[] }) {
   return (
     <thead>
-      <tr>
+      <tr className="bg-surface-1">
         {cols.map((col) => (
           <th
             key={col}
-            className="py-2 px-3 text-left font-mono text-[9px] uppercase tracking-[0.3em] text-muted border-b border-border"
+            className="py-3 px-4 text-left font-mono text-[10px] uppercase tracking-[0.3em] text-gold/90 first:rounded-l-sm last:rounded-r-sm"
           >
             {col}
           </th>
@@ -72,15 +72,15 @@ function TableHead({ cols }: { cols: string[] }) {
 function SizeTable({ tab }: { tab: Tab }) {
   if (tab === "Tees") {
     return (
-      <table className="w-full text-sm">
+      <table className="w-full text-sm border-separate border-spacing-0">
         <TableHead cols={["Size", "Chest", "Length", "Shoulder"]} />
         <tbody>
           {TEES.map((r, i) => (
-            <tr key={r.size} className={i % 2 === 0 ? "bg-surface/30" : ""}>
-              <td className="py-2 px-3 font-mono text-xs font-bold text-text">{r.size}</td>
-              <td className="py-2 px-3 font-mono text-xs text-subtle">{r.chest}</td>
-              <td className="py-2 px-3 font-mono text-xs text-subtle">{r.length}</td>
-              <td className="py-2 px-3 font-mono text-xs text-subtle">{r.shoulder}</td>
+            <tr key={r.size} className={i % 2 === 0 ? "bg-surface-1/60" : ""}>
+              <td className="py-3 px-4 font-mono text-xs font-bold text-text">{r.size}</td>
+              <td className="py-3 px-4 font-mono text-xs text-muted">{r.chest}</td>
+              <td className="py-3 px-4 font-mono text-xs text-muted">{r.length}</td>
+              <td className="py-3 px-4 font-mono text-xs text-muted">{r.shoulder}</td>
             </tr>
           ))}
         </tbody>
@@ -90,15 +90,15 @@ function SizeTable({ tab }: { tab: Tab }) {
 
   if (tab === "Hoodies") {
     return (
-      <table className="w-full text-sm">
+      <table className="w-full text-sm border-separate border-spacing-0">
         <TableHead cols={["Size", "Chest", "Length", "Sleeve"]} />
         <tbody>
           {HOODIES.map((r, i) => (
-            <tr key={r.size} className={i % 2 === 0 ? "bg-surface/30" : ""}>
-              <td className="py-2 px-3 font-mono text-xs font-bold text-text">{r.size}</td>
-              <td className="py-2 px-3 font-mono text-xs text-subtle">{r.chest}</td>
-              <td className="py-2 px-3 font-mono text-xs text-subtle">{r.length}</td>
-              <td className="py-2 px-3 font-mono text-xs text-subtle">{r.sleeve}</td>
+            <tr key={r.size} className={i % 2 === 0 ? "bg-surface-1/60" : ""}>
+              <td className="py-3 px-4 font-mono text-xs font-bold text-text">{r.size}</td>
+              <td className="py-3 px-4 font-mono text-xs text-muted">{r.chest}</td>
+              <td className="py-3 px-4 font-mono text-xs text-muted">{r.length}</td>
+              <td className="py-3 px-4 font-mono text-xs text-muted">{r.sleeve}</td>
             </tr>
           ))}
         </tbody>
@@ -107,15 +107,15 @@ function SizeTable({ tab }: { tab: Tab }) {
   }
 
   return (
-    <table className="w-full text-sm">
+    <table className="w-full text-sm border-separate border-spacing-0">
       <TableHead cols={["Size", "Waist", "Hip", "Inseam"]} />
       <tbody>
         {BOTTOMS.map((r, i) => (
-          <tr key={r.size} className={i % 2 === 0 ? "bg-surface/30" : ""}>
-            <td className="py-2 px-3 font-mono text-xs font-bold text-text">{r.size}</td>
-            <td className="py-2 px-3 font-mono text-xs text-subtle">{r.waist}</td>
-            <td className="py-2 px-3 font-mono text-xs text-subtle">{r.hip}</td>
-            <td className="py-2 px-3 font-mono text-xs text-subtle">{r.inseam}</td>
+          <tr key={r.size} className={i % 2 === 0 ? "bg-surface-1/60" : ""}>
+            <td className="py-3 px-4 font-mono text-xs font-bold text-text">{r.size}</td>
+            <td className="py-3 px-4 font-mono text-xs text-muted">{r.waist}</td>
+            <td className="py-3 px-4 font-mono text-xs text-muted">{r.hip}</td>
+            <td className="py-3 px-4 font-mono text-xs text-muted">{r.inseam}</td>
           </tr>
         ))}
       </tbody>
@@ -172,7 +172,7 @@ export function SizeGuideModal({ defaultTab = "Tees" }: SizeGuideModalProps) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 16, scale: 0.97 }}
               transition={{ duration: 0.28, ease: "easeOut" }}
-              className="fixed inset-x-4 top-1/2 z-50 max-w-lg w-full mx-auto -translate-y-1/2 bg-[#141414] border border-[rgba(242,237,228,0.12)] shadow-[0_24px_48px_rgba(0,0,0,0.7)] overflow-hidden"
+              className="fixed inset-x-4 top-1/2 z-50 max-w-lg w-full mx-auto -translate-y-1/2 bg-[#141414] rounded-lg border border-border shadow-overlay overflow-hidden"
               style={{ left: "50%", transform: "translateX(-50%) translateY(-50%)" }}
             >
               {/* Header */}
@@ -219,7 +219,7 @@ export function SizeGuideModal({ defaultTab = "Tees" }: SizeGuideModalProps) {
               </div>
 
               {/* Footer note */}
-              <p className="px-6 pb-5 font-serif italic text-xs text-muted/60">
+              <p className="px-6 pb-5 font-serif italic text-sm text-muted/80 leading-relaxed">
                 All measurements in inches. For best fit, measure your body and
                 compare — not your garment. When between sizes, size up.
               </p>

@@ -36,8 +36,8 @@ function InstagramIcon({ className }: { className?: string }) {
 /* ─── Newsletter row — uses the live Klaviyo client form ─────────────────── */
 function NewsletterRow() {
   return (
-    <div className="border-t border-border-strong pt-12 mt-12">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+    <div className="border-t border-border-strong pt-14 mt-14">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_minmax(0,28rem)] gap-10 md:gap-14 items-center">
         <div>
           <p
             className="font-mono uppercase text-gold mb-3"
@@ -52,7 +52,7 @@ function NewsletterRow() {
           <h3 className="font-display text-3xl sm:text-4xl leading-none tracking-[0.18em] text-text">
             JOIN THE OHANA
           </h3>
-          <p className="font-serif text-base text-subtle mt-4 max-w-sm leading-relaxed">
+          <p className="font-serif text-[1.0625rem] text-muted mt-4 max-w-md leading-relaxed">
             Limited drops, exclusive early access, and Waipahu culture — direct to your inbox.
           </p>
         </div>
@@ -105,7 +105,7 @@ export function SiteFooter() {
             >
               {SITE.tagline}
             </p>
-            <p className="font-serif text-base text-subtle leading-relaxed max-w-xs">
+            <p className="font-serif text-base text-muted leading-relaxed max-w-xs">
               Hawaiian streetwear & fitness apparel. Designed and dropped from Waipahu, HI.
             </p>
             <a
@@ -240,7 +240,7 @@ export function SiteFooter() {
               >
                 Location
               </p>
-              <address className="not-italic font-serif text-sm text-subtle leading-relaxed">
+              <address className="not-italic font-serif text-sm text-muted leading-relaxed">
                 {SITE.address.street}<br />
                 {SITE.address.city}, {SITE.address.region} {SITE.address.postalCode}
               </address>

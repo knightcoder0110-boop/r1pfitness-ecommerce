@@ -21,30 +21,59 @@ import { cn } from "@/lib/utils/cn";
  */
 const buttonVariants = cva(
   [
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap",
+    "relative inline-flex items-center justify-center gap-2 whitespace-nowrap",
     "font-semibold uppercase tracking-wider",
-    "cursor-pointer",
-    "transition-colors duration-200 ease-out",
+    "cursor-pointer select-none",
+    "rounded-md",
+    "transition-[transform,filter,background-color,box-shadow] duration-200 ease-out",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
-    "disabled:pointer-events-none disabled:opacity-50",
+    "disabled:pointer-events-none disabled:opacity-55 disabled:saturate-75",
+    "active:translate-y-px",
   ],
   {
     variants: {
       variant: {
-        primary:
-          "bg-accent text-text hover:bg-accent-hover focus-visible:ring-accent",
-        secondary:
-          "bg-text text-bg hover:bg-text/90 focus-visible:ring-text",
-        outline:
-          "border border-border-strong bg-surface-1 text-text hover:bg-surface-2 focus-visible:ring-text",
-        ghost:
-          "bg-surface-1 text-text hover:bg-surface-2 focus-visible:ring-text",
-        link: "bg-transparent text-gold underline-offset-4 hover:underline focus-visible:ring-gold",
+        // Primary — metallic gold. Solid with linear-gradient sheen + raised shadow.
+        primary: [
+          "text-bg shadow-metallic",
+          "bg-[linear-gradient(170deg,#E6C56A_0%,#D4AF55_28%,#C9A84C_55%,#A88934_100%)]",
+          "hover:brightness-[1.07] hover:shadow-metallic-hover hover:-translate-y-[1px]",
+          "focus-visible:ring-gold",
+        ],
+        // Secondary — bone/sand solid. Paper-feel with crisp shadow.
+        secondary: [
+          "text-bg shadow-metallic",
+          "bg-[linear-gradient(170deg,#FAF6EE_0%,#F2EDE4_45%,#E3DCCE_100%)]",
+          "hover:brightness-[1.04] hover:shadow-metallic-hover hover:-translate-y-[1px]",
+          "focus-visible:ring-text",
+        ],
+        // Tertiary — obsidian solid. Dark surface with gold-tinted border, sand text.
+        tertiary: [
+          "text-text shadow-soft",
+          "bg-[linear-gradient(170deg,#1F1F1F_0%,#151515_55%,#0D0D0D_100%)]",
+          "ring-1 ring-inset ring-[rgba(201,168,76,0.22)]",
+          "hover:ring-[rgba(201,168,76,0.45)] hover:brightness-110 hover:-translate-y-[1px] hover:shadow-raised",
+          "focus-visible:ring-gold",
+        ],
+        // Outline — subtle alt, kept for compatibility. Still solid surface.
+        outline: [
+          "bg-surface-1 text-text ring-1 ring-inset ring-border-strong",
+          "hover:bg-surface-2 hover:ring-text/40",
+          "focus-visible:ring-text",
+        ],
+        // Ghost — low-emphasis surface button.
+        ghost: [
+          "bg-transparent text-text",
+          "hover:bg-surface-1",
+          "focus-visible:ring-text",
+        ],
+        // Link — inline gold link, no shadow/bg.
+        link: "bg-transparent text-gold underline-offset-4 hover:underline focus-visible:ring-gold rounded-none shadow-none",
       },
       size: {
-        sm: "h-9 px-3 text-xs",
-        md: "h-11 px-5 text-sm",
-        lg: "h-14 px-8 text-base",
+        sm:   "h-10 px-4 text-xs",
+        md:   "h-12 px-6 text-sm",
+        lg:   "h-14 px-9 text-sm",
         icon: "h-11 w-11",
       },
       full: {

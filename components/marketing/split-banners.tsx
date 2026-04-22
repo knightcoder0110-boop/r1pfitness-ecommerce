@@ -216,7 +216,7 @@ function BannerRow({
           {item.title.toUpperCase()}
         </h3>
         {item.subtitle && (
-          <p className="text-subtle text-base max-w-sm leading-relaxed">{item.subtitle}</p>
+          <p className="text-muted text-base max-w-sm leading-relaxed">{item.subtitle}</p>
         )}
         <Link href={item.ctaHref} className={buttonVariants({ size: "lg" })}>
           {item.ctaLabel ?? "SHOP NOW"}

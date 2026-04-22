@@ -114,6 +114,18 @@ export interface ProductSummary {
   hoverImage?: ImageRef;
   stockStatus: StockStatus;
   isLimited: boolean;
+  /**
+   * Color attribute terms (e.g. ["Bone", "Black"]). Used to render small
+   * swatch dots on product cards. Up to ~6; more are summarised as "+N".
+   */
+  colorOptions?: string[];
+  /**
+   * Size attribute terms (e.g. ["S","M","L","XL"]). Rendered as a compact
+   * size range on the card.
+   */
+  sizeOptions?: string[];
+  /** Total variation count — used when deciding whether to show a "+N more" hint. */
+  variantCount?: number;
   /** ISO 8601 date-time string from `date_modified` in the Store API. Used by the sitemap. */
   updatedAt?: string;
 }

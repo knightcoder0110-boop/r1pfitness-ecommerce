@@ -102,36 +102,36 @@ function AggregateBar() {
 /* ─── Individual card ────────────────────────────────────────────────────── */
 function TestimonialCard({ item }: { item: TestimonialItem }) {
   return (
-    <blockquote className="group relative h-full flex flex-col bg-surface-1 border border-border overflow-hidden transition-colors duration-300 hover:border-border-strong">
-      {/* Gold left accent bar — thickens on hover */}
+    <blockquote className="group relative h-full flex flex-col rounded-md bg-[linear-gradient(170deg,rgba(242,237,228,0.055)_0%,rgba(242,237,228,0.02)_100%)] ring-1 ring-border overflow-hidden shadow-soft transition-[transform,box-shadow,ring] duration-300 hover:-translate-y-1 hover:shadow-raised hover:ring-gold/45">
+      {/* Gold top accent bar */}
       <span
         aria-hidden="true"
-        className="absolute inset-y-0 left-0 w-[3px] bg-gold/25 group-hover:bg-gold/70 transition-colors duration-300"
+        className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-gold to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-300"
       />
 
       {/* Decorative opening quotation mark */}
       <span
         aria-hidden="true"
-        className="absolute -top-4 left-5 font-serif text-[7rem] leading-none text-gold/[0.07] select-none pointer-events-none"
+        className="absolute -top-2 left-6 font-serif text-[8rem] leading-none text-gold/[0.08] select-none pointer-events-none"
       >
         &ldquo;
       </span>
 
-      <div className="relative z-10 flex flex-col gap-5 h-full p-7 sm:p-8">
+      <div className="relative z-10 flex flex-col gap-6 h-full p-8 sm:p-9">
         {/* Product chip */}
         {item.product && (
-          <p className="self-start font-mono text-[9px] uppercase tracking-[0.4em] text-gold bg-gold/[0.08] px-2.5 py-1 rounded-sm">
+          <p className="self-start font-mono text-[9px] uppercase tracking-[0.4em] text-gold bg-gold/[0.10] ring-1 ring-gold/25 px-2.5 py-1 rounded-sm">
             {item.product}
           </p>
         )}
 
         {/* Quote body — Cormorant Garamond italic */}
-        <p className="font-serif italic text-[1.0625rem] sm:text-[1.125rem] leading-[1.8] text-text flex-1">
+        <p className="font-serif italic text-[1.125rem] sm:text-[1.1875rem] leading-[1.75] text-text flex-1">
           &ldquo;{item.text}&rdquo;
         </p>
 
-        {/* Divider */}
-        <div className="h-px w-full bg-border" aria-hidden="true" />
+        {/* Gold hairline divider */}
+        <div aria-hidden="true" className="h-px w-12 bg-gradient-to-r from-gold/70 to-transparent" />
 
         {/* Author footer */}
         <footer className="flex items-end justify-between gap-4">
@@ -148,7 +148,7 @@ function TestimonialCard({ item }: { item: TestimonialItem }) {
           </div>
 
           {/* Verified badge */}
-          <span className="shrink-0 inline-flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.25em] text-green-400/60 self-start">
+          <span className="shrink-0 inline-flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.25em] text-green-400/80 self-start">
             <svg
               viewBox="0 0 16 16"
               fill="currentColor"

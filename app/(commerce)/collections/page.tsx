@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getCatalog } from "@/lib/catalog";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Container } from "@/components/ui/container";
-import { Heading } from "@/components/ui/heading";
+import { PageHeader } from "@/components/ui/page-header";
 import { ROUTES } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -22,19 +23,15 @@ export default async function CollectionsPage() {
   const displayCategories = categories.filter((c) => c.slug !== "uncategorized");
 
   return (
-    <Container as="main" size="xl" className="py-12 sm:py-20">
-      {/* ── Header ────────────────────────────────────────────────────── */}
-      <header className="mb-12 sm:mb-16">
-        <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-muted mb-3">
-          Shop by Category
-        </p>
-        <Heading level={1} size="xl" className="text-3xl sm:text-5xl">
-          All Collections
-        </Heading>
-        <p className="mt-3 font-serif italic text-subtle max-w-lg">
-          Limited drops across every category. 24 hours only — no restocks, no exceptions.
-        </p>
-      </header>
+    <Container as="main" className="py-8 sm:py-10">
+      <Breadcrumbs items={[{ label: "Collections" }]} className="mb-6" />
+
+      <PageHeader
+        eyebrow="Shop by Category"
+        title="All Collections"
+        subtitle="Limited drops across every category. 24 hours only — no restocks, no exceptions."
+        className="mb-12 sm:mb-16"
+      />
 
       {/* ── Grid ──────────────────────────────────────────────────────── */}
       {displayCategories.length > 0 ? (
@@ -46,7 +43,7 @@ export default async function CollectionsPage() {
             <li key={cat.slug}>
               <Link
                 href={ROUTES.category(cat.slug)}
-                className="group relative flex flex-col overflow-hidden border border-border hover:border-gold/40 transition-colors duration-300"
+                className="group relative flex flex-col overflow-hidden rounded-sm border border-border hover:border-gold/40 transition-colors duration-300"
               >
                 {/* Category placeholder image */}
                 <div className="relative aspect-card bg-[#1A1A1A] overflow-hidden flex items-center justify-center">

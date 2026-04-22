@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback, useId } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils/cn";
 import type { ProductSummary } from "@/lib/woo/types";
@@ -13,6 +14,39 @@ interface SearchResult {
   items: ProductSummary[];
   total: number;
 }
+
+// ── Recent-searches localStorage helpers ─────────────────────────────────────
+
+const RECENT_KEY = "r1p:recent-searches";
+const RECENT_MAX = 5;
+
+function loadRecent(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(RECENT_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === "string").slice(0, RECENT_MAX) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecent(term: string) {
+  if (typeof window === "undefined") return;
+  const clean = term.trim();
+  if (clean.length < 2) return;
+  try {
+    const current = loadRecent().filter((t) => t.toLowerCase() !== clean.toLowerCase());
+    const next = [clean, ...current].slice(0, RECENT_MAX);
+    window.localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+  } catch {
+    /* quota / privacy mode — silently ignore */
+  }
+}
+
+// Trending / suggested queries surfaced when the modal has no query.
+const TRENDING: string[] = ["Hoodies", "Tees", "Limited drops", "Accessories"];
 
 // ── Debounce hook ─────────────────────────────────────────────────────────────
 
@@ -35,12 +69,14 @@ interface SearchModalProps {
 export function SearchModal({ open, onClose }: SearchModalProps) {
   const dialogId = useId();
   const labelId = `${dialogId}-label`;
+  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [recent, setRecent] = useState<string[]>([]);
   const resultRefs = useRef<Array<HTMLAnchorElement | null>>([]);
 
   const debouncedQuery = useDebounce(query, 300);
@@ -52,6 +88,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
       setResults(null);
       setError(false);
       setActiveIndex(-1);
+      setRecent(loadRecent());
       // Focus input after paint
       requestAnimationFrame(() => inputRef.current?.focus());
     }
@@ -99,6 +136,17 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
         onClose();
         return;
       }
+      if (e.key === "Enter" && activeIndex === -1) {
+        // Submit the raw query to the search page.
+        const q = query.trim();
+        if (q.length >= 2) {
+          e.preventDefault();
+          saveRecent(q);
+          onClose();
+          router.push(`${ROUTES.search}?q=${encodeURIComponent(q)}`);
+        }
+        return;
+      }
       if (e.key === "ArrowDown") {
         e.preventDefault();
         const next = Math.min(activeIndex + 1, items.length - 1);
@@ -118,8 +166,35 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
         }
       }
     },
-    [activeIndex, onClose, results],
+    [activeIndex, onClose, results, query, router],
   );
+
+  // Save term + close when a suggestion is clicked.
+  const handleSuggestion = useCallback(
+    (term: string) => {
+      saveRecent(term);
+      onClose();
+      router.push(`${ROUTES.search}?q=${encodeURIComponent(term)}`);
+    },
+    [onClose, router],
+  );
+
+  const handleResultClick = useCallback(
+    (term: string) => {
+      saveRecent(term);
+      onClose();
+    },
+    [onClose],
+  );
+
+  const handleClearRecent = useCallback(() => {
+    try {
+      window.localStorage.removeItem(RECENT_KEY);
+    } catch {
+      /* ignore */
+    }
+    setRecent([]);
+  }, []);
 
   // Dismiss on backdrop click
   function handleBackdropClick(e: React.MouseEvent<HTMLDivElement>) {
@@ -144,15 +219,15 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelId}
-        className="relative w-full max-w-2xl bg-[#141414] border border-[rgba(242,237,228,0.15)] rounded-sm shadow-[0_32px_64px_rgba(0,0,0,0.75)] flex flex-col overflow-hidden"
+        className="relative w-full max-w-2xl bg-[#141414] border border-[rgba(242,237,228,0.15)] rounded-md shadow-[0_32px_64px_rgba(0,0,0,0.75)] flex flex-col overflow-hidden"
         onKeyDown={handleKeyDown}
       >
         {/* ── Search input ──────────────────────────────────────────── */}
-        <div className="flex items-center gap-4 px-6 h-16 border-b border-border-strong">
+        <div className="flex items-center gap-4 px-7 h-20 border-b border-border-strong">
           {/* Magnifier — bold, gold */}
           <svg
             aria-hidden
-            className="size-5 shrink-0 text-gold"
+            className="size-6 shrink-0 text-gold"
             viewBox="0 0 20 20"
             fill="none"
             stroke="currentColor"
@@ -175,7 +250,8 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search products, collections, drops…"
-            className="flex-1 bg-transparent font-serif text-lg text-text placeholder:text-muted focus:outline-none"
+            /* Override global input primitive: wrapper owns the visible chrome here. */
+            className="flex-1 min-w-0 h-full !bg-transparent !border-0 !ring-0 !shadow-none !rounded-none !px-0 font-serif !text-xl text-text placeholder:text-muted focus:outline-none"
           />
 
           {/* Loading spinner */}
@@ -214,15 +290,68 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
           aria-label="Search results"
           className="overflow-y-auto max-h-[65vh]"
         >
-          {/* Empty query hint */}
+          {/* Empty query hint — recent + trending */}
           {!query && (
-            <div className="px-6 py-12 text-center">
-              <p className="font-mono text-[11px] uppercase tracking-[0.35em] text-gold mb-2">
-                Search the shop
-              </p>
-              <p className="font-serif text-base text-subtle">
-                Try <span className="text-text">hoodies</span>, <span className="text-text">tees</span>, or <span className="text-text">king of kings</span>
-              </p>
+            <div className="px-6 py-8 flex flex-col gap-7">
+              {recent.length > 0 ? (
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-gold">
+                      Recent searches
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleClearRecent}
+                      className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted hover:text-gold cursor-pointer transition-colors"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  <ul role="list" className="flex flex-col gap-1">
+                    {recent.map((term) => (
+                      <li key={term}>
+                        <button
+                          type="button"
+                          onClick={() => handleSuggestion(term)}
+                          className="flex w-full items-center gap-3 py-1.5 text-left font-serif text-base text-text hover:text-gold cursor-pointer transition-colors"
+                        >
+                          <svg
+                            aria-hidden
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.5}
+                            className="size-4 shrink-0 text-subtle"
+                          >
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="M12 7v5l3 2" strokeLinecap="round" />
+                          </svg>
+                          <span className="truncate">{term}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              <div className="flex flex-col gap-3">
+                <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-gold">
+                  Trending
+                </p>
+                <ul role="list" className="flex flex-wrap gap-2">
+                  {TRENDING.map((term) => (
+                    <li key={term}>
+                      <button
+                        type="button"
+                        onClick={() => handleSuggestion(term)}
+                        className="inline-flex items-center rounded-sm border border-border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.25em] text-text hover:border-gold hover:text-gold cursor-pointer transition-colors"
+                      >
+                        {term}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           )}
 
@@ -232,7 +361,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
               <p className="font-mono text-[11px] uppercase tracking-[0.35em] text-gold mb-2">
                 No matches
               </p>
-              <p className="font-serif text-base text-subtle">
+              <p className="font-serif text-base text-muted">
                 Nothing found for &ldquo;<span className="text-text">{debouncedQuery}</span>&rdquo;
               </p>
             </div>
@@ -247,7 +376,23 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
 
           {/* Result items */}
           {hasResults && (
-            <ul role="none" className="py-2">
+            <>
+              {/* Count row */}
+              <div className="flex items-center justify-between border-b border-border px-6 py-2.5 font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+                <span>
+                  Showing <span className="text-text">{items.length}</span>
+                  {results && results.total > items.length ? (
+                    <>
+                      <span className="text-subtle"> of </span>
+                      <span className="text-text">{results.total}</span>
+                    </>
+                  ) : null}{" "}
+                  result{items.length === 1 ? "" : "s"}
+                </span>
+                <span className="hidden sm:inline text-subtle">↑↓ navigate · ↵ select</span>
+              </div>
+
+              <ul role="none" className="py-2">
               {items.map((product, idx) => {
                 const price = (product.price.amount / 100).toFixed(2);
                 return (
@@ -257,7 +402,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                       role="option"
                       aria-selected={activeIndex === idx}
                       ref={(el) => { resultRefs.current[idx] = el; }}
-                      onClick={onClose}
+                      onClick={() => handleResultClick(product.name)}
                       className={cn(
                         "flex items-center gap-5 px-6 py-4",
                         "transition-colors cursor-pointer focus:outline-none",
@@ -265,14 +410,14 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                         activeIndex === idx && "bg-surface-2",
                       )}
                     >
-                      {/* Thumbnail */}
-                      <div className="relative size-16 shrink-0 bg-surface-2 overflow-hidden rounded-sm border border-border">
+                      {/* Thumbnail — 64px xs, 80px sm+ */}
+                      <div className="relative size-16 sm:size-20 shrink-0 bg-surface-2 overflow-hidden rounded-sm border border-border">
                         {product.image ? (
                           <Image
                             src={product.image.url}
                             alt={product.image.alt || product.name}
                             fill
-                            sizes="64px"
+                            sizes="80px"
                             className="object-cover"
                           />
                         ) : (
@@ -315,6 +460,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                 );
               })}
             </ul>
+            </>
           )}
 
           {/* "See all results" footer */}

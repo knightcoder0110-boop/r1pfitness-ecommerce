@@ -90,7 +90,7 @@ export function ProductRail({
               {title.toUpperCase()}
             </h2>
             {subtitle && (
-              <p className="mt-2 font-serif italic text-base text-subtle">
+              <p className="mt-2 font-serif italic text-base text-muted">
                 {subtitle}
               </p>
             )}

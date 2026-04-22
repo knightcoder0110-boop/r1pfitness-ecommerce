@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ProductGrid } from "@/components/product";
-import { CategoryChips, Pagination, SearchBar, SortSelect } from "@/components/shop";
+import { Pagination, ShopToolbar } from "@/components/shop";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Container } from "@/components/ui/container";
-import { Heading } from "@/components/ui/heading";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCatalog } from "@/lib/catalog";
 import { parsePage, parseSearch, parseSort } from "@/lib/shop";
@@ -97,22 +98,17 @@ export default async function ShopPage(props: ShopPageProps) {
   const suspenseKey = JSON.stringify(await props.searchParams);
 
   return (
-    <Container as="main" size="xl" className="py-10 sm:py-16">
-      <header className="mb-8 sm:mb-10">
-        <Heading level={1} size="xl" className="text-4xl sm:text-5xl lg:text-6xl">
-          Shop
-        </Heading>
-        <p className="mt-2 max-w-xl font-serif text-base sm:text-lg italic text-muted">
-          Limited runs. Heavyweight fabric. Made with intention.
-        </p>
-      </header>
+    <Container as="main" className="py-8 sm:py-10">
+      <Breadcrumbs items={[{ label: "Shop" }]} className="mb-6" />
+
+      <PageHeader
+        title="Shop"
+        subtitle="Limited runs. Heavyweight fabric. Made with intention."
+        className="mb-8 sm:mb-10"
+      />
 
       <div className="flex flex-col gap-4">
-        <CategoryChips activeSlug={null} />
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <SearchBar className="sm:max-w-xs" />
-          <SortSelect />
-        </div>
+        <ShopToolbar activeSlug={null} showSearch />
       </div>
 
       <Suspense key={suspenseKey} fallback={<ShopSkeleton />}>

@@ -246,6 +246,14 @@ export function mapProductSummary(raw: RawStoreProduct): ProductSummary {
   const first = raw.images?.[0];
   const second = raw.images?.[1];
   const meta = mapMetaDataRecord(raw.meta_data);
+
+  // Extract color / size option lists for swatch rendering on cards.
+  const attrs = raw.attributes ?? [];
+  const colorAttr = attrs.find((a) => /colou?r/i.test(a.name) || a.taxonomy === "pa_color");
+  const sizeAttr = attrs.find((a) => /^size$/i.test(a.name) || a.taxonomy === "pa_size");
+  const colorOptions = colorAttr?.terms?.map((t) => t.name).filter(Boolean) ?? [];
+  const sizeOptions = sizeAttr?.terms?.map((t) => t.name).filter(Boolean) ?? [];
+
   return {
     id: String(raw.id),
     slug: raw.slug,
@@ -258,6 +266,9 @@ export function mapProductSummary(raw: RawStoreProduct): ProductSummary {
     ...(second ? { hoverImage: mapImage(second) } : {}),
     stockStatus: deriveStockStatus(raw),
     isLimited: meta["is_limited"] === true || meta["is_limited"] === "1",
+    ...(colorOptions.length ? { colorOptions } : {}),
+    ...(sizeOptions.length ? { sizeOptions } : {}),
+    ...(raw.variations?.length ? { variantCount: raw.variations.length } : {}),
     ...(raw.date_modified ? { updatedAt: raw.date_modified } : {}),
   };
 }

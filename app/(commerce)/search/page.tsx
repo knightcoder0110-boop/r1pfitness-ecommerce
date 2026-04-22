@@ -4,7 +4,9 @@ import { Suspense } from "react";
 import { ProductGrid } from "@/components/product";
 import { SortSelect, Pagination } from "@/components/shop";
 import { SearchInput } from "@/components/search/search-input";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Container } from "@/components/ui/container";
+import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCatalog } from "@/lib/catalog";
 import { parsePage, parseSearch, parseSort } from "@/lib/shop";
@@ -249,16 +251,17 @@ export default async function SearchPage(props: SearchPageProps) {
   const suspenseKey = `${raw.q ?? ""}:${raw.sort ?? ""}:${raw.page ?? ""}`;
 
   return (
-    <Container as="section" size="xl" className="py-10 sm:py-16">
-      {/* Page header */}
-      <header className="mb-10 sm:mb-14">
-        <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-muted mb-3">
-          Search
-        </p>
+    <Container as="section" className="py-8 sm:py-10">
+      <Breadcrumbs items={[{ label: "Search" }]} className="mb-6" />
 
-        {/* The big search input — client component */}
-        <SearchInput />
-      </header>
+      <PageHeader
+        title="Search"
+        subtitle="Find limited drops, heavyweight tees, hoodies and more."
+        className="mb-8 sm:mb-10"
+      />
+
+      {/* The big search input — client component */}
+      <SearchInput />
 
       {/* Results area — re-mounts on every query/sort/page change */}
       <Suspense key={suspenseKey} fallback={<SearchSkeleton />}>

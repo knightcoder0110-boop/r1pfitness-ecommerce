@@ -5,6 +5,8 @@ import { VariantPicker } from "@/components/product/variant-picker";
 import { SizeGuideModal } from "@/components/product/size-guide-modal";
 import { BackInStockForm } from "@/components/product/back-in-stock-form";
 import { StickyAddToCart } from "@/components/product/sticky-add-to-cart";
+import { StockScarcity } from "@/components/product/stock-scarcity";
+import { TrustStrip } from "@/components/product/trust-strip";
 import { Button } from "@/components/ui/button";
 import { useServerCart } from "@/lib/cart";
 import { useToastStore } from "@/lib/toast";
@@ -107,6 +109,9 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Stock scarcity — reacts to selected variation */}
+      <StockScarcity product={product} variation={matchingVariation} />
+
       {/* Variant picker + size guide link */}
       {requiredAttrs.length > 0 && (
         <div className="flex flex-col gap-3">
@@ -146,10 +151,13 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
         size="lg"
         disabled={disabled}
         onClick={handleAdd}
-        className="w-full sm:w-auto"
+        className="w-full"
       >
         {label}
       </Button>
+
+      {/* Trust signals — shipping / returns / secure / made with aloha */}
+      <TrustStrip />
 
       {/* Back-in-stock subscribe form — shown when item is genuinely OOS */}
       {(productOutOfStock || variationOutOfStock) && (

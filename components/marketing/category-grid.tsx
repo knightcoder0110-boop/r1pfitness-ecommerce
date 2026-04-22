@@ -179,7 +179,7 @@ function CategoryCard({
       href={`/shop?category=${cat.slug}`}
       className={cn(
         /* Flex column so media + body stack */
-        "group flex flex-col overflow-hidden",
+        "group flex flex-col overflow-hidden rounded-sm",
         /* Border */
         "border border-white/[0.08]",
         /* Hover: lift + deep shadow + solid gold ring — exact liquid values */
