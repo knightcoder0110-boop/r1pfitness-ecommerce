@@ -19,27 +19,30 @@ import { siteConfig } from "@/lib/siteConfig";
 import { ROUTES } from "@/lib/constants";
 import type { Product } from "@/lib/woo/types";
 
-/* ── Static spotlight product — shown until a real WooCommerce product is live ── */
-const JESUS_IS_KING_PRODUCT: Product = {
-  id: "static-jesus-is-king",
-  slug: "jesus-is-king-tee-shorts",
-  name: "Jesus Is King",
+/* ── Spotlight product slug — published "Saved By Jesus" on WooCommerce ── */
+const SPOTLIGHT_SLUG = "saved-by-jesus-oversized-vintage-tee";
+
+/* ── Fallback shown if Woo is unreachable or product is missing ── */
+const SAVED_BY_JESUS_PRODUCT: Product = {
+  id: "static-saved-by-jesus",
+  slug: "saved-by-jesus-oversized-vintage-tee",
+  name: "Saved By Jesus",
   description:
-    "Reborn in faith. The Jesus Is King tee-and-shorts set is a limited R1P drop — premium heavyweight cotton, oversized silhouette, and bold camo-print shorts built for the 'ohana that trains with purpose.",
-  shortDescription: "Limited tee & camo shorts set. Faith over fear.",
-  price: { amount: 6500, currency: "USD" },
-  compareAtPrice: { amount: 8500, currency: "USD" },
+    "Reborn in faith. The Saved By Jesus oversized vintage tee is a limited R1P drop — premium heavyweight cotton, washed vintage finish, and bold faith-inspired graphics built for the 'ohana that trains with purpose.",
+  shortDescription: "Limited oversized vintage tee. Faith over fear.",
+  price: { amount: 4500, currency: "USD" },
+  compareAtPrice: { amount: 5500, currency: "USD" },
   images: [
     {
-      id: "jik-1",
-      url: "/images/products/shorts/tee-camo-shorts.png",
-      alt: "Jesus Is King tee with camo shorts — R1P Fitness limited drop",
+      id: "sbj-1",
+      url: "/images/products/tees/saved-by-jesus.png",
+      alt: "Saved By Jesus oversized vintage tee — R1P Fitness limited drop",
       width: 1200,
       height: 1600,
     },
   ],
   categories: [{ id: "tees", name: "Tees", slug: "tees" }],
-  tags: ["limited", "faith", "camo", "new-drop"],
+  tags: ["limited", "faith", "vintage", "new-drop"],
   attributes: [
     {
       id: "pa_size",
@@ -50,11 +53,11 @@ const JESUS_IS_KING_PRODUCT: Product = {
     },
   ],
   variations: [
-    { id: "jik-v-s",  sku: "JIK-S",   price: { amount: 6500, currency: "USD" }, stockStatus: "in_stock",  stockQuantity: 8,  attributes: { pa_size: "S" } },
-    { id: "jik-v-m",  sku: "JIK-M",   price: { amount: 6500, currency: "USD" }, stockStatus: "in_stock",  stockQuantity: 12, attributes: { pa_size: "M" } },
-    { id: "jik-v-l",  sku: "JIK-L",   price: { amount: 6500, currency: "USD" }, stockStatus: "in_stock",  stockQuantity: 10, attributes: { pa_size: "L" } },
-    { id: "jik-v-xl", sku: "JIK-XL",  price: { amount: 6500, currency: "USD" }, stockStatus: "low_stock", stockQuantity: 3,  attributes: { pa_size: "XL" } },
-    { id: "jik-v-xxl",sku: "JIK-XXL", price: { amount: 6500, currency: "USD" }, stockStatus: "out_of_stock", stockQuantity: 0, attributes: { pa_size: "XXL" } },
+    { id: "sbj-v-s",   sku: "SBJ-S",   price: { amount: 4500, currency: "USD" }, stockStatus: "in_stock",     stockQuantity: 8,  attributes: { pa_size: "S" } },
+    { id: "sbj-v-m",   sku: "SBJ-M",   price: { amount: 4500, currency: "USD" }, stockStatus: "in_stock",     stockQuantity: 12, attributes: { pa_size: "M" } },
+    { id: "sbj-v-l",   sku: "SBJ-L",   price: { amount: 4500, currency: "USD" }, stockStatus: "in_stock",     stockQuantity: 10, attributes: { pa_size: "L" } },
+    { id: "sbj-v-xl",  sku: "SBJ-XL",  price: { amount: 4500, currency: "USD" }, stockStatus: "low_stock",    stockQuantity: 3,  attributes: { pa_size: "XL" } },
+    { id: "sbj-v-xxl", sku: "SBJ-XXL", price: { amount: 4500, currency: "USD" }, stockStatus: "out_of_stock", stockQuantity: 0,  attributes: { pa_size: "XXL" } },
   ],
   stockStatus: "in_stock",
   stockQuantity: 33,
@@ -64,14 +67,14 @@ const JESUS_IS_KING_PRODUCT: Product = {
     printMethod: "Screen printed",
     careInstructions: "Cold wash, hang dry",
     designStory:
-      "Faith-inspired art meets Hawaiian streetwear. Limited 24-hour drop. No restock.",
+      "Faith-inspired art meets Hawaiian streetwear. Limited drop. No restock.",
     isLimited: true,
     dropDate: "2026-04-24T00:00:00Z",
   },
   seo: {
-    title: "Jesus Is King Tee & Camo Shorts — R1P FITNESS Limited Drop",
+    title: "Saved By Jesus Oversized Vintage Tee — R1P FITNESS Limited Drop",
     description:
-      "Limited 24-hour drop. Heavyweight tee + camo shorts set from R1P FITNESS, Waipahu HI.",
+      "Limited drop. Oversized vintage heavyweight tee from R1P FITNESS, Waipahu HI.",
   },
 };
 
@@ -86,11 +89,14 @@ export const revalidate = 3600;
 export default async function HomePage() {
   const catalog = getCatalog();
 
-  // Products for grid rail + best sellers — spotlight is now the static Jesus Is King drop.
-  const [{ items: gridProducts }, { items: bestSellers }] = await Promise.all([
-    catalog.listProducts({ sort: "featured", pageSize: 4 }),
-    catalog.listProducts({ sort: "newest", pageSize: 4 }),
-  ]);
+  const [{ items: gridProducts }, { items: bestSellers }, liveSpotlight] =
+    await Promise.all([
+      catalog.listProducts({ sort: "featured", pageSize: 4 }),
+      catalog.listProducts({ sort: "newest", pageSize: 4 }),
+      catalog.getProductBySlug(SPOTLIGHT_SLUG).catch(() => null),
+    ]);
+
+  const spotlightProduct = liveSpotlight ?? SAVED_BY_JESUS_PRODUCT;
 
   return (
     <>
@@ -218,12 +224,12 @@ export default async function HomePage() {
         )}
 
         {/* ══════════════════════════════════════════════════════════
-            8. PRODUCT SPOTLIGHT — Jesus Is King featured drop
+            8. PRODUCT SPOTLIGHT — Saved By Jesus featured drop
             ══════════════════════════════════════════════════════════ */}
         <ProductSpotlight
-          product={JESUS_IS_KING_PRODUCT}
+          product={spotlightProduct}
           tagline="Featured Drop"
-          subtext="Faith over fear. Limited 24-hour drop — no restock."
+          subtext="Faith over fear. Limited drop — no restock."
           layout="image-left"
         />
 
