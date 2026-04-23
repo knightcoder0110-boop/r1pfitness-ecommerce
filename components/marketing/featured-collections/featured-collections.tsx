@@ -137,8 +137,14 @@ export function FeaturedCollections({
             /* Mobile: flex snap row with leading/trailing padding */
             "flex gap-3 snap-x snap-mandatory scroll-smooth",
             "pl-4 sm:pl-6 lg:pl-0",
-            /* Desktop: reset to CSS grid 5 equal columns with gap */
-            "md:grid md:grid-cols-5 md:gap-px",
+            /* Desktop: reset to CSS grid — column count matches card count */
+            "md:grid md:gap-px",
+            collections.length === 1 && "md:grid-cols-1",
+            collections.length === 2 && "md:grid-cols-2",
+            collections.length === 3 && "md:grid-cols-3",
+            collections.length === 4 && "md:grid-cols-4",
+            (collections.length === 5 || collections.length === 0) && "md:grid-cols-5",
+            collections.length >= 6 && "md:grid-cols-6",
           )}
         >
           {collections.map((col, i) => (
