@@ -14,7 +14,7 @@
  *   pnpm seed:products --include-manifest    # disable exclude-manifest (attempt all)
  */
 
-import { main } from "./seed/index.ts";
+import { main } from "./seed/index";
 
 main(process.argv.slice(2)).catch((err: unknown) => {
   console.error("\nFatal:", err instanceof Error ? err.message : err);
