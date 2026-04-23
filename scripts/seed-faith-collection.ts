@@ -39,7 +39,7 @@ loadEnvLocal();
 const WOO_BASE   = (process.env.WOO_BASE_URL        ?? "").replace(/\/$/, "");
 const WOO_KEY    = process.env.WOO_CONSUMER_KEY     ?? "";
 const WOO_SECRET = process.env.WOO_CONSUMER_SECRET  ?? "";
-const WP_USER    = process.env.WP_USERNAME           ?? "";
+const WP_USER    = (process.env.WP_USERNAME           ?? "").trim();
 const WP_PASS    = (process.env.WP_APP_PASSWORD      ?? "").replace(/\s+/g, "");
 
 // ── WP media upload ───────────────────────────────────────────────────────────

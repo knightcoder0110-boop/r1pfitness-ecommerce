@@ -43,5 +43,8 @@ next-env.d.ts
 # product data exports (large/sensitive CSVs)
 public/assets/products-files/
 
+# local reference images — uploaded to WP media library, not stored in repo
+public/images/products/new-faith-collection/
+
 
 info.md
