@@ -20,8 +20,9 @@ import { ROUTES } from "@/lib/constants";
 import type { Product } from "@/lib/woo/types";
 import type { Collection } from "@/components/marketing/featured-collections/data";
 
-/* ── Spotlight product slug — published "Saved By Jesus" on WooCommerce ── */
-const SPOTLIGHT_SLUG = "saved-by-jesus-oversized-vintage-tee";
+/* ── Spotlight slugs ─────────────────────────────────────────────────────── */
+const SPOTLIGHT_SLUG        = "saved-by-jesus-oversized-vintage-tee";
+const DARK_ROMANCE_SLUG     = "dark-romance-heavyweight-tee-valentines-day-edition-r1pfitness";
 
 /* ── Fallback shown if Woo is unreachable or product is missing ── */
 const SAVED_BY_JESUS_PRODUCT: Product = {
@@ -79,6 +80,67 @@ const SAVED_BY_JESUS_PRODUCT: Product = {
   },
 };
 
+/* ── Dark Romance fallback (if Woo unreachable) ───────────────────────────── */
+const DARK_ROMANCE_PRODUCT: Product = {
+  id: "static-dark-romance",
+  slug: DARK_ROMANCE_SLUG,
+  name: "Dark Romance Heavyweight Tee",
+  description:
+    "Love was never gentle. It binds, it breaks, it burns — and through it all, the heart endures. The Dark Romance Tee is R1P FITNESS's Valentine's Day statement piece: a collision of classical art, gothic streetwear, and raw gym energy.",
+  shortDescription: "Limited Valentine's Day drop. Gothic heavyweight oversized tee.",
+  price: { amount: 6500, currency: "USD" },
+  images: [
+    {
+      id: "dr-1",
+      url: "https://cdn.shopify.com/s/files/1/0269/6124/8339/files/dark-romance-cover-image.png?v=1770820781",
+      alt: "Dark Romance Heavyweight Tee — R1P Fitness Valentine's Day limited drop",
+      width: 1200,
+      height: 1600,
+    },
+    {
+      id: "dr-2",
+      url: "https://cdn.shopify.com/s/files/1/0269/6124/8339/files/dark-romance-front.png?v=1770820783",
+      alt: "Dark Romance Tee front — gothic cherub artwork",
+      width: 1200,
+      height: 1600,
+    },
+  ],
+  categories: [{ id: "tees", name: "Tees", slug: "tees" }],
+  tags: ["limited", "gothic", "dark-romance", "valentines"],
+  attributes: [
+    {
+      id: "pa_size",
+      name: "Size",
+      options: ["S", "M", "L", "XL", "XXL"],
+      variation: true,
+      visible: true,
+    },
+  ],
+  variations: [
+    { id: "dr-v-s",   sku: "DR-S",   price: { amount: 6500, currency: "USD" }, stockStatus: "in_stock",  stockQuantity: 10, attributes: { pa_size: "S" } },
+    { id: "dr-v-m",   sku: "DR-M",   price: { amount: 6500, currency: "USD" }, stockStatus: "in_stock",  stockQuantity: 14, attributes: { pa_size: "M" } },
+    { id: "dr-v-l",   sku: "DR-L",   price: { amount: 6500, currency: "USD" }, stockStatus: "in_stock",  stockQuantity: 10, attributes: { pa_size: "L" } },
+    { id: "dr-v-xl",  sku: "DR-XL",  price: { amount: 6500, currency: "USD" }, stockStatus: "low_stock", stockQuantity: 4,  attributes: { pa_size: "XL" } },
+    { id: "dr-v-xxl", sku: "DR-XXL", price: { amount: 6500, currency: "USD" }, stockStatus: "in_stock",  stockQuantity: 6,  attributes: { pa_size: "XXL" } },
+  ],
+  stockStatus: "in_stock",
+  stockQuantity: 44,
+  meta: {
+    fitType: "Oversized",
+    fabricDetails: "100% heavyweight cotton, 300gsm acid-washed",
+    printMethod: "Screen printed",
+    careInstructions: "Cold wash, hang dry",
+    designStory: "Gothic art meets Hawaiian streetwear. Valentine's Day 2026 limited drop.",
+    isLimited: true,
+    dropDate: "2026-02-14T00:00:00Z",
+  },
+  seo: {
+    title: "Dark Romance Heavyweight Tee — Valentine's Day 2026 | R1P FITNESS",
+    description:
+      "Limited Valentine's Day 2026 drop. Gothic oversized heavyweight tee from R1P FITNESS.",
+  },
+};
+
 export const metadata: Metadata = {
   title: "R1P FITNESS — REBORN 1N PARADISE",
   description:
@@ -90,15 +152,17 @@ export const revalidate = 3600;
 export default async function HomePage() {
   const catalog = getCatalog();
 
-  const [{ items: gridProducts }, { items: bestSellers }, liveSpotlight, { items: faithProducts }] =
+  const [{ items: gridProducts }, { items: bestSellers }, liveSpotlight, liveDarkRomance, { items: faithProducts }] =
     await Promise.all([
       catalog.listProducts({ sort: "featured", pageSize: 4 }),
       catalog.listProducts({ sort: "newest", pageSize: 4 }),
       catalog.getProductBySlug(SPOTLIGHT_SLUG).catch(() => null),
+      catalog.getProductBySlug(DARK_ROMANCE_SLUG).catch(() => null),
       catalog.listProducts({ category: "faith", pageSize: 4 }),
     ]);
 
-  const spotlightProduct = liveSpotlight ?? SAVED_BY_JESUS_PRODUCT;
+  const spotlightProduct   = liveSpotlight   ?? SAVED_BY_JESUS_PRODUCT;
+  const darkRomanceProduct = liveDarkRomance ?? DARK_ROMANCE_PRODUCT;
 
   /* ── Map faith products → Collection cards ─────────────────────────────── */
   const faithCollections: Collection[] = faithProducts.map((p) => ({
@@ -344,17 +408,7 @@ export default async function HomePage() {
         </Section>
 
         {/* ══════════════════════════════════════════════════════════
-            11. TESTIMONIALS — social proof
-            ══════════════════════════════════════════════════════════ */}
-        <Testimonials />
-
-        {/* ══════════════════════════════════════════════════════════
-            12. COMMUNITY UGC — #r1pfitness Instagram wall
-            ══════════════════════════════════════════════════════════ */}
-        <CommunityUgc />
-
-        {/* ══════════════════════════════════════════════════════════
-            13. BEST SELLERS — final conversion push
+            11. BEST SELLERS — conversion push after brand story
             ══════════════════════════════════════════════════════════ */}
         {bestSellers.length > 0 && (
           <ProductRail
@@ -365,6 +419,26 @@ export default async function HomePage() {
             bordered="top"
           />
         )}
+
+        {/* ══════════════════════════════════════════════════════════
+            12. PRODUCT SPOTLIGHT — Dark Romance (Valentine's Drop)
+            ══════════════════════════════════════════════════════════ */}
+        <ProductSpotlight
+          product={darkRomanceProduct}
+          tagline="Limited Drop"
+          subtext="Love was never gentle. Gothic heavyweight tee — no restock."
+          layout="image-right"
+        />
+
+        {/* ══════════════════════════════════════════════════════════
+            13. TESTIMONIALS — social proof
+            ══════════════════════════════════════════════════════════ */}
+        <Testimonials />
+
+        {/* ══════════════════════════════════════════════════════════
+            14. COMMUNITY UGC — #r1pfitness Instagram wall
+            ══════════════════════════════════════════════════════════ */}
+        <CommunityUgc />
       </main>
 
       <SiteFooter />
