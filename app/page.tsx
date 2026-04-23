@@ -18,6 +18,7 @@ import { FeaturedCollections } from "@/components/marketing/featured-collections
 import { siteConfig } from "@/lib/siteConfig";
 import { ROUTES } from "@/lib/constants";
 import type { Product } from "@/lib/woo/types";
+import type { Collection } from "@/components/marketing/featured-collections/data";
 
 /* ── Spotlight product slug — published "Saved By Jesus" on WooCommerce ── */
 const SPOTLIGHT_SLUG = "saved-by-jesus-oversized-vintage-tee";
@@ -89,14 +90,31 @@ export const revalidate = 3600;
 export default async function HomePage() {
   const catalog = getCatalog();
 
-  const [{ items: gridProducts }, { items: bestSellers }, liveSpotlight] =
+  const [{ items: gridProducts }, { items: bestSellers }, liveSpotlight, { items: faithProducts }] =
     await Promise.all([
       catalog.listProducts({ sort: "featured", pageSize: 4 }),
       catalog.listProducts({ sort: "newest", pageSize: 4 }),
       catalog.getProductBySlug(SPOTLIGHT_SLUG).catch(() => null),
+      catalog.listProducts({ category: "faith", pageSize: 4 }),
     ]);
 
   const spotlightProduct = liveSpotlight ?? SAVED_BY_JESUS_PRODUCT;
+
+  /* ── Map faith products → Collection cards ─────────────────────────────── */
+  const faithCollections: Collection[] = faithProducts.map((p) => ({
+    id: p.slug,
+    name: p.name,
+    itemCount: p.variantCount ?? 5,
+    href: ROUTES.product(p.slug),
+    badge: "new-drop" as const,
+    gradient: "linear-gradient(160deg,#04020c 0%,#0b0519 45%,#130828 100%)",
+    image: p.image?.url,
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} aria-hidden="true" className="size-8 shrink-0">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v8m0 0v12m0-12h5m-5 0H7" />
+      </svg>
+    ),
+  }));
 
   return (
     <>
@@ -191,9 +209,16 @@ export default async function HomePage() {
         )}
 
         {/* ══════════════════════════════════════════════════════════
-            5. FEATURED COLLECTIONS — editorial collection showcase
+            5. FEATURED COLLECTIONS — faith collection products
             ══════════════════════════════════════════════════════════ */}
-        <FeaturedCollections />
+        <FeaturedCollections
+          collections={faithCollections.length > 0 ? faithCollections : undefined}
+          eyebrow="New Faith Collection"
+          title={"FAITH OVER FEAR.\nWEAR YOUR BELIEFS."}
+          subtitle="Four pieces. One message. Crafted for those who carry their faith into every rep, every day."
+          ctaLabel="Shop Faith Collection"
+          ctaHref={ROUTES.category("faith")}
+        />
 
         {/* ══════════════════════════════════════════════════════════
             6. STATEMENT MARQUEE #1 — energise before product grid
