@@ -50,7 +50,7 @@ export default function RootLayout({
     >
       {/* GTM noscript fallback — must be the first element inside <body> */}
       {gtmId && (
-        <body className="relative min-h-full flex flex-col z-10">
+        <body className="relative min-h-full flex flex-col z-10" suppressHydrationWarning>
           <noscript>
             <iframe
               src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
@@ -76,7 +76,7 @@ export default function RootLayout({
         </body>
       )}
       {!gtmId && (
-        <body className="relative min-h-full flex flex-col z-10">
+        <body className="relative min-h-full flex flex-col z-10" suppressHydrationWarning>
           <Providers>
             {children}
           </Providers>

@@ -22,10 +22,14 @@ const nextConfig: NextConfig = {
     // Without this every unique URL re-fetches from Hostinger on expiry.
     minimumCacheTTL: 2592000,
     remotePatterns: [
-      // Production WordPress / WooCommerce install (read from WOO_BASE_URL at build time).
+      // Active WooCommerce install (read from WOO_BASE_URL at build time).
       ...(wooHostname
         ? [{ protocol: "https" as const, hostname: wooHostname }]
         : []),
+      // Cloudways WooCommerce instance (fallback in case WOO_BASE_URL isn't set at build time).
+      { protocol: "https" as const, hostname: "woocommerce-1616698-6370177.cloudwaysapps.com" },
+      // Previous Hostinger WooCommerce instance (products seeded from here may still reference it).
+      { protocol: "https" as const, hostname: "lightslategrey-ibex-799942.hostingersite.com" },
       // Local WordPress development (common patterns: localhost, *.local, *.test).
       { protocol: "http" as const, hostname: "localhost" },
       { protocol: "http" as const, hostname: "*.local" },
@@ -33,6 +37,8 @@ const nextConfig: NextConfig = {
       // WP.com CDN and common managed WP hosts.
       { protocol: "https" as const, hostname: "*.wp.com" },
       { protocol: "https" as const, hostname: "*.wordpress.com" },
+      // Shopify CDN — product images seeded from Shopify CSV reference these URLs.
+      { protocol: "https" as const, hostname: "cdn.shopify.com" },
     ],
   },
 
@@ -61,6 +67,9 @@ const nextConfig: NextConfig = {
       [
         "img-src 'self' data: blob:",
         wooHostname ? wooHostname : "",
+        "woocommerce-1616698-6370177.cloudwaysapps.com",
+        "lightslategrey-ibex-799942.hostingersite.com",
+        "cdn.shopify.com",
         "*.wp.com *.wordpress.com",
       ]
         .filter(Boolean)
