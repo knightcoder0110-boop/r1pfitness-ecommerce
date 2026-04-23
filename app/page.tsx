@@ -1,26 +1,79 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { getCatalog } from "@/lib/catalog";
 import { ProductRail } from "@/components/product/product-rail";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { buttonVariants } from "@/components/ui/button";
-import Marquee from "@/components/marquee";
 import { StatementMarquee } from "@/components/marketing/statement-marquee";
 import { TrustBar } from "@/components/marketing/trust-bar";
 import { ProductSpotlight } from "@/components/marketing/product-spotlight";
-import { CategoryScroller } from "@/components/marketing/category-scroller";
-import { CategoryGrid } from "@/components/marketing/category-grid";
 import { Testimonials } from "@/components/marketing/testimonials";
 import { CommunityUgc } from "@/components/marketing/community-ugc";
 import { CampaignCountdown } from "@/components/campaign/campaign-countdown";
 import { HeroRebirth } from "@/components/marketing/hero-rebirth";
+import { FeaturedCollections } from "@/components/marketing/featured-collections";
 import { siteConfig } from "@/lib/siteConfig";
-import { ROUTES, SITE } from "@/lib/constants";
+import { ROUTES } from "@/lib/constants";
+import type { Product } from "@/lib/woo/types";
+
+/* ── Static spotlight product — shown until a real WooCommerce product is live ── */
+const JESUS_IS_KING_PRODUCT: Product = {
+  id: "static-jesus-is-king",
+  slug: "jesus-is-king-tee-shorts",
+  name: "Jesus Is King",
+  description:
+    "Reborn in faith. The Jesus Is King tee-and-shorts set is a limited R1P drop — premium heavyweight cotton, oversized silhouette, and bold camo-print shorts built for the 'ohana that trains with purpose.",
+  shortDescription: "Limited tee & camo shorts set. Faith over fear.",
+  price: { amount: 6500, currency: "USD" },
+  compareAtPrice: { amount: 8500, currency: "USD" },
+  images: [
+    {
+      id: "jik-1",
+      url: "/images/products/shorts/tee-camo-shorts.png",
+      alt: "Jesus Is King tee with camo shorts — R1P Fitness limited drop",
+      width: 1200,
+      height: 1600,
+    },
+  ],
+  categories: [{ id: "tees", name: "Tees", slug: "tees" }],
+  tags: ["limited", "faith", "camo", "new-drop"],
+  attributes: [
+    {
+      id: "pa_size",
+      name: "Size",
+      options: ["S", "M", "L", "XL", "XXL"],
+      variation: true,
+      visible: true,
+    },
+  ],
+  variations: [
+    { id: "jik-v-s",  sku: "JIK-S",   price: { amount: 6500, currency: "USD" }, stockStatus: "in_stock",  stockQuantity: 8,  attributes: { pa_size: "S" } },
+    { id: "jik-v-m",  sku: "JIK-M",   price: { amount: 6500, currency: "USD" }, stockStatus: "in_stock",  stockQuantity: 12, attributes: { pa_size: "M" } },
+    { id: "jik-v-l",  sku: "JIK-L",   price: { amount: 6500, currency: "USD" }, stockStatus: "in_stock",  stockQuantity: 10, attributes: { pa_size: "L" } },
+    { id: "jik-v-xl", sku: "JIK-XL",  price: { amount: 6500, currency: "USD" }, stockStatus: "low_stock", stockQuantity: 3,  attributes: { pa_size: "XL" } },
+    { id: "jik-v-xxl",sku: "JIK-XXL", price: { amount: 6500, currency: "USD" }, stockStatus: "out_of_stock", stockQuantity: 0, attributes: { pa_size: "XXL" } },
+  ],
+  stockStatus: "in_stock",
+  stockQuantity: 33,
+  meta: {
+    fitType: "Oversized",
+    fabricDetails: "100% heavyweight cotton, 280gsm",
+    printMethod: "Screen printed",
+    careInstructions: "Cold wash, hang dry",
+    designStory:
+      "Faith-inspired art meets Hawaiian streetwear. Limited 24-hour drop. No restock.",
+    isLimited: true,
+    dropDate: "2026-04-24T00:00:00Z",
+  },
+  seo: {
+    title: "Jesus Is King Tee & Camo Shorts — R1P FITNESS Limited Drop",
+    description:
+      "Limited 24-hour drop. Heavyweight tee + camo shorts set from R1P FITNESS, Waipahu HI.",
+  },
+};
 
 export const metadata: Metadata = {
   title: "R1P FITNESS — REBORN 1N PARADISE",
@@ -33,20 +86,11 @@ export const revalidate = 3600;
 export default async function HomePage() {
   const catalog = getCatalog();
 
-  // Single data fetch — pass products to all sections that need them.
-  const [{ items: allFeatured }, { items: bestSellers }] = await Promise.all([
-    catalog.listProducts({ sort: "featured", pageSize: 8 }),
+  // Products for grid rail + best sellers — spotlight is now the static Jesus Is King drop.
+  const [{ items: gridProducts }, { items: bestSellers }] = await Promise.all([
+    catalog.listProducts({ sort: "featured", pageSize: 4 }),
     catalog.listProducts({ sort: "newest", pageSize: 4 }),
   ]);
-
-  // First product becomes the spotlight hero; remaining 4 fill the grid.
-  const [spotlightSummary, ...gridProducts] = allFeatured;
-
-  // Fetch the full product (with variations + attributes) for the spotlight.
-  // We need the complete data for the inline variant picker + add-to-cart.
-  const spotlightProduct = spotlightSummary
-    ? await catalog.getProductBySlug(spotlightSummary.slug)
-    : null;
 
   return (
     <>
@@ -102,12 +146,12 @@ export default async function HomePage() {
         ── End old hero ─────────────────────────────────────────── */}
 
         {/* ══════════════════════════════════════════════════════════
-            2. TICKER MARQUEE — thin band of brand identity
+            2. TRUST BAR — credibility signals right after hero
             ══════════════════════════════════════════════════════════ */}
-        <Marquee />
+        <TrustBar />
 
         {/* ══════════════════════════════════════════════════════════
-            2b. DROP COUNTDOWN — shown only when nextDropDate is set
+            4. DROP COUNTDOWN — urgency/FOMO (shown when active)
             ══════════════════════════════════════════════════════════ */}
         {siteConfig.nextDropDate && (
           <Section
@@ -141,23 +185,12 @@ export default async function HomePage() {
         )}
 
         {/* ══════════════════════════════════════════════════════════
-            3. TRUST BAR — 5 signals in gold
+            5. FEATURED COLLECTIONS — editorial collection showcase
             ══════════════════════════════════════════════════════════ */}
-        <TrustBar />
+        <FeaturedCollections />
 
         {/* ══════════════════════════════════════════════════════════
-            4. PRODUCT SPOTLIGHT — hero feature of the first drop
-            ══════════════════════════════════════════════════════════ */}
-        {spotlightProduct && (
-          <ProductSpotlight
-            product={spotlightProduct}
-            tagline="Featured Drop"
-            layout="image-left"
-          />
-        )}
-
-        {/* ══════════════════════════════════════════════════════════
-            5. STATEMENT MARQUEE #1 — oversized scrolling type
+            6. STATEMENT MARQUEE #1 — energise before product grid
             ══════════════════════════════════════════════════════════ */}
         <StatementMarquee
           items={[
@@ -173,7 +206,7 @@ export default async function HomePage() {
         />
 
         {/* ══════════════════════════════════════════════════════════
-            6. NEW ARRIVALS GRID — 4 products
+            7. LATEST DROPS — 4-product new arrivals grid
             ══════════════════════════════════════════════════════════ */}
         {gridProducts.length > 0 && (
           <ProductRail
@@ -185,12 +218,17 @@ export default async function HomePage() {
         )}
 
         {/* ══════════════════════════════════════════════════════════
-            7. CATEGORY BENTO GRID — shop by category
+            8. PRODUCT SPOTLIGHT — Jesus Is King featured drop
             ══════════════════════════════════════════════════════════ */}
-        <CategoryGrid />
+        <ProductSpotlight
+          product={JESUS_IS_KING_PRODUCT}
+          tagline="Featured Drop"
+          subtext="Faith over fear. Limited 24-hour drop — no restock."
+          layout="image-left"
+        />
 
         {/* ══════════════════════════════════════════════════════════
-            8. SECOND STATEMENT MARQUEE — reversed direction
+            9. STATEMENT MARQUEE #2 — pace break before brand story
             ══════════════════════════════════════════════════════════ */}
         <StatementMarquee
           items={[
@@ -206,12 +244,7 @@ export default async function HomePage() {
         />
 
         {/* ══════════════════════════════════════════════════════════
-            9. CATEGORY SCROLLER — horizontal snap-scroll on mobile
-            ══════════════════════════════════════════════════════════ */}
-        <CategoryScroller />
-
-        {/* ══════════════════════════════════════════════════════════
-            10. BRAND STORY — text + stat grid
+            10. BRAND STORY — emotional connection + stat grid
             ══════════════════════════════════════════════════════════ */}
         <Section
           aria-labelledby="story-heading"
@@ -280,15 +313,17 @@ export default async function HomePage() {
         </Section>
 
         {/* ══════════════════════════════════════════════════════════
-            11. TESTIMONIALS — community reviews
+            11. TESTIMONIALS — social proof
             ══════════════════════════════════════════════════════════ */}
         <Testimonials />
-        {/* ════════════════════════════════════════════════════════
-            11b. COMMUNITY UGC — #r1pfitness Instagram wall
-            ═══════════════════════════════════════════════════════ */}
-        <CommunityUgc />
+
         {/* ══════════════════════════════════════════════════════════
-            12. BEST SELLERS — additional 4-product row
+            12. COMMUNITY UGC — #r1pfitness Instagram wall
+            ══════════════════════════════════════════════════════════ */}
+        <CommunityUgc />
+
+        {/* ══════════════════════════════════════════════════════════
+            13. BEST SELLERS — final conversion push
             ══════════════════════════════════════════════════════════ */}
         {bestSellers.length > 0 && (
           <ProductRail

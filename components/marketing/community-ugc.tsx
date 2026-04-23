@@ -23,35 +23,35 @@ interface UgcTile {
 
 const TILES: UgcTile[] = [
   {
-    image: "/images/hero/king-of-kings-collection-cover-image.jpg",
+    image: "/images/photos/r1p-13.jpg",
     handle: "r1pfitness",
-    caption: "KING OF KINGS drop · Waipahu HI",
+    caption: "Reborn in Paradise · Waipahu HI",
     href: "https://instagram.com/r1pfitness",
   },
   {
-    image: "/images/hero/king-of-kings-collection-cover-image.jpg",
+    image: "/images/photos/IMG_0331.jpg",
     handle: "ohanalifts",
     caption: "Training in the Discipline Club hoodie",
   },
   {
-    image: "/images/hero/king-of-kings-collection-cover-image.jpg",
+    image: "/images/photos/R1P2025%20Collection_135.jpg",
     handle: "keanu.m",
-    caption: "Ohana Forever tee on leg day",
+    caption: "2025 Collection drop · Ohana Forever",
   },
   {
-    image: "/images/hero/king-of-kings-collection-cover-image.jpg",
+    image: "/images/photos/R1P2025%20Collection_141.jpg",
     handle: "talia.r",
     caption: "R1P fit-check · Maui sunrise",
   },
   {
-    image: "/images/hero/king-of-kings-collection-cover-image.jpg",
+    image: "/images/photos/IMG_0447.jpg",
     handle: "kaimana.l",
-    caption: "Crossbody + tee · streetwear staple",
+    caption: "Reborn strong · streetwear staple",
   },
   {
-    image: "/images/hero/king-of-kings-collection-cover-image.jpg",
+    image: "/images/photos/R1P2025%20Collection_8.jpg",
     handle: "elijah.p",
-    caption: "Vintage Arnold tee · gym day",
+    caption: "2025 Collection · Discipline over everything",
   },
 ];
 
@@ -79,7 +79,7 @@ function UgcCard({ tile }: { tile: UgcTile }) {
       {/* Gradient base — always visible for handle pill */}
       <div
         aria-hidden
-        className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-bg/85 via-bg/35 to-transparent"
+        className="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-bg/85 via-bg/35 to-transparent"
       />
 
       {/* Hover caption overlay */}

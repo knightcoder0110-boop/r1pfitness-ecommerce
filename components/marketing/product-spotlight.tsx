@@ -77,9 +77,7 @@ export function ProductSpotlight({
       className={cn(
         "group relative w-full overflow-hidden border-y border-border",
         /* 2-col on desktop */
-        "grid grid-cols-1 md:grid-cols-2",
-        /* Cap height to viewport on desktop — never forces scroll just to see one product */
-        "md:max-h-[min(840px,calc(100vh-var(--size-header)))]",
+        "grid grid-cols-1 md:grid-cols-2 md:items-stretch",
         className,
       )}
     >
@@ -87,10 +85,8 @@ export function ProductSpotlight({
       <div
         className={cn(
           "relative overflow-hidden bg-surface-2",
-          /* Mobile: landscape crop keeps it compact */
-          "aspect-[4/3]",
-          /* Desktop: stretch to fill the grid row height — no fixed ratio */
-          "md:aspect-auto",
+          /* 2:3 portrait on both mobile and desktop — image drives section height */
+          "aspect-2/3",
           imageRight && "md:order-2",
         )}
       >
@@ -100,12 +96,12 @@ export function ProductSpotlight({
             alt={primaryImage.alt || product.name}
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+            className="object-contain object-center transition-transform duration-700 ease-out group-hover:scale-[1.03]"
             priority
           />
         ) : (
           /* Branded placeholder when no image is available */
-          <div className="absolute inset-0 bg-gradient-to-br from-surface-2 to-surface-3 flex items-center justify-center">
+          <div className="absolute inset-0 bg-linear-to-br from-surface-2 to-surface-3 flex items-center justify-center">
             <span
               className="font-display text-7xl tracking-widest text-muted opacity-30"
               aria-hidden="true"
@@ -129,13 +125,13 @@ export function ProductSpotlight({
         {/* Bottom scrim — subtle fade into section bg on mobile stacked layout */}
         <div
           aria-hidden="true"
-          className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-bg/40 to-transparent md:hidden"
+          className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-bg/40 to-transparent md:hidden"
         />
 
         {/* Faint large watermark letter — top-right corner */}
         <span
           aria-hidden="true"
-          className="absolute -top-4 -right-2 font-display leading-none select-none text-white/[0.04] pointer-events-none"
+          className="absolute -top-4 -right-2 font-display leading-none select-none text-white/4 pointer-events-none"
           style={{ fontSize: "clamp(6rem, 18vw, 11rem)" }}
         >
           {product.name.charAt(0).toUpperCase()}
@@ -144,7 +140,7 @@ export function ProductSpotlight({
         {/* Gold rule slides in from left on hover — same pattern as CategoryScroller */}
         <div
           aria-hidden="true"
-          className="absolute bottom-0 left-0 h-[2px] w-0 bg-gold transition-[width] duration-700 ease-out group-hover:w-full"
+          className="absolute bottom-0 left-0 h-0.5 w-0 bg-gold transition-[width] duration-700 ease-out group-hover:w-full"
         />
 
         {/* SOLD OUT overlay */}
@@ -170,7 +166,7 @@ export function ProductSpotlight({
         {/* Vertical gold accent — subtle left bar on the text column */}
         <span
           aria-hidden="true"
-          className="hidden md:block absolute left-0 top-[20%] bottom-[20%] w-[2px] bg-gold/20"
+          className="hidden md:block absolute left-0 top-[20%] bottom-[20%] w-0.5 bg-gold/20"
         />
 
         {/* ── Eyebrow ────────────────────────────────────────── */}
