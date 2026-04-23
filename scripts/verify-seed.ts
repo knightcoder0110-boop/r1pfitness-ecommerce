@@ -13,12 +13,12 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
-import { loadEnvLocal } from "./seed/index.ts";
+import { loadEnvLocal } from "./seed/index";
 import {
   createWooClient,
   ensureGlobalAttributes,
-} from "./seed/woo.ts";
-import type { SeedPlan, PlannedProduct } from "./seed/types.ts";
+} from "./seed/woo";
+import type { SeedPlan, PlannedProduct } from "./seed/types";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, "..");

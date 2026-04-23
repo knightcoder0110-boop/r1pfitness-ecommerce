@@ -20,8 +20,8 @@ import {
   RETRY_BACKOFF_BASE_MS,
   GLOBAL_ATTRIBUTES,
   CATEGORY_TREE,
-} from "./config.ts";
-import type { PlannedProduct } from "./types.ts";
+} from "./config";
+import type { PlannedProduct } from "./types";
 
 // ── Public types ──────────────────────────────────────────────────────────────
 export interface RequestOpts {

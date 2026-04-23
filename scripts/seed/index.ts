@@ -14,8 +14,8 @@ import { readFileSync, existsSync, mkdirSync, writeFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
-import { parseShopifyCsv } from "./csv.ts";
-import { filterGroups, splitBeastMode, planProduct, sizeMenuOrder } from "./transforms.ts";
+import { parseShopifyCsv } from "./csv";
+import { filterGroups, splitBeastMode, planProduct, sizeMenuOrder } from "./transforms";
 import {
   createWooClient,
   ensureGlobalAttributes,
@@ -23,9 +23,9 @@ import {
   ensureCategoryTree,
   fetchExistingProductSlugs,
   createProduct,
-} from "./woo.ts";
-import { CATEGORY_TREE } from "./config.ts";
-import type { CliOptions, PlannedProduct, SeedPlan, SkippedItem } from "./types.ts";
+} from "./woo";
+import { CATEGORY_TREE } from "./config";
+import type { CliOptions, PlannedProduct, SeedPlan, SkippedItem } from "./types";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, "..", "..");

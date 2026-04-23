@@ -27,15 +27,15 @@ import {
   SKU_MAX_LENGTH,
   YOAST_META,
   COLOR_ABBR,
-} from "./config.ts";
-import { buildExcludeIndex } from "./exclude-manifest.ts";
+} from "./config";
+import { buildExcludeIndex } from "./exclude-manifest";
 import type {
   ProductGroup,
   PlannedProduct,
   PlannedVariant,
   SkippedItem,
   ShopifyMetafields,
-} from "./types.ts";
+} from "./types";
 
 // ──────────────────────────────────────────────────────────────────────────────
 // 1. Filtering

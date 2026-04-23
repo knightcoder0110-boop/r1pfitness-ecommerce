@@ -140,7 +140,7 @@ export const YOAST_META = {
 
 // ── Shopify CSV metafield column → ACF-style post_meta key ───────────────────
 // Column header regexes map into cleaner post_meta keys that ACF Pro can wire to.
-export const METAFIELD_COLUMN_MAP: Array<{ match: RegExp; key: keyof import("./types.ts").ShopifyMetafields }> = [
+export const METAFIELD_COLUMN_MAP: Array<{ match: RegExp; key: keyof import("./types").ShopifyMetafields }> = [
   { match: /activity.*metafields\.shopify\.activity/i,                    key: "activity" },
   { match: /age group.*metafields\.shopify\.age-group/i,                  key: "age_group" },
   { match: /clothing features.*metafields\.shopify\.clothing-features/i,  key: "clothing_features" },

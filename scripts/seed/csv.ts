@@ -7,8 +7,8 @@
  * header-name field access (robust against column re-ordering).
  */
 
-import type { CsvRow, ProductGroup, RawVariant, ShopifyMetafields } from "./types.ts";
-import { METAFIELD_COLUMN_MAP } from "./config.ts";
+import type { CsvRow, ProductGroup, RawVariant, ShopifyMetafields } from "./types";
+import { METAFIELD_COLUMN_MAP } from "./config";
 
 // ── Low-level RFC-4180 parser ─────────────────────────────────────────────────
 export function parseCsv(content: string): string[][] {
