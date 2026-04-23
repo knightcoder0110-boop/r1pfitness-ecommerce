@@ -100,10 +100,14 @@
   --space-section-md-lg: 7rem;   /* 112px — default (desktop)                          */
   --space-section-lg-lg: 9rem;   /* 144px — spacious (desktop)                         */
 
-  /* ── Card / image aspect ratios (single source of truth) ───── */
-  --aspect-card:     2 / 3;   /* product & category cards — tall editorial portrait */
-  --aspect-banner:   4 / 5;   /* split banner tiles                                 */
-  --aspect-wide:     16 / 9;  /* video / hero stills                                */
+  /* ── Commerce media aspect ratios (single source of truth) ─── */
+  --aspect-product:        3 / 4;  /* main product cards + PDP gallery               */
+  --aspect-editorial:      2 / 3;  /* lookbook / campaign / lifestyle portrait media */
+  --aspect-cart-thumb:     1 / 1;  /* cart + checkout thumbnails                     */
+  --aspect-hero-desktop:   16 / 9; /* main landing hero on desktop                   */
+  --aspect-hero-mobile:    4 / 5;  /* main landing hero on mobile                    */
+  --aspect-collection-desktop: 16 / 9; /* collection cover banners on desktop      */
+  --aspect-collection-mobile:  4 / 5;  /* collection cover banners on mobile       */
 
   /* ── Navigation & Footer typography (modular, single source of truth) ──
      Change any value here and every nav/footer/search surface updates.
@@ -197,10 +201,10 @@
   --ease-out: var(--ease-out);
   --ease-in:  var(--ease-in);
 
-  /* Aspect ratios as Tailwind utilities: aspect-card, aspect-banner, aspect-wide */
-  --aspect-card:   var(--aspect-card);
-  --aspect-banner: var(--aspect-banner);
-  --aspect-wide:   var(--aspect-wide);
+  /* Aspect ratios as Tailwind utilities: aspect-product, aspect-editorial, aspect-cart-thumb */
+  --aspect-product:    var(--aspect-product);
+  --aspect-editorial:  var(--aspect-editorial);
+  --aspect-cart-thumb: var(--aspect-cart-thumb);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -217,6 +221,24 @@
   .py-section-sm { padding-block: var(--space-section-sm-lg); }
   .py-section-md { padding-block: var(--space-section-md-lg); }
   .py-section-lg { padding-block: var(--space-section-lg-lg); }
+}
+
+.aspect-hero-surface {
+  aspect-ratio: var(--aspect-hero-mobile);
+}
+
+.aspect-collection-cover {
+  aspect-ratio: var(--aspect-collection-mobile);
+}
+
+@media (min-width: 768px) {
+  .aspect-hero-surface {
+    aspect-ratio: var(--aspect-hero-desktop);
+  }
+
+  .aspect-collection-cover {
+    aspect-ratio: var(--aspect-collection-desktop);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════

@@ -30,11 +30,11 @@ export interface ProductSpotlightProps {
  *  Desktop │ [full-height photo]  │  eyebrow · title · price · variants · ATC
  *          │  max-h: min(840px, 100vh-header)
  *
- *  Mobile  │  [landscape 4:3 photo]
+ *  Mobile  │  [portrait 3:4 product photo]
  *          │  eyebrow · title · price · variants · ATC
  *
  * Design principles:
- *  - Image fills its column with `object-cover` — no fixed aspect pushing height.
+ *  - Image keeps the same 3:4 product ratio as the commerce grid/gallery.
  *  - Text column is vertically centred, scrollable only if content overflows.
  *  - Variants (size, color…) and Add-to-Cart live directly in the section.
  *  - Gold lustre CTA matches the hero button — consistent call-to-action language.
@@ -85,8 +85,8 @@ export function ProductSpotlight({
       <div
         className={cn(
           "relative overflow-hidden bg-surface-2",
-          /* 2:3 portrait on both mobile and desktop — image drives section height */
-          "aspect-2/3",
+          /* Match the commerce product media standard across spotlight + PDP */
+          "aspect-product",
           imageRight && "md:order-2",
         )}
       >

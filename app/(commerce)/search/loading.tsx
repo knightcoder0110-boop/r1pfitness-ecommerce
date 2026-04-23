@@ -26,7 +26,7 @@ export default function SearchLoading() {
       <ul className="grid grid-cols-2 gap-x-5 gap-y-12 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5" aria-busy="true" aria-label="Loading search results">
         {Array.from({ length: 8 }).map((_, i) => (
           <li key={i} className="flex flex-col gap-3">
-            <Skeleton className="aspect-card w-full" />
+            <Skeleton className="aspect-product w-full" />
             <Skeleton className="h-5 w-3/4" />
             <Skeleton className="h-4 w-1/3" />
           </li>

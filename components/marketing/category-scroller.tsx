@@ -74,7 +74,7 @@ export async function CategoryScroller() {
                   href={`/shop?category=${cat.slug}`}
                   className="
                     group relative flex flex-col justify-end
-                    w-full aspect-card overflow-hidden
+                    w-full aspect-editorial overflow-hidden
                     rounded-sm
                     border border-white/[0.07]
                     hover:border-gold/40
@@ -160,7 +160,7 @@ export async function CategoryScroller() {
               href={ROUTES.collections}
               className="
                 group relative flex flex-col items-center justify-center
-                w-full aspect-card overflow-hidden
+                w-full aspect-editorial overflow-hidden
                 rounded-sm
                 border border-gold/20
                 hover:border-gold/50

@@ -71,7 +71,7 @@ export function HeroRebirth({
           ═══════════════════════════════════════════════════════════ */}
       <section
         aria-label="Wear the Rebirth"
-        className="relative isolate overflow-hidden bg-bg"
+        className="relative isolate overflow-hidden bg-bg aspect-hero-surface min-h-[34rem] md:min-h-[42rem]"
       >
         {/* ─── Background image + overlays ──────────────────────── */}
         <div className="absolute inset-0 -z-10">
@@ -123,9 +123,8 @@ export function HeroRebirth({
         <Container size="page">
           <div
             className={cn(
-              "relative flex flex-col justify-center",
-              "min-h-[78vh] md:min-h-[82vh]",
-              "py-20 md:py-28 lg:py-32",
+              "relative flex h-full min-h-full flex-col justify-center",
+              "py-16 md:py-20 lg:py-24",
             )}
           >
             <div

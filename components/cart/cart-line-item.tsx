@@ -28,7 +28,7 @@ export function CartLineItem({ item, compact = false }: CartLineItemProps) {
       aria-label={item.name}
     >
       {item.image ? (
-        <div className="relative h-24 w-20 flex-shrink-0 overflow-hidden bg-surface-1">
+        <div className="relative aspect-cart-thumb w-20 shrink-0 overflow-hidden rounded-sm bg-surface-1">
           <Image
             src={item.image.url}
             alt={item.image.alt || item.name}

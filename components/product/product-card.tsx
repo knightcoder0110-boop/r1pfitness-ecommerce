@@ -18,7 +18,7 @@ export interface ProductCardProps {
  * Premium editorial product card for R1P FITNESS.
  *
  * Design intent:
- *  - 2:3 tall portrait ratio — the standard for luxury streetwear product imagery
+ *  - 3:4 tall portrait ratio — the standard for luxury streetwear product imagery
  *  - Dark-frosted quick-view strip slides up on hover from the image bottom
  *  - Thin gold sweep rule at the image edge (brand signature)
  *  - Hover image crossfades in at full opacity
@@ -39,7 +39,7 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
       className={cn("group relative flex flex-col", className)}
     >
       {/* ── Image block ─────────────────────────────────────────────── */}
-      <div className="relative aspect-card w-full overflow-hidden rounded-sm bg-surface-2">
+      <div className="relative aspect-product w-full overflow-hidden rounded-sm bg-surface-2">
 
         {/* Primary image */}
         {product.image ? (

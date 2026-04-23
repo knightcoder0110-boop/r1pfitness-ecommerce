@@ -62,6 +62,7 @@ export function CollectionCard({
       aria-label={`Shop ${collection.name} — ${collection.itemCount} items`}
       className={cn(
         "group relative flex flex-col overflow-hidden",
+        "aspect-editorial",
         "border border-white/8 hover:border-gold/40",
         "transition-[border-color] duration-300",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg",

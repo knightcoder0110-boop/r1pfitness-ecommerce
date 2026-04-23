@@ -103,7 +103,7 @@ function UgcCard({ tile }: { tile: UgcTile }) {
   );
 
   const base =
-    "group relative block aspect-card overflow-hidden rounded-md ring-1 ring-border transition-[transform,box-shadow,ring] duration-300 hover:-translate-y-1 hover:shadow-raised hover:ring-gold/40";
+    "group relative block aspect-editorial overflow-hidden rounded-md ring-1 ring-border transition-[transform,box-shadow,ring] duration-300 hover:-translate-y-1 hover:shadow-raised hover:ring-gold/40";
 
   if (tile.href) {
     return (

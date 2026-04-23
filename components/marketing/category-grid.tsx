@@ -13,7 +13,7 @@
  *   │  · Tagline pill (top-left, like liquid's       │
  *   │    product-count pill)                         │
  *   │  · Bottom gradient scrim                       │
- *   │  aspect-ratio: 2/3 (--aspect-card, portrait)  │
+ *   │  aspect-ratio: 2/3 (--aspect-editorial)       │
  *   ├────────────────────────────────────────────────┤
  *   │  BODY BAR                                      │
  *   │  · Category name  (Bebas Neue, gold on hover)  │
@@ -128,7 +128,7 @@ export async function CategoryGrid({ className }: CategoryGridProps) {
       {/*
         ─── Bento grid ──────────────────────────────────────────────────────
         lg+  : 4-col. Featured spans col-span-2 × row-span-2.
-               Row heights driven by the regular cards' aspect-card ratio.
+               Row heights driven by the regular cards' editorial ratio.
                Featured fills its 2-row slot via `h-full` + `flex-1` media.
         sm–lg: 2-col flat (bento resets; featured collapses to 1×1).
         xs   : 2-col flat.
@@ -199,15 +199,15 @@ function CategoryCard({
 
       {/* ═══════════════════════════════════════════════════════════
           PART 1 — MEDIA AREA
-          Regular cards: aspect-card (2:3 portrait — tall editorial).
+          Regular cards: aspect-editorial (2:3 portrait — tall editorial).
           Featured (lg): flex-1 so it fills the bento 2-row height.
-          Featured (sm/mobile): aspect-card same as any other card.
+          Featured (sm/mobile): aspect-editorial same as any other card.
           ═══════════════════════════════════════════════════════════ */}
       <div
         className={cn(
           "relative overflow-hidden",
           /* Regular cards always portrait */
-          "aspect-card",
+          "aspect-editorial",
           /* Featured on desktop: override aspect, fill remaining flex height */
           featured && "lg:[aspect-ratio:auto] lg:flex-1 lg:min-h-[300px]",
         )}
