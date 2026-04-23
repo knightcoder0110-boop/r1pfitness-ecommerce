@@ -18,6 +18,7 @@ import { CategoryGrid } from "@/components/marketing/category-grid";
 import { Testimonials } from "@/components/marketing/testimonials";
 import { CommunityUgc } from "@/components/marketing/community-ugc";
 import { CampaignCountdown } from "@/components/campaign/campaign-countdown";
+import { HeroRebirth } from "@/components/marketing/hero-rebirth";
 import { siteConfig } from "@/lib/siteConfig";
 import { ROUTES, SITE } from "@/lib/constants";
 
@@ -58,11 +59,13 @@ export default async function HomePage() {
         {/* ══════════════════════════════════════════════════════════
             1. HERO — cinematic full-viewport opener
             ══════════════════════════════════════════════════════════ */}
+        <HeroRebirth />
+
+        {/* ── Old hero (kept for reference) ─────────────────────────
         <section
           aria-label="Hero"
           className="relative overflow-hidden bg-bg min-h-[85vh] flex items-center"
         >
-          {/* Hero background image */}
           <Image
             src="/images/hero/king-of-kings-collection-cover-image.jpg"
             alt=""
@@ -72,67 +75,22 @@ export default async function HomePage() {
             sizes="100vw"
             className="object-cover object-center"
           />
-
-          {/* Dark overlay — heavier at edges, lighter at centre so text pops */}
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-gradient-to-b from-bg/75 via-bg/55 to-bg/80"
-          />
-          {/* Left-edge fade for readability on wide screens */}
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-gradient-to-r from-bg/60 via-transparent to-bg/60"
-          />
-
-          {/* Grid texture (on top of image) */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--color-border)/0.12)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--color-border)/0.12)_1px,transparent_1px)] bg-[size:44px_44px]"
-          />
-
-          {/* Radial glow from bottom-left */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -bottom-32 -left-32 w-[600px] h-[600px] rounded-full bg-gold/5 blur-[120px]"
-          />
-
+          <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-bg/75 via-bg/55 to-bg/80" />
+          <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-bg/60 via-transparent to-bg/60" />
+          <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--color-border)/0.12)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--color-border)/0.12)_1px,transparent_1px)] bg-[size:44px_44px]" />
+          <div aria-hidden className="pointer-events-none absolute -bottom-32 -left-32 w-[600px] h-[600px] rounded-full bg-gold/5 blur-[120px]" />
           <Container className="relative z-10 flex flex-col items-center justify-center py-32 sm:py-40 gap-8 text-center">
-            {/* Location pill */}
             <div className="flex items-center gap-3">
               <span className="h-px w-6 bg-gold" aria-hidden="true" />
-              <p className="font-mono text-[10px] uppercase tracking-[0.55em] text-gold">
-                Waipahu, Hawaii · Est. 2026
-              </p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.55em] text-gold">Waipahu, Hawaii · Est. 2026</p>
               <span className="h-px w-6 bg-gold" aria-hidden="true" />
             </div>
-
-            {/* Main wordmark */}
-            <h1 className="font-display text-[clamp(4rem,16vw,10.5rem)] leading-none tracking-[0.06em] text-text">
-              {SITE.name}
-            </h1>
-
-            {/* Italic tagline */}
-            <p className="font-serif italic text-xl sm:text-2xl md:text-3xl text-muted max-w-lg leading-relaxed">
-              Reborn 1n Paradise
-            </p>
-
-            {/* CTAs */}
+            <h1 className="font-display text-[clamp(4rem,16vw,10.5rem)] leading-none tracking-[0.06em] text-text">{SITE.name}</h1>
+            <p className="font-serif italic text-xl sm:text-2xl md:text-3xl text-muted max-w-lg leading-relaxed">Reborn 1n Paradise</p>
             <div className="flex flex-wrap gap-4 justify-center mt-4">
-              <Link
-                href={ROUTES.shop}
-                className={buttonVariants({ size: "lg" })}
-              >
-                Shop the Drop
-              </Link>
-              <Link
-                href={ROUTES.category("tees")}
-                className={buttonVariants({ variant: "tertiary", size: "lg" })}
-              >
-                Browse Tees
-              </Link>
+              <Link href={ROUTES.shop} className={buttonVariants({ size: "lg" })}>Shop the Drop</Link>
+              <Link href={ROUTES.category("tees")} className={buttonVariants({ variant: "tertiary", size: "lg" })}>Browse Tees</Link>
             </div>
-
-            {/* Scroll hint */}
             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 animate-bounce opacity-40" aria-hidden="true">
               <div className="w-px h-8 bg-gold" />
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="size-4 text-gold">
@@ -141,6 +99,7 @@ export default async function HomePage() {
             </div>
           </Container>
         </section>
+        ── End old hero ─────────────────────────────────────────── */}
 
         {/* ══════════════════════════════════════════════════════════
             2. TICKER MARQUEE — thin band of brand identity
