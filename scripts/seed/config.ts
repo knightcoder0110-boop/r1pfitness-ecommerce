@@ -107,6 +107,13 @@ export const CATEGORY_TREE: CategoryDef[] = [
   // Accessories sub-categories
   { slug: "bags",        name: "Bags",        parent: "accessories", description: "Totes and duffel bags." },
   { slug: "socks",       name: "Socks",       parent: "accessories", description: "Athletic socks." },
+
+  // Tops — broader umbrella above tees (for filtering + faith collection)
+  { slug: "tops",        name: "Tops",        parent: "apparel",     description: "Tops — tees, tanks, and lightweight uppers." },
+
+  // Collections + sub-collections
+  { slug: "collections", name: "Collections", description: "Exclusive R1P Fitness themed collections." },
+  { slug: "faith",       name: "Faith",       parent: "collections", description: "Faith-inspired apparel — wear your beliefs." },
 ];
 
 // ── SKU category codes (short tokens for `R1P-{CAT}-{STYLE}-{COLOR}-{SIZE}`) ──

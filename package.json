@@ -18,6 +18,7 @@
     "seed:products:dry": "tsx scripts/seed-products.ts --mode=plan",
     "seed:verify": "tsx scripts/verify-seed.ts",
     "seed:verify:fix": "tsx scripts/verify-seed.ts --fix-variations",
+    "seed:faith": "tsx scripts/seed-faith-collection.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
