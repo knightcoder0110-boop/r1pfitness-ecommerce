@@ -49,7 +49,7 @@ export default function RootLayout({
     >
       {/* GTM noscript fallback — must be the first element inside <body> */}
       {gtmId && (
-        <body className="relative min-h-full flex flex-col z-10" suppressHydrationWarning>
+        <body className="relative min-h-full flex flex-col" suppressHydrationWarning>
           <noscript>
             <iframe
               src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
@@ -86,7 +86,7 @@ export default function RootLayout({
         </body>
       )}
       {!gtmId && (
-        <body className="relative min-h-full flex flex-col z-10" suppressHydrationWarning>
+        <body className="relative min-h-full flex flex-col" suppressHydrationWarning>
           {/* Site-wide JSON-LD — Organization + WebSite with SearchAction */}
           <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: orgLd }} />
           <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: webLd }} />
