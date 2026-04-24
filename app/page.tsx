@@ -15,7 +15,7 @@ import { Testimonials } from "@/components/marketing/testimonials";
 import { CommunityUgc } from "@/components/marketing/community-ugc";
 import { CampaignCountdown } from "@/components/campaign/campaign-countdown";
 import { HeroRebirth } from "@/components/marketing/hero-rebirth";
-import { FeaturedCollectionSection, FeaturedCollectionSectionSkeleton } from "@/components/sections";
+import { FeaturedCollectionSection, FeaturedCollectionSectionSkeleton, HomeCategoryScroller } from "@/components/sections";
 import { siteConfig } from "@/lib/siteConfig";
 import { ROUTES } from "@/lib/constants";
 import type { Product } from "@/lib/woo/types";
@@ -182,6 +182,53 @@ export default async function HomePage() {
             1. HERO — cinematic full-viewport opener
             ══════════════════════════════════════════════════════════ */}
         <HeroRebirth />
+
+        {/* ══════════════════════════════════════════════════════════
+            1.5 SHOP BY CATEGORY — horizontal scroll directly under hero
+            Hand-curated tiles (see HomeCategoryScroller). "Bottoms" maps
+            to /shop/bottoms which renders a curated joggers+shorts view
+            (see shop/[category]/page.tsx alias handling); "Mystery Boxes"
+            renders a graceful coming-soon state until the category is
+            created in Woo.
+            ══════════════════════════════════════════════════════════ */}
+        <HomeCategoryScroller
+          eyebrow="Shop by Category"
+          title="Find your fit"
+          description="Five pillars of the R1P wardrobe. Built in limited runs from Waipahu, HI."
+          tiles={[
+            {
+              label: "Tops",
+              href: ROUTES.category("tops"),
+              image: "/images/products/tees/black-tee-male-model-1.png",
+              tagline: "Tees · Hoodies",
+            },
+            {
+              label: "Bottoms",
+              href: ROUTES.category("bottoms"),
+              image: "/images/products/shorts/tee-camo-shorts.png",
+              tagline: "Joggers · Shorts",
+            },
+            {
+              label: "Accessories",
+              href: ROUTES.category("accessories"),
+              image: "/images/products/accessories/R1P_Crossbody_Bag.jpg",
+              tagline: "Bags · Socks",
+            },
+            {
+              label: "Hats",
+              href: ROUTES.category("headwear"),
+              image: "/images/products/hats/hawaii-cream (1).png",
+              tagline: "Caps · Beanies",
+            },
+            {
+              label: "Mystery Boxes",
+              href: ROUTES.category("mystery-boxes"),
+              image: "/images/products/gift-boxes/gift-boxes.png",
+              tagline: "Drop Zero",
+              note: "Coming soon",
+            },
+          ]}
+        />
 
         {/* ── Old hero (kept for reference) ─────────────────────────
         <section

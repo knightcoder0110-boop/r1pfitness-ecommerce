@@ -134,20 +134,22 @@ export function DesktopNav({ links }: DesktopNavProps) {
       </nav>
 
       {/* ══════════════════════════════════════════════════
-          Mega menu panel — fixed, full-width, below header
+          Mega menu panel — absolute, anchored to the sticky
+          header's bottom edge so it always sits directly
+          under the nav bar regardless of announcement-bar
+          height or scroll position.
           ══════════════════════════════════════════════════ */}
       <div
         onMouseEnter={cancelClose}
         onMouseLeave={scheduleClose}
         aria-hidden={!hasMegaOpen}
         className={cn(
-          "fixed left-0 right-0 z-50 hidden sm:block",
+          "absolute left-0 right-0 top-full z-50 hidden sm:block",
           "transition-[opacity,transform] duration-(--dur-slow) ease-out",
           hasMegaOpen
             ? "opacity-100 translate-y-0 pointer-events-auto"
             : "opacity-0 -translate-y-1 pointer-events-none",
         )}
-        style={{ top: "calc(var(--size-header) + 1px)" }}
       >
         <div
           className="border-b border-border-strong shadow-overlay"

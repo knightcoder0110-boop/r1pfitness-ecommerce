@@ -15,17 +15,26 @@ import { SearchButton } from "@/components/search/search-button";
  *
  * Items with `groups` get a mega-menu on desktop hover.
  */
+/**
+ * Nav items reflect the ACTUAL Woo categories that have products today:
+ *   tees (32) · tops (8) · headwear (7) · faith (7) · drops (13)
+ *   hoodies (1) · joggers (2) · shorts (2) · accessories (1) · bags (1)
+ *
+ * "Bottoms" in the mega menu points to /shop/joggers (closest Woo bucket
+ * until a dedicated `bottoms` parent category is created in WP).
+ * "Hats" maps to the Woo `headwear` slug.
+ */
 const NAV_LINKS: NavLinkItem[] = [
   {
-    label: "Shop",
+    label: "Shop All",
     href: ROUTES.shop,
     groups: [
       {
         title: "New",
         items: [
-          { label: "New Arrivals",  href: ROUTES.shop,                   description: "Latest releases"       },
-          { label: "Best Sellers",  href: ROUTES.shop,                   description: "Community favorites"   },
-          { label: "Limited Drops", href: ROUTES.shop,                   description: "While they last"       },
+          { label: "New Arrivals",  href: ROUTES.category("drops"),      description: "Latest releases"       },
+          { label: "Faith Collection", href: ROUTES.category("faith"),   description: "Faith over fear"       },
+          { label: "All Products",  href: ROUTES.shop,                   description: "Browse everything"     },
         ],
       },
       {
@@ -33,14 +42,15 @@ const NAV_LINKS: NavLinkItem[] = [
         items: [
           { label: "Tees",    href: ROUTES.category("tees"),    description: "Graphic & essentials" },
           { label: "Hoodies", href: ROUTES.category("hoodies"), description: "Heavyweight fleece"   },
-          { label: "Tanks",   href: ROUTES.category("tanks"),   description: "Training cuts"         },
+          { label: "All Tops",href: ROUTES.category("tops"),    description: "Full apparel line"    },
         ],
       },
       {
         title: "Bottoms & More",
         items: [
-          { label: "Bottoms",     href: ROUTES.category("bottoms"),     description: "Shorts & joggers"    },
-          { label: "Caps",        href: ROUTES.category("caps"),        description: "Structured fits"     },
+          { label: "Joggers",     href: ROUTES.category("joggers"),     description: "Everyday fleece"     },
+          { label: "Shorts",      href: ROUTES.category("shorts"),      description: "Training cuts"       },
+          { label: "Hats",        href: ROUTES.category("headwear"),    description: "Caps & beanies"      },
           { label: "Accessories", href: ROUTES.category("accessories"), description: "Bags, socks & more"  },
         ],
       },
@@ -56,8 +66,8 @@ const NAV_LINKS: NavLinkItem[] = [
   },
   { label: "Tees",        href: ROUTES.category("tees")        },
   { label: "Hoodies",     href: ROUTES.category("hoodies")     },
-  { label: "Bottoms",     href: ROUTES.category("bottoms")     },
-  { label: "Caps",        href: ROUTES.category("caps")        },
+  { label: "Hats",        href: ROUTES.category("headwear")    },
+  { label: "Faith",       href: ROUTES.category("faith")       },
   { label: "Accessories", href: ROUTES.category("accessories") },
 ];
 
@@ -72,7 +82,7 @@ export function SiteHeader() {
       <AnnouncementBar />
       <ScrollAwareHeader>
         <header
-          className="w-full border-b border-border bg-bg/85 backdrop-blur-lg shadow-soft"
+          className="relative w-full border-b border-border bg-bg/85 backdrop-blur-lg shadow-soft"
           style={{ height: "var(--size-header)" }}
         >
           <Container className="flex h-full items-center justify-between gap-4">

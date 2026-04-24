@@ -162,7 +162,9 @@ export function SizeGuideModal({ defaultTab = "Tees" }: SizeGuideModalProps) {
               aria-hidden
             />
 
-            {/* Modal panel */}
+            {/* Modal panel — centred via left/top + translate so it stays
+                in the viewport on narrow screens. Constrained height with
+                internal scroll so tall size tables don't bleed off screen. */}
             <motion.div
               key="panel"
               role="dialog"
@@ -172,11 +174,10 @@ export function SizeGuideModal({ defaultTab = "Tees" }: SizeGuideModalProps) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 16, scale: 0.97 }}
               transition={{ duration: 0.28, ease: "easeOut" }}
-              className="fixed inset-x-4 top-1/2 z-50 max-w-lg w-full mx-auto -translate-y-1/2 bg-[#141414] rounded-lg border border-border shadow-overlay overflow-hidden"
-              style={{ left: "50%", transform: "translateX(-50%) translateY(-50%)" }}
+              className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg max-h-[calc(100dvh-2rem)] -translate-x-1/2 -translate-y-1/2 bg-[#141414] rounded-lg border border-border shadow-overlay overflow-hidden flex flex-col"
             >
               {/* Header */}
-              <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border">
+              <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border shrink-0">
                 <div>
                   <p className="font-mono text-[9px] uppercase tracking-[0.4em] text-muted">
                     R1P FITNESS
@@ -196,7 +197,7 @@ export function SizeGuideModal({ defaultTab = "Tees" }: SizeGuideModalProps) {
               </div>
 
               {/* Tabs */}
-              <div className="flex border-b border-border">
+              <div className="flex border-b border-border shrink-0">
                 {TABS.map((tab) => (
                   <button
                     key={tab}
@@ -213,16 +214,19 @@ export function SizeGuideModal({ defaultTab = "Tees" }: SizeGuideModalProps) {
                 ))}
               </div>
 
-              {/* Table */}
-              <div className="px-4 py-4 overflow-x-auto">
-                <SizeTable tab={activeTab} />
-              </div>
+              {/* Scrollable body */}
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                {/* Table */}
+                <div className="px-4 py-4 overflow-x-auto">
+                  <SizeTable tab={activeTab} />
+                </div>
 
-              {/* Footer note */}
-              <p className="px-6 pb-5 font-serif italic text-sm text-muted/80 leading-relaxed">
-                All measurements in inches. For best fit, measure your body and
-                compare — not your garment. When between sizes, size up.
-              </p>
+                {/* Footer note */}
+                <p className="px-6 pb-5 font-serif italic text-sm text-muted/80 leading-relaxed">
+                  All measurements in inches. For best fit, measure your body and
+                  compare — not your garment. When between sizes, size up.
+                </p>
+              </div>
             </motion.div>
           </>
         )}

@@ -10,6 +10,48 @@ import { parsePage, parseSort, parseFilters } from "@/lib/shop";
 import { ROUTES, SITE } from "@/lib/constants";
 import { breadcrumbSchema, collectionPageSchema } from "@/lib/seo";
 import { getSiteUrl } from "@/lib/seo/site-url";
+import type { ProductCategory } from "@/lib/woo/types";
+
+/**
+ * Virtual (alias) categories — slugs the homepage links to that don't yet
+ * exist as real WooCommerce categories. We render a synthesized category
+ * page so these URLs never 404.
+ *
+ *  - `bottoms` → merges Woo categories `joggers` + `shorts` into one view.
+ *  - `mystery-boxes` → coming-soon state (no underlying products yet).
+ *
+ * Once these are created in Woo admin, delete the corresponding entry
+ * and the real category will take over automatically.
+ */
+const VIRTUAL_CATEGORIES: Record<
+  string,
+  {
+    category: ProductCategory;
+    /** Woo slugs to merge. Empty = empty state. */
+    sourceSlugs: string[];
+  }
+> = {
+  bottoms: {
+    category: {
+      id: "virtual-bottoms",
+      slug: "bottoms",
+      name: "Bottoms",
+      description: "Joggers and shorts engineered for training in the islands.",
+      count: 0,
+    },
+    sourceSlugs: ["joggers", "shorts"],
+  },
+  "mystery-boxes": {
+    category: {
+      id: "virtual-mystery-boxes",
+      slug: "mystery-boxes",
+      name: "Mystery Boxes",
+      description: "Curated surprise drops. Coming soon.",
+      count: 0,
+    },
+    sourceSlugs: [],
+  },
+};
 
 interface CategoryPageProps {
   params: Promise<{ category: string }>;
@@ -39,7 +81,8 @@ export async function generateMetadata(
   { params }: { params: Promise<{ category: string }> },
 ): Promise<Metadata> {
   const { category } = await params;
-  const match = await getCatalog().getCategoryBySlug(category);
+  const virtual = VIRTUAL_CATEGORIES[category];
+  const match = virtual?.category ?? (await getCatalog().getCategoryBySlug(category));
   if (!match) return { title: "Not Found" };
   const canonical = `/shop/${match.slug}`;
   const description =
@@ -64,20 +107,32 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const { category } = await params;
   const raw = await searchParams;
 
-  const match = await getCatalog().getCategoryBySlug(category);
+  const virtual = VIRTUAL_CATEGORIES[category];
+  const match = virtual?.category ?? (await getCatalog().getCategoryBySlug(category));
   if (!match) notFound();
 
   const filters = parseFilters(raw);
-  const { items, total, page, pageCount } = await getCatalog().listProducts({
-    category: match.slug,
-    sort: parseSort(raw.sort),
-    page: parsePage(raw.page),
-    sizes: filters.sizes.length > 0 ? filters.sizes : undefined,
-    colors: filters.colors.length > 0 ? filters.colors : undefined,
-    priceMin: filters.priceMin,
-    priceMax: filters.priceMax,
-    inStock: filters.inStock || undefined,
-  });
+
+  // Virtual categories pull from zero or more real Woo slugs.
+  // Empty sourceSlugs → coming-soon state (no listProducts call needed).
+  const listQuery = virtual
+    ? virtual.sourceSlugs.length > 0
+      ? { categories: virtual.sourceSlugs }
+      : null
+    : { category: match.slug };
+
+  const { items, total, page, pageCount } = listQuery
+    ? await getCatalog().listProducts({
+        ...listQuery,
+        sort: parseSort(raw.sort),
+        page: parsePage(raw.page),
+        sizes: filters.sizes.length > 0 ? filters.sizes : undefined,
+        colors: filters.colors.length > 0 ? filters.colors : undefined,
+        priceMin: filters.priceMin,
+        priceMax: filters.priceMax,
+        inStock: filters.inStock || undefined,
+      })
+    : { items: [], total: 0, page: 1, pageCount: 1 };
 
   const siteUrl = getSiteUrl();
   const categoryPath = ROUTES.category(match.slug);

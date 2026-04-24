@@ -127,12 +127,15 @@ export function ProductRail({
       {/* ── 4-column grid ────────────────────────────────────────────── */}
       <ProductGrid items={items} columns={4} />
 
-      {/* ── Mobile footer CTA (hidden on sm+) ───────────────────────── */}
+      {/* ── Mobile footer CTA (hidden on sm+) ───────────────────────
+          Full-width gold gradient button — matches the primary CTA
+          on <ProductSpotlight> so mobile users see one consistent
+          button language across the homepage. */}
       {viewAllHref && (
-        <div className="mt-10 flex justify-center sm:hidden">
+        <div className="mt-10 sm:hidden">
           <Link
             href={viewAllHref}
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+            className={buttonVariants({ variant: "primary", size: "lg", full: true })}
           >
             {mobileCta}
           </Link>
