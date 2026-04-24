@@ -245,14 +245,15 @@
    BASE
    ═══════════════════════════════════════════════════════════════════ */
 
-html, body {
+html,
+body {
   background: var(--color-bg);
   color: var(--color-text);
-}
-
-html {
   /* clip does NOT create a scroll container (unlike hidden), so
-     position: sticky on child elements continues to work correctly. */
+     position: sticky on child elements continues to work correctly.
+     Applied to both html AND body — html alone is insufficient because
+     absolutely-positioned children of body can still expand body's
+     scroll width and cause horizontal page shift on mobile. */
   overflow-x: clip;
 }
 
