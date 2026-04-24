@@ -78,14 +78,28 @@ export function createWooCatalog(): CatalogDataSource {
         query.priceMax !== undefined ||
         query.inStock;
 
-      const fetchPerPage = hasPostFilters ? Math.min(perPage * 4, 48) : perPage;
+      const fetchPerPage = hasPostFilters ? 100 : perPage;
 
-      // ── Resolve multi-value filters that require slug → id ──
-      // Woo's `category=<slug>` works for a SINGLE slug but multi-category
-      // filtering requires numeric IDs. Same story for tags.
+      // ── Resolve all category slugs → numeric IDs ──
+      // The Woo Store API `category` param accepts numeric IDs universally.
+      // Slug support exists on Woo 7.x+ but is silently ignored on older
+      // installs — passing a non-numeric value causes the filter to be skipped
+      // and ALL products are returned. We always resolve to IDs so filtering
+      // is reliable regardless of WooCommerce version.
+      //
+      // Both the single `query.category` and the plural `query.categories[]`
+      // paths now go through ID resolution. Results are de-duped and merged.
+      const slugsToResolve: string[] = [
+        ...(query.category ? [query.category] : []),
+        ...(query.categories ?? []),
+      ];
+      const resolvedCategories =
+        slugsToResolve.length > 0
+          ? await listStoreCategoriesBySlugs(slugsToResolve)
+          : [];
       const categoryIds =
-        query.categories && query.categories.length > 0
-          ? (await listStoreCategoriesBySlugs(query.categories)).map((c) => c.id)
+        resolvedCategories.length > 0
+          ? resolvedCategories.map((c) => c.id)
           : undefined;
 
       const tagIds =
@@ -119,7 +133,6 @@ export function createWooCatalog(): CatalogDataSource {
       }
 
       const res = await listStoreProducts({
-        categorySlug: query.category,
         categoryIds,
         includeIds: query.ids,
         tagSlug: query.tag,

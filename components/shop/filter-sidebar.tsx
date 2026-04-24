@@ -153,6 +153,7 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
       price_min: null,
       price_max: null,
       in_stock: null,
+      q: null,
     });
   }
 

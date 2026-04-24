@@ -165,7 +165,7 @@ function parsePositiveInt(input: string | null, fallback: number): number {
 
 function clampPerPage(n: number | undefined): number {
   if (!n || n <= 0) return 12;
-  if (n > 48) return 48;
+  if (n > 100) return 100; // Woo's hard cap
   return Math.floor(n);
 }
 
@@ -341,43 +341,43 @@ export async function listStoreCategories(): Promise<ProductCategory[]> {
 
 export async function getStoreCategoryBySlug(slug: string): Promise<ProductCategory | null> {
   if (!slug) return null;
-  const { data } = await storeFetchWithHeaders<RawStoreCategory[]>("/products/categories", {
-    searchParams: { slug, per_page: 1 },
-    tags: [WOO_TAGS.category(slug)],
-  });
-  const raw = data[0];
-  if (!raw) return null;
-  return mapCategory(raw);
+  // NOTE: The Woo Store API's `/products/categories?slug=` filter is silently
+  // ignored on many installs (it returns ALL categories regardless of the
+  // slug param). We therefore fetch the full list (already cached + tagged
+  // via `listStoreCategories`) and filter in-memory. Cheap — there are
+  // typically <50 categories per store.
+  const all = await listStoreCategories();
+  return all.find((c) => c.slug === slug) ?? null;
 }
 
 /**
- * Resolve one or more category slugs into their numeric IDs (Woo's
- * `/products?category=` param requires IDs when you want to OR multiple
- * categories — a single slug works on its own).
+ * Resolve one or more category slugs into their numeric IDs.
  *
- * Returns in the order Woo responds in (not necessarily the input order).
- * Unknown slugs are silently dropped.
+ * The Woo Store API's `/products/categories?slug=` filter is unreliable
+ * (silently ignored on many installs), so we fetch the full cached list
+ * and filter in-memory. Order is preserved from the input `slugs` array;
+ * unknown slugs are silently dropped.
  */
 export async function listStoreCategoriesBySlugs(
   slugs: string[],
 ): Promise<ProductCategory[]> {
   if (slugs.length === 0) return [];
-  const { data } = await storeFetchWithHeaders<RawStoreCategory[]>(
-    "/products/categories",
-    {
-      searchParams: {
-        slug: slugs.join(","),
-        per_page: Math.min(100, Math.max(slugs.length, 10)),
-      },
-      tags: [WOO_TAGS.categories, ...slugs.map((s) => WOO_TAGS.category(s))],
-    },
-  );
-  return data.map(mapCategory);
+  const all = await listStoreCategories();
+  const bySlug = new Map(all.map((c) => [c.slug, c]));
+  const out: ProductCategory[] = [];
+  for (const slug of slugs) {
+    const match = bySlug.get(slug);
+    if (match) out.push(match);
+  }
+  return out;
 }
 
 /**
  * Resolve one or more product-tag slugs into their numeric IDs. Used when
  * filtering `/products?tag=` by multiple tags.
+ *
+ * The Store API's `/products/tags?slug=` filter has the same reliability
+ * issues as categories — we fetch once and filter locally.
  */
 export async function listStoreTagIdsBySlugs(
   slugs: string[],
@@ -386,14 +386,12 @@ export async function listStoreTagIdsBySlugs(
   const { data } = await storeFetchWithHeaders<Array<{ id: number; slug: string }>>(
     "/products/tags",
     {
-      searchParams: {
-        slug: slugs.join(","),
-        per_page: Math.min(100, Math.max(slugs.length, 10)),
-      },
+      searchParams: { per_page: 100 },
       tags: [WOO_TAGS.products],
     },
   );
-  return data.map((t) => String(t.id));
+  const wanted = new Set(slugs);
+  return data.filter((t) => wanted.has(t.slug)).map((t) => String(t.id));
 }
 
 // storeFetch is re-exported for downstream modules (cart, checkout) that need

@@ -12,6 +12,10 @@ const LOCK_BYPASS_PREFIXES = [
   "/locked",
   "/api/site-unlock",
   "/api/auth",
+  // Image proxy must bypass the lock — otherwise Next.js's image optimizer
+  // follows the redirect to /locked, receives HTML, and logs
+  // "The requested resource isn't a valid image ... received null".
+  "/api/image-proxy",
 ];
 
 function isBypassPath(pathname: string): boolean {

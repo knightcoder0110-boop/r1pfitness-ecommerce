@@ -19,6 +19,7 @@ import { FeaturedCollectionSection, FeaturedCollectionSectionSkeleton } from "@/
 import { siteConfig } from "@/lib/siteConfig";
 import { ROUTES } from "@/lib/constants";
 import type { Product } from "@/lib/woo/types";
+import type { ProductSummary } from "@/lib/woo/types";
 
 /* ── Spotlight slugs ─────────────────────────────────────────────────────── */
 const SPOTLIGHT_SLUG        = "saved-by-jesus-oversized-vintage-tee";
@@ -160,8 +161,8 @@ export default async function HomePage() {
 
   const [{ items: gridProducts }, { items: bestSellers }, liveSpotlight, liveDarkRomance] =
     await Promise.all([
-      catalog.listProducts({ sort: "featured", pageSize: 4 }),
-      catalog.listProducts({ sort: "newest", pageSize: 4 }),
+      catalog.listProducts({ sort: "featured", pageSize: 4 }).catch(() => ({ items: [] as ProductSummary[] })),
+      catalog.listProducts({ sort: "newest", pageSize: 4 }).catch(() => ({ items: [] as ProductSummary[] })),
       catalog.getProductBySlug(SPOTLIGHT_SLUG).catch(() => null),
       catalog.getProductBySlug(DARK_ROMANCE_SLUG).catch(() => null),
     ]);

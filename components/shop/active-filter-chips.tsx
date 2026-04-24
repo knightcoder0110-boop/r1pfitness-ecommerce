@@ -35,6 +35,7 @@ export function ActiveFilterChips({ className }: { className?: string }) {
       price_min: null,
       price_max: null,
       in_stock: null,
+      q: null,
     });
   }
 

@@ -25,8 +25,14 @@ interface CategoryPageProps {
 }
 
 export async function generateStaticParams() {
-  const categories = await getCatalog().listCategories();
-  return categories.map((c) => ({ category: c.slug }));
+  try {
+    const categories = await getCatalog().listCategories();
+    return categories.map((c) => ({ category: c.slug }));
+  } catch {
+    // If Woo is unreachable at build time, skip pre-generation.
+    // Pages are still rendered on-demand via dynamicParams = true (the default).
+    return [];
+  }
 }
 
 export async function generateMetadata(
@@ -114,7 +120,7 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         className="mb-8 sm:mb-10"
       />
 
-      <ShopToolbar activeSlug={match.slug} />
+      <ShopToolbar activeSlug={match.slug} currentSort={raw.sort} />
 
       {/* Main content: sidebar + grid */}
       <div className="mt-8 flex flex-col gap-6 lg:flex-row lg:gap-10">

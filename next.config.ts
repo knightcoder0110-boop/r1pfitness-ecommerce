@@ -21,6 +21,14 @@ const nextConfig: NextConfig = {
     // Cache images for 30 days on the Next.js image proxy.
     // Without this every unique URL re-fetches from Hostinger on expiry.
     minimumCacheTTL: 2592000,
+    // Next.js 15+ restricts local <Image> src paths when localPatterns is
+    // defined. Omitting `search` from a pattern means "match any query
+    // string" (including none). `/**` covers all public/ assets, and the
+    // explicit proxy entry ensures /api/image-proxy?url=... is accepted.
+    localPatterns: [
+      { pathname: "/api/image-proxy" },
+      { pathname: "/**" },
+    ],
     remotePatterns: [
       // Active WooCommerce install (read from WOO_BASE_URL at build time).
       ...(wooHostname

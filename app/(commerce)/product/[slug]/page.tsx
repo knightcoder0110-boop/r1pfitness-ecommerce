@@ -19,8 +19,14 @@ interface ProductPageProps {
 }
 
 export async function generateStaticParams() {
-  const { items } = await getCatalog().listProducts({ pageSize: 100 });
-  return items.map((p) => ({ slug: p.slug }));
+  try {
+    const { items } = await getCatalog().listProducts({ pageSize: 100 });
+    return items.map((p) => ({ slug: p.slug }));
+  } catch {
+    // If Woo is unreachable at build time, skip pre-generation.
+    // Pages are still rendered on-demand via dynamicParams = true (the default).
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {

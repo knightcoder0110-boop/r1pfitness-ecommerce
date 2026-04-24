@@ -119,12 +119,12 @@ describe("listStoreProducts", () => {
     expect(result.totalPages).toBe(1);
   });
 
-  it("clamps perPage to the 1..48 window", async () => {
+  it("clamps perPage to the 1..100 window", async () => {
     const { listStoreProducts } = await import("./products");
     const { calls } = captureFetchMock([jsonResponse([], { "x-wp-total": "0" })]);
 
     await listStoreProducts({ perPage: 500 });
-    expect(new URL(calls[0]!.url).searchParams.get("per_page")).toBe("48");
+    expect(new URL(calls[0]!.url).searchParams.get("per_page")).toBe("100");
   });
 
   it("throws WooError with WOO_UNREACHABLE when base URL is missing", async () => {

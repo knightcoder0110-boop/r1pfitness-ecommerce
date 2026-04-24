@@ -10,6 +10,7 @@ import type {
   ProductVariation,
   StockStatus,
 } from "./types";
+import { proxyWooImageUrl } from "./image-proxy";
 
 /**
  * Raw shapes from the WooCommerce Store API (`/wp-json/wc/store/v1`).
@@ -144,14 +145,27 @@ function mapImage(raw: RawStoreImage | undefined): ImageRef | undefined {
   if (!raw) return undefined;
   return {
     id: String(raw.id),
-    url: raw.src,
+    // Proxy Cloudways-hosted URLs through our local API route so Next.js image
+    // optimisation never sees the NAT64 address that the Cloudways host resolves
+    // to. For all other URLs (fixtures, CDNs, etc.) the URL is returned as-is.
+    url: proxyWooImageUrl(raw.src),
     alt: raw.alt ?? raw.name ?? "",
   };
 }
 
 function mapImages(raw: RawStoreImage[] | undefined): ImageRef[] {
   if (!raw) return [];
+  // WooCommerce sometimes returns the same image attachment more than once in
+  // the `images` array (e.g. when a product's gallery image was set as the
+  // featured image too). Deduplicate by numeric ID so React never sees two
+  // children with the same `key`.
+  const seen = new Set<number>();
   return raw
+    .filter((img) => {
+      if (seen.has(img.id)) return false;
+      seen.add(img.id);
+      return true;
+    })
     .map((img) => mapImage(img))
     .filter((img): img is ImageRef => img !== undefined);
 }

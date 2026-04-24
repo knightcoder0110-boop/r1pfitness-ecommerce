@@ -106,7 +106,8 @@ function ShopSkeleton() {
 
 export default async function ShopPage(props: ShopPageProps) {
   // Resolving here so <Suspense key> remounts on param change.
-  const suspenseKey = JSON.stringify(await props.searchParams);
+  const searchParams = await props.searchParams;
+  const suspenseKey = JSON.stringify(searchParams);
 
   return (
     <Container as="main" className="py-8 sm:py-10">
@@ -118,7 +119,7 @@ export default async function ShopPage(props: ShopPageProps) {
         className="mb-8 sm:mb-10"
       />
 
-      <ShopToolbar activeSlug={null} showSearch />
+      <ShopToolbar activeSlug={null} currentSort={searchParams.sort} showSearch />
 
       {/* Main content: sidebar (desktop) + product grid */}
       <div className="mt-8 flex flex-col gap-6 lg:flex-row lg:gap-10">
@@ -134,7 +135,7 @@ export default async function ShopPage(props: ShopPageProps) {
           <ActiveFilterChips className="mb-5" />
 
           <Suspense key={suspenseKey} fallback={<ShopSkeleton />}>
-            <ShopProducts {...props} />
+            <ShopProducts searchParams={props.searchParams} />
           </Suspense>
         </div>
       </div>

@@ -1,5 +1,5 @@
-import "server-only";
-
+// NOTE: intentionally no "server-only" — getSiteUrl() reads only a NEXT_PUBLIC_
+// env var which is safe to call from both server and client components.
 import { env } from "@/lib/env";
 
 export function getSiteUrl(): string {
