@@ -9,3 +9,9 @@ export type {
   FeaturedCollectionSectionProps,
   FeaturedCollectionSource,
 } from "./featured-collection";
+
+export {
+  CategoryCardSkeleton,
+  ShopByCategorySectionSkeleton,
+  FeaturedCollectionSectionSkeleton,
+} from "./skeletons";

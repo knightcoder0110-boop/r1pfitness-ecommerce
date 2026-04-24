@@ -1,5 +1,5 @@
 import { SITE } from "@/lib/constants";
-import type { Product } from "@/lib/woo/types";
+import type { Product, ProductCategory, ProductSummary } from "@/lib/woo/types";
 
 /**
  * JSON-LD helpers. Return a plain object — call site embeds via:
@@ -93,6 +93,57 @@ export function productSchema(product: Product, productUrl: string) {
       price: (product.price.amount / 100).toFixed(2),
       availability,
       itemCondition: "https://schema.org/NewCondition",
+    },
+  };
+}
+
+/**
+ * Schema.org CollectionPage + embedded ItemList for a category page.
+ *
+ * Google uses the ItemList to surface category pages as collection rich
+ * results. We keep offers inline (price + availability) so the listing can
+ * qualify for `product` snippets without a second crawl.
+ */
+export function collectionPageSchema(
+  category: ProductCategory,
+  items: ProductSummary[],
+  categoryUrl: string,
+  siteUrl: string,
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": `${categoryUrl}#collection`,
+    url: categoryUrl,
+    name: category.name,
+    description:
+      category.description ||
+      `${category.name} from ${SITE.legalName} — limited runs, heavyweight fabric, made in ${SITE.address.city}, ${SITE.address.region}.`,
+    ...(category.image?.url ? { image: category.image.url } : {}),
+    isPartOf: { "@id": `${siteUrl}#website` },
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: items.length,
+      itemListElement: items.map((p, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        item: {
+          "@type": "Product",
+          name: p.name,
+          url: `${siteUrl}/product/${p.slug}`,
+          ...(p.image?.url ? { image: p.image.url } : {}),
+          sku: p.id,
+          offers: {
+            "@type": "Offer",
+            priceCurrency: p.price.currency,
+            price: (p.price.amount / 100).toFixed(2),
+            availability:
+              p.stockStatus === "out_of_stock"
+                ? "https://schema.org/OutOfStock"
+                : "https://schema.org/InStock",
+          },
+        },
+      })),
     },
   };
 }

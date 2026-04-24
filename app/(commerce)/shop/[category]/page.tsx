@@ -7,6 +7,9 @@ import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
 import { getCatalog } from "@/lib/catalog";
 import { parsePage, parseSort, parseFilters } from "@/lib/shop";
+import { ROUTES, SITE } from "@/lib/constants";
+import { breadcrumbSchema, collectionPageSchema } from "@/lib/seo";
+import { getSiteUrl } from "@/lib/seo/site-url";
 
 interface CategoryPageProps {
   params: Promise<{ category: string }>;
@@ -33,14 +36,21 @@ export async function generateMetadata(
   const match = await getCatalog().getCategoryBySlug(category);
   if (!match) return { title: "Not Found" };
   const canonical = `/shop/${match.slug}`;
+  const description =
+    match.description ||
+    `${match.name} from ${SITE.legalName} — limited runs, heavyweight fabric, made in ${SITE.address.city}, ${SITE.address.region}.`;
+  const ogImage = match.image?.url;
   return {
     title: match.name,
-    description: `${match.name} from R1P FITNESS - limited runs, heavyweight fabric, made in Waipahu, HI.`,
+    description,
     alternates: { canonical },
     openGraph: {
-      title: `${match.name} - R1P FITNESS`,
+      title: `${match.name} — ${SITE.name}`,
+      description,
       url: canonical,
+      ...(ogImage ? { images: [ogImage] } : {}),
     },
+    ...(ogImage ? { twitter: { card: "summary_large_image", images: [ogImage] } } : {}),
   };
 }
 
@@ -63,15 +73,39 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
     inStock: filters.inStock || undefined,
   });
 
+  const siteUrl = getSiteUrl();
+  const categoryPath = ROUTES.category(match.slug);
+  const categoryUrl = `${siteUrl}${categoryPath}`;
+
+  const breadcrumbItems = [
+    { label: "Shop", href: ROUTES.shop },
+    { label: match.name },
+  ];
+
+  const collectionLd = JSON.stringify(
+    collectionPageSchema(match, items, categoryUrl, siteUrl),
+  );
+  const breadcrumbLd = JSON.stringify(
+    breadcrumbSchema(
+      breadcrumbItems.map((item) => ({
+        name: item.label,
+        url: item.href ? `${siteUrl}${item.href}` : undefined,
+      })),
+    ),
+  );
+
   return (
     <Container as="main" className="py-8 sm:py-10">
-      <Breadcrumbs
-        items={[
-          { label: "Shop", href: "/shop" },
-          { label: match.name },
-        ]}
-        className="mb-6"
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: collectionLd }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: breadcrumbLd }}
+      />
+
+      <Breadcrumbs items={breadcrumbItems} className="mb-6" />
 
       <PageHeader
         eyebrow="Category"

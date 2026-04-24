@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
 import { getCatalog } from "@/lib/catalog";
 import { ProductRail } from "@/components/product/product-rail";
 import { CartDrawer } from "@/components/cart/cart-drawer";
@@ -14,7 +15,7 @@ import { Testimonials } from "@/components/marketing/testimonials";
 import { CommunityUgc } from "@/components/marketing/community-ugc";
 import { CampaignCountdown } from "@/components/campaign/campaign-countdown";
 import { HeroRebirth } from "@/components/marketing/hero-rebirth";
-import { FeaturedCollectionSection } from "@/components/sections";
+import { FeaturedCollectionSection, FeaturedCollectionSectionSkeleton } from "@/components/sections";
 import { siteConfig } from "@/lib/siteConfig";
 import { ROUTES } from "@/lib/constants";
 import type { Product } from "@/lib/woo/types";
@@ -264,15 +265,17 @@ export default async function HomePage() {
             5. FEATURED COLLECTION — faith collection products
             (Renders null automatically if the category is empty.)
             ══════════════════════════════════════════════════════════ */}
-        <FeaturedCollectionSection
-          source={{ kind: "category", slug: "faith" }}
-          eyebrow="New Faith Collection"
-          title="FAITH OVER FEAR"
-          subtitle="Four pieces. One message. Built for those who carry their faith into every rep."
-          productCount={4}
-          viewAllHref={ROUTES.category("faith")}
-          viewAllLabel="Shop Faith Collection"
-        />
+        <Suspense fallback={<FeaturedCollectionSectionSkeleton productCount={4} />}>
+          <FeaturedCollectionSection
+            source={{ kind: "category", slug: "faith" }}
+            eyebrow="New Faith Collection"
+            title="FAITH OVER FEAR"
+            subtitle="Four pieces. One message. Built for those who carry their faith into every rep."
+            productCount={4}
+            viewAllHref={ROUTES.category("faith")}
+            viewAllLabel="Shop Faith Collection"
+          />
+        </Suspense>
 
         {/* ══════════════════════════════════════════════════════════
             6. STATEMENT MARQUEE #1 — energise before product grid

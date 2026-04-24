@@ -4,5 +4,6 @@ export {
   websiteSchema,
   productSchema,
   breadcrumbSchema,
+  collectionPageSchema,
   type BreadcrumbSchemaItem,
 } from "./jsonld";
