@@ -49,16 +49,68 @@ export function createWooCatalog(): CatalogDataSource {
       const perPage = query.pageSize && query.pageSize > 0 ? query.pageSize : DEFAULT_PAGE_SIZE;
       const page = query.page && query.page > 0 ? query.page : 1;
 
+      // Attribute filters are not directly supported by the Woo Store API's
+      // /products endpoint. When filters are active we fetch a larger batch
+      // and apply them in-process. Once Meilisearch is provisioned (Sprint 4),
+      // filtered queries will bypass this adapter entirely.
+      const hasFilters =
+        (query.sizes && query.sizes.length > 0) ||
+        (query.colors && query.colors.length > 0) ||
+        query.priceMin !== undefined ||
+        query.priceMax !== undefined ||
+        query.inStock;
+
+      const fetchPerPage = hasFilters ? Math.min(perPage * 4, 48) : perPage;
+
       const res = await listStoreProducts({
         categorySlug: query.category,
         search: query.search,
-        page,
-        perPage,
+        page: hasFilters ? 1 : page,
+        perPage: fetchPerPage,
         orderby,
         order,
       });
 
-      const items: ProductSummary[] = res.items;
+      let items: ProductSummary[] = res.items;
+
+      if (hasFilters) {
+        if (query.sizes && query.sizes.length > 0) {
+          const sizeSet = new Set(query.sizes.map((s) => s.toLowerCase()));
+          items = items.filter((p) =>
+            p.sizeOptions?.some((s) => sizeSet.has(s.toLowerCase())),
+          );
+        }
+        if (query.colors && query.colors.length > 0) {
+          const colorSet = new Set(query.colors.map((c) => c.toLowerCase()));
+          items = items.filter((p) =>
+            p.colorOptions?.some((c) => colorSet.has(c.toLowerCase())),
+          );
+        }
+        if (query.priceMin !== undefined) {
+          items = items.filter((p) => p.price.amount >= query.priceMin!);
+        }
+        if (query.priceMax !== undefined) {
+          items = items.filter((p) => p.price.amount <= query.priceMax!);
+        }
+        if (query.inStock) {
+          items = items.filter(
+            (p) => p.stockStatus === "in_stock" || p.stockStatus === "low_stock",
+          );
+        }
+
+        // Re-paginate the filtered result.
+        const total = items.length;
+        const pageCount = Math.max(1, Math.ceil(total / perPage));
+        const safePage = Math.min(Math.max(1, page), pageCount);
+        const start = (safePage - 1) * perPage;
+        return {
+          items: items.slice(start, start + perPage),
+          total,
+          page: safePage,
+          pageCount,
+        };
+      }
+
       return {
         items,
         total: res.total,

@@ -38,6 +38,7 @@ export const env = createEnv({
     // Meilisearch (Phase 3)
     MEILI_HOST: z.string().url().optional(),
     MEILI_MASTER_KEY: z.string().min(1).optional(),
+    MEILI_SEARCH_KEY: z.string().min(1).optional(),
 
     // Auth (Phase 4)
     NEXTAUTH_SECRET: z.string().min(16).optional(),
@@ -75,6 +76,7 @@ export const env = createEnv({
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     MEILI_HOST: process.env.MEILI_HOST,
     MEILI_MASTER_KEY: process.env.MEILI_MASTER_KEY,
+    MEILI_SEARCH_KEY: process.env.MEILI_SEARCH_KEY,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     WP_BASE_URL: process.env.WP_BASE_URL,
     SUPPORT_EMAIL: process.env.SUPPORT_EMAIL,

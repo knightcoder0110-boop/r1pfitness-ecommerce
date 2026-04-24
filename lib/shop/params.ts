@@ -85,3 +85,66 @@ function flattenRecord(
   }
   return out;
 }
+
+// ── Filter param helpers (Sprint 4) ───────────────────────────────────────
+
+export interface ShopFilters {
+  sizes: string[];
+  colors: string[];
+  priceMin: number | undefined;
+  priceMax: number | undefined;
+  inStock: boolean;
+}
+
+export const EMPTY_FILTERS: ShopFilters = {
+  sizes: [],
+  colors: [],
+  priceMin: undefined,
+  priceMax: undefined,
+  inStock: false,
+};
+
+/**
+ * Parse all filter-related search params from the URL into a typed object.
+ * Rejects any obviously invalid values — callers get safe defaults.
+ */
+export function parseFilters(
+  raw: URLSearchParams | Record<string, string | string[] | undefined>,
+): ShopFilters {
+  const p =
+    raw instanceof URLSearchParams
+      ? raw
+      : new URLSearchParams(flattenRecord(raw));
+
+  const sizes = (p.get("sizes") ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const colors = (p.get("colors") ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const priceMinRaw = Number(p.get("price_min") ?? "");
+  const priceMaxRaw = Number(p.get("price_max") ?? "");
+
+  return {
+    sizes,
+    colors,
+    priceMin: Number.isFinite(priceMinRaw) && priceMinRaw > 0 ? priceMinRaw : undefined,
+    priceMax: Number.isFinite(priceMaxRaw) && priceMaxRaw > 0 ? priceMaxRaw : undefined,
+    inStock: p.get("in_stock") === "1",
+  };
+}
+
+/** Count how many distinct filters are active. */
+export function countActiveFilters(f: ShopFilters): number {
+  return (
+    f.sizes.length +
+    f.colors.length +
+    (f.priceMin !== undefined ? 1 : 0) +
+    (f.priceMax !== undefined ? 1 : 0) +
+    (f.inStock ? 1 : 0)
+  );
+}

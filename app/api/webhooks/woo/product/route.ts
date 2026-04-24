@@ -2,6 +2,11 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { revalidateTag } from "next/cache";
 import { WOO_TAGS } from "@/lib/woo/products";
+import {
+  isMeiliConfigured,
+  deleteProductFromMeili,
+  upsertProductInMeili,
+} from "@/lib/search/meilisearch";
 
 /**
  * WooCommerce product webhook.
@@ -28,6 +33,7 @@ export const dynamic = "force-dynamic";
 interface WooWebhookPayload {
   id?: number;
   slug?: string;
+  status?: string; // "publish", "trash", "draft" etc.
   // Plus many more fields we don't need for revalidation.
 }
 
@@ -95,6 +101,32 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     } catch {
       // revalidateTag throws outside a request scope in rare cases; ignore
       // so a single bad tag doesn't fail the whole webhook.
+    }
+  }
+
+  // ── Meilisearch sync ────────────────────────────────────────────────────
+  // When Meili is configured, keep the search index in sync with Woo.
+  // Fire-and-forget — don't let Meili errors fail the webhook response.
+  if (isMeiliConfigured() && typeof payload.id === "number") {
+    const topic = req.headers.get("x-wc-webhook-topic") ?? "";
+    const productId = String(payload.id);
+
+    if (topic === "product.deleted" || payload.status === "trash") {
+      deleteProductFromMeili(productId).catch((err) => {
+        console.error(`[woo-product-webhook] Meili delete failed for ${productId}:`, err);
+      });
+    } else if (typeof payload.slug === "string" && payload.slug) {
+      // Fetch the full product from Woo to get all attributes before indexing.
+      // Dynamic import keeps the woo adapter (server-only) out of the static
+      // build graph for non-Woo environments.
+      import("@/lib/woo/products")
+        .then(({ getStoreProductBySlug }) => getStoreProductBySlug(payload.slug!))
+        .then((product) => {
+          if (product) return upsertProductInMeili(product);
+        })
+        .catch((err) => {
+          console.error(`[woo-product-webhook] Meili upsert failed for ${payload.slug}:`, err);
+        });
     }
   }
 

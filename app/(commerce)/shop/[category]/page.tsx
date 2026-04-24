@@ -1,16 +1,24 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductGrid } from "@/components/product";
-import { Pagination, ShopToolbar } from "@/components/shop";
+import { ActiveFilterChips, FilterSidebar, Pagination, ShopToolbar } from "@/components/shop";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
 import { getCatalog } from "@/lib/catalog";
-import { parsePage, parseSort } from "@/lib/shop";
+import { parsePage, parseSort, parseFilters } from "@/lib/shop";
 
 interface CategoryPageProps {
   params: Promise<{ category: string }>;
-  searchParams: Promise<{ sort?: string; page?: string }>;
+  searchParams: Promise<{
+    sort?: string;
+    page?: string;
+    sizes?: string;
+    colors?: string;
+    price_min?: string;
+    price_max?: string;
+    in_stock?: string;
+  }>;
 }
 
 export async function generateStaticParams() {
@@ -43,10 +51,16 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const match = await getCatalog().getCategoryBySlug(category);
   if (!match) notFound();
 
+  const filters = parseFilters(raw);
   const { items, total, page, pageCount } = await getCatalog().listProducts({
     category: match.slug,
     sort: parseSort(raw.sort),
     page: parsePage(raw.page),
+    sizes: filters.sizes.length > 0 ? filters.sizes : undefined,
+    colors: filters.colors.length > 0 ? filters.colors : undefined,
+    priceMin: filters.priceMin,
+    priceMax: filters.priceMax,
+    inStock: filters.inStock || undefined,
   });
 
   return (
@@ -66,31 +80,36 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         className="mb-8 sm:mb-10"
       />
 
-      <div className="flex flex-col gap-4">
-        <ShopToolbar activeSlug={match.slug} />
-      </div>
+      <ShopToolbar activeSlug={match.slug} />
 
-      <div className="mt-8">
-        {items.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 border border-dashed border-border py-16 text-center">
-            <p className="font-display text-2xl tracking-wider text-muted">
-              Nothing here yet
-            </p>
-            <p className="max-w-md font-mono text-xs uppercase tracking-[0.2em] text-subtle">
-              This category is between drops. Check the full shop.
-            </p>
-          </div>
-        ) : (
-          <>
-            <ProductGrid items={items} />
-            <Pagination
-              page={page}
-              pageCount={pageCount}
-              basePath={`/shop/${match.slug}`}
-              searchParams={raw}
-            />
-          </>
-        )}
+      {/* Main content: sidebar + grid */}
+      <div className="mt-8 flex flex-col gap-6 lg:flex-row lg:gap-10">
+        <FilterSidebar />
+
+        <div className="flex-1 min-w-0">
+          <ActiveFilterChips className="mb-5" />
+
+          {items.length === 0 ? (
+            <div className="flex flex-col items-center gap-4 border border-dashed border-border py-16 text-center">
+              <p className="font-display text-2xl tracking-wider text-muted">
+                Nothing here yet
+              </p>
+              <p className="max-w-md font-mono text-xs uppercase tracking-[0.2em] text-subtle">
+                This category is between drops. Check the full shop.
+              </p>
+            </div>
+          ) : (
+            <>
+              <ProductGrid items={items} />
+              <Pagination
+                page={page}
+                pageCount={pageCount}
+                basePath={`/shop/${match.slug}`}
+                searchParams={raw}
+              />
+            </>
+          )}
+        </div>
       </div>
     </Container>
   );

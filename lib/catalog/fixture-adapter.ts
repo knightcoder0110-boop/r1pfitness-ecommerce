@@ -48,6 +48,11 @@ export function createFixtureCatalog(): CatalogDataSource {
         sort = "featured",
         page = 1,
         pageSize = DEFAULT_PAGE_SIZE,
+        sizes,
+        colors,
+        priceMin,
+        priceMax,
+        inStock,
       } = query;
 
       let items = getAllProducts();
@@ -63,6 +68,34 @@ export function createFixtureCatalog(): CatalogDataSource {
             p.name.toLowerCase().includes(needle) ||
             p.tags.some((t) => t.toLowerCase().includes(needle)),
         );
+      }
+
+      if (sizes && sizes.length > 0) {
+        const sizeSet = new Set(sizes.map((s) => s.toLowerCase()));
+        items = items.filter((p) => {
+          const attr = p.attributes.find((a) => a.id === "pa_size");
+          return attr?.options.some((o) => sizeSet.has(o.toLowerCase()));
+        });
+      }
+
+      if (colors && colors.length > 0) {
+        const colorSet = new Set(colors.map((c) => c.toLowerCase()));
+        items = items.filter((p) => {
+          const attr = p.attributes.find((a) => a.id === "pa_color");
+          return attr?.options.some((o) => colorSet.has(o.toLowerCase()));
+        });
+      }
+
+      if (priceMin !== undefined) {
+        items = items.filter((p) => p.price.amount >= priceMin);
+      }
+
+      if (priceMax !== undefined) {
+        items = items.filter((p) => p.price.amount <= priceMax);
+      }
+
+      if (inStock) {
+        items = items.filter((p) => p.stockStatus === "in_stock" || p.stockStatus === "low_stock");
       }
 
       const summaries = sortSummaries(items.map(toSummary), sort);

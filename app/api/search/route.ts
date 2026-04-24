@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getCatalog } from "@/lib/catalog";
 import { ok, fail } from "@/lib/api/response";
 import { checkRateLimit } from "@/lib/api/ratelimit";
+import { isMeiliConfigured, getMeiliSearch, MEILI_INDEX, meiliDocumentToSummary } from "@/lib/search/meilisearch";
+import type { MeiliProduct } from "@/lib/search/meilisearch";
 
 /**
  * GET /api/search?q=<term>&limit=<n>
@@ -10,11 +12,12 @@ import { checkRateLimit } from "@/lib/api/ratelimit";
  * Returns the standard {ok, data} BFF envelope with up to `limit`
  * (default 8, max 20) ProductSummary items and a `total` meta field.
  *
- * Rate limited: 60 req / 60 s / IP — generous for real-time typing, but
- * prevents runaway scrapers.
+ * Backend selection (automatic, zero config change in UI):
+ *  - When MEILI_HOST + MEILI_SEARCH_KEY (or MEILI_MASTER_KEY) are set:
+ *    queries Meilisearch (fast, typo-tolerant, ranked).
+ *  - Otherwise: falls back to getCatalog().listProducts() (fixture or Woo).
  *
- * TODO Sprint 4: swap getCatalog() for Meilisearch once the search index
- * is provisioned.
+ * Rate limited: 60 req / 60 s / IP.
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {
   // Rate limiting — before any heavy work.
@@ -40,6 +43,23 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   }
 
   try {
+    if (isMeiliConfigured()) {
+      // ── Meilisearch path ────────────────────────────────────────────
+      const client = getMeiliSearch();
+      const index = client.index<MeiliProduct>(MEILI_INDEX);
+      const result = await index.search(q, {
+        limit: pageSize,
+        attributesToRetrieve: [
+          "id", "slug", "name", "priceCents", "compareAtPriceCents",
+          "imageUrl", "imageAlt", "inStock", "isLimited",
+          "sizeOptions", "colorOptions",
+        ],
+      });
+      const items = result.hits.map(meiliDocumentToSummary);
+      return NextResponse.json(ok({ items, total: result.estimatedTotalHits ?? items.length }));
+    }
+
+    // ── Catalog fallback path ───────────────────────────────────────
     const catalog = getCatalog();
     const { items, total } = await catalog.listProducts({ search: q, pageSize, page: 1 });
     return NextResponse.json(ok({ items, total }));
@@ -49,5 +69,5 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   }
 }
 
-// Each request reads live catalog data — never cache.
+// Each request reads live data — never cache.
 export const dynamic = "force-dynamic";

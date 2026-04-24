@@ -15,6 +15,18 @@ export interface ListProductsQuery {
   page?: number;
   /** Items per page. */
   pageSize?: number;
+
+  // ── Phase 3 filters (Sprint 4) ──
+  /** Filter to products that have one of these size options. */
+  sizes?: string[];
+  /** Filter to products that have one of these color options. */
+  colors?: string[];
+  /** Minimum price in cents (inclusive). */
+  priceMin?: number;
+  /** Maximum price in cents (inclusive). */
+  priceMax?: number;
+  /** When true, only return in-stock products. */
+  inStock?: boolean;
 }
 
 export interface ListProductsResult {

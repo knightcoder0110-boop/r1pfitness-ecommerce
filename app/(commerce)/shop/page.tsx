@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ProductGrid } from "@/components/product";
-import { Pagination, ShopToolbar } from "@/components/shop";
+import { ActiveFilterChips, FilterSidebar, Pagination, ShopToolbar } from "@/components/shop";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCatalog } from "@/lib/catalog";
-import { parsePage, parseSearch, parseSort } from "@/lib/shop";
+import { parsePage, parseSearch, parseSort, parseFilters } from "@/lib/shop";
 
 export const metadata: Metadata = {
   title: "Shop",
@@ -26,16 +26,27 @@ interface ShopPageProps {
     sort?: string;
     page?: string;
     q?: string;
+    sizes?: string;
+    colors?: string;
+    price_min?: string;
+    price_max?: string;
+    in_stock?: string;
   }>;
 }
 
 async function ShopProducts({ searchParams }: ShopPageProps) {
   const raw = await searchParams;
   const q = parseSearch(raw.q);
+  const filters = parseFilters(raw);
   const { items, total, pageCount, page } = await getCatalog().listProducts({
     sort: parseSort(raw.sort),
     page: parsePage(raw.page),
     ...(q ? { search: q } : {}),
+    sizes: filters.sizes.length > 0 ? filters.sizes : undefined,
+    colors: filters.colors.length > 0 ? filters.colors : undefined,
+    priceMin: filters.priceMin,
+    priceMax: filters.priceMax,
+    inStock: filters.inStock || undefined,
   });
 
   if (items.length === 0) {
@@ -107,13 +118,26 @@ export default async function ShopPage(props: ShopPageProps) {
         className="mb-8 sm:mb-10"
       />
 
-      <div className="flex flex-col gap-4">
-        <ShopToolbar activeSlug={null} showSearch />
-      </div>
+      <ShopToolbar activeSlug={null} showSearch />
 
-      <Suspense key={suspenseKey} fallback={<ShopSkeleton />}>
-        <ShopProducts {...props} />
-      </Suspense>
+      {/* Main content: sidebar (desktop) + product grid */}
+      <div className="mt-8 flex flex-col gap-6 lg:flex-row lg:gap-10">
+        {/*
+         * FilterSidebar is self-contained:
+         *  - Desktop (lg+): renders as an inline w-56 aside
+         *  - Mobile: renders only the trigger button; drawer is fixed-position
+         */}
+        <FilterSidebar />
+
+        <div className="flex-1 min-w-0">
+          {/* Active filter chips (visible when any filter is set) */}
+          <ActiveFilterChips className="mb-5" />
+
+          <Suspense key={suspenseKey} fallback={<ShopSkeleton />}>
+            <ShopProducts {...props} />
+          </Suspense>
+        </div>
+      </div>
     </Container>
   );
 }
