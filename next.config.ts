@@ -124,18 +124,13 @@ const nextConfig: NextConfig = {
       { source: "/collections/:slug*", destination: "/shop/:slug*", permanent },
       { source: "/collections",        destination: "/shop", permanent },
 
-      // ── Account & auth ──────────────────────────────────
-      { source: "/account/:path*",     destination: "/", permanent },
-      { source: "/account",            destination: "/", permanent },
-      { source: "/login",              destination: "/", permanent },
+      // ── Legacy Shopify paths we don't use ──────────────
+      // NOTE: /account/*, /login, /pages/*, /blogs/*, /contact are REAL routes
+      // in this app. They must NOT be redirected away. Shopify `/blogs/*` is
+      // rewritten to our `/blog/*` so old URLs still work.
       { source: "/services/:path*",    destination: "/", permanent },
-
-      // ── Pages, blogs, contact ───────────────────────────
-      { source: "/pages/:slug*",       destination: "/", permanent },
-      { source: "/pages",              destination: "/", permanent },
-      { source: "/blogs/:path*",       destination: "/", permanent },
-      { source: "/blogs",              destination: "/", permanent },
-      { source: "/contact",            destination: "/", permanent },
+      { source: "/blogs/:path*",       destination: "/blog/:path*", permanent },
+      { source: "/blogs",              destination: "/blog", permanent },
 
       // ── Discounts ───────────────────────────────────────
       { source: "/discount/:code*",    destination: "/", permanent },

@@ -2,25 +2,41 @@ import { NextRequest, NextResponse } from "next/server";
 import type { ZodError } from "zod";
 import {
   CheckoutRequestSchema,
+  type CheckoutRequest,
   type CheckoutResult,
   computeOrderTotal,
   createPaymentIntent,
   createWooOrder,
 } from "@/lib/checkout";
 import { checkRateLimit } from "@/lib/api/ratelimit";
+import { getCart } from "@/lib/woo/cart";
+import type { CartLineItem } from "@/lib/woo/types";
 
 /**
  * POST /api/checkout
  *
- * Accepts a serialised cart + address, creates a WooCommerce order (pending),
- * and returns a Stripe PaymentIntent client_secret for the client to confirm.
+ * Accepts an address + (informational) cart snapshot, cross-checks against
+ * the authoritative server cart (via the httpOnly `r1p_cart_token` cookie),
+ * creates a WooCommerce order (pending), and returns a Stripe PaymentIntent
+ * client_secret for the client to confirm.
+ *
+ * SECURITY — trust boundary:
+ *   The caller is the browser. We do NOT trust any monetary field it sends.
+ *   Prices, quantities, totals, and the very list of purchasable items are
+ *   all derived from the server-fetched Woo cart keyed by the httpOnly cart
+ *   cookie. The client-submitted `items` array is used only to detect
+ *   client/server drift (e.g. cart was updated in another tab) and to bail
+ *   out before charging the customer an unexpected amount.
  *
  * Flow:
- *  1. Validate request body with Zod.
- *  2. Compute order total from line items (server-side, not trusted client total).
- *  3. Create Woo order → orderId.
- *  4. Create Stripe PaymentIntent with metadata.orderId.
- *  5. Return { clientSecret, orderId, totalAmount, currency }.
+ *  1. Rate-limit per IP.
+ *  2. Validate request body with Zod (address + informational items).
+ *  3. Load server cart via `getCart()`. Reject if empty.
+ *  4. Cross-check client item IDs + quantities against server cart.
+ *  5. Compute total from SERVER cart line items.
+ *  6. Create Woo order with SERVER items → orderId.
+ *  7. Create Stripe PaymentIntent using server total + metadata.orderId.
+ *  8. Return { clientSecret, orderId, totalAmount, currency }.
  *
  * The Stripe webhook (app/api/webhooks/stripe/route.ts) listens for
  * `payment_intent.succeeded` and transitions the Woo order to "processing".
@@ -59,20 +75,71 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const data = parsed.data;
 
-  // Compute total server-side — never trust client-supplied total.
-  const totalAmount = computeOrderTotal(
-    data.items as Parameters<typeof computeOrderTotal>[0],
-  );
+  // ── 3. Load the authoritative server cart ────────────────────────────
+  // Uses the httpOnly `r1p_cart_token` cookie set by the cart BFF. This is
+  // the ONLY source of truth for prices and quantities.
+  let serverCart: Awaited<ReturnType<typeof getCart>>;
+  try {
+    serverCart = await getCart();
+  } catch (err) {
+    console.error("[checkout] Failed to load server cart:", err);
+    return NextResponse.json(
+      { error: "Could not load your cart. Please refresh and try again." },
+      { status: 502 },
+    );
+  }
+
+  if (!serverCart.items.length) {
+    return NextResponse.json(
+      { error: "Your cart is empty." },
+      { status: 409 },
+    );
+  }
+
+  // ── 4. Cross-check client items against server cart ──────────────────
+  // Any drift — added, removed, or quantity-changed in another tab — aborts
+  // with 409 so the client can reload the cart before charging.
+  const drift = detectCartDrift(data.items, serverCart.items);
+  if (drift) {
+    return NextResponse.json(
+      { error: "Your cart has changed. Please review it and try again.", reason: drift },
+      { status: 409 },
+    );
+  }
+
+  // ── 5. Build a server-authoritative checkout request ─────────────────
+  // Prices, quantities, SKUs, and attributes come from `serverCart`. The
+  // client's `items` array is discarded from this point on.
+  const trustedItems: CheckoutRequest["items"] = serverCart.items.map((li) => ({
+    productId: li.productId,
+    variationId: li.variationId,
+    quantity: li.quantity,
+    unitPrice: li.unitPrice,
+    name: li.name,
+    sku: li.sku,
+    attributes: li.attributes,
+  }));
+
+  const trustedRequest: CheckoutRequest = {
+    email: data.email,
+    billing: data.billing,
+    shipping: data.shipping,
+    items: trustedItems,
+    coupons: data.coupons,
+  };
+
+  // Compute total from server cart items (minor units).
+  const totalAmount = computeOrderTotal(trustedItems);
   if (totalAmount <= 0) {
     return NextResponse.json({ error: "Order total must be > 0" }, { status: 422 });
   }
 
-  const currency = data.items[0]!.unitPrice.currency;
+  const currency = serverCart.currency;
 
   // Create Woo order (pending, not yet paid).
   let orderId: string;
   try {
-    const result = await createWooOrder(data);
+    const result = await createWooOrder(trustedRequest);
     orderId = result.orderId;
   } catch (err) {
     console.error("[checkout] Woo order creation failed:", err);
@@ -110,4 +177,50 @@ function formatZodError(err: ZodError): Record<string, string[]> {
     out[key]!.push(issue.message);
   }
   return out;
+}
+
+/**
+ * Compare the client-submitted items against the server cart.
+ *
+ * Drift conditions (any one aborts checkout):
+ *  - Client has an item not in the server cart, or vice-versa.
+ *  - Quantities differ for a matched item.
+ *  - A client-submitted unit price does not match the server unit price.
+ *
+ * Price mismatch is treated as drift rather than silently accepted — a
+ * price change between the customer opening the page and clicking "Pay"
+ * should re-display the new total before charging.
+ *
+ * Items are keyed by `productId::variationId` (variationId defaulting to
+ * "0" for simple products) so the same product in two variants is not
+ * collapsed.
+ */
+function detectCartDrift(
+  clientItems: CheckoutRequest["items"],
+  serverItems: CartLineItem[],
+): string | null {
+  const key = (p: string, v: string | undefined) => `${p}::${v ?? "0"}`;
+
+  const serverMap = new Map<string, CartLineItem>();
+  for (const li of serverItems) {
+    serverMap.set(key(li.productId, li.variationId), li);
+  }
+
+  if (clientItems.length !== serverItems.length) {
+    return "item_count_mismatch";
+  }
+
+  for (const ci of clientItems) {
+    const match = serverMap.get(key(ci.productId, ci.variationId));
+    if (!match) return "item_missing_on_server";
+    if (match.quantity !== ci.quantity) return "quantity_mismatch";
+    if (
+      match.unitPrice.amount !== ci.unitPrice.amount ||
+      match.unitPrice.currency !== ci.unitPrice.currency
+    ) {
+      return "price_mismatch";
+    }
+  }
+
+  return null;
 }

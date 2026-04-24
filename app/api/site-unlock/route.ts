@@ -1,9 +1,33 @@
 import { NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/api/ratelimit";
 
 const COOKIE_NAME = "r1p_site_unlocked";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
 export async function POST(request: Request) {
+  // Rate limit before touching the body. 5 attempts / 10 min / IP is
+  // aggressive enough to make brute-force impractical while still allowing
+  // a legitimate user a few typos.
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    request.headers.get("x-real-ip") ??
+    "unknown";
+  const rl = checkRateLimit(`site-unlock:${ip}`, {
+    max: 5,
+    windowMs: 10 * 60_000,
+  });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { ok: false, error: "Too many attempts. Try again later." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
+        },
+      },
+    );
+  }
+
   let body: unknown;
 
   try {
@@ -22,10 +46,11 @@ export async function POST(request: Request) {
 
   const { password } = body as { password: string };
 
-  // SITE_UNLOCK_PASSWORD is server-side only — never exposed in the client bundle.
-  // Falls back to the drop password if not set (for convenience during dev).
-  const correctPassword =
-    process.env.SITE_UNLOCK_PASSWORD || process.env.NEXT_PUBLIC_DROP_PASSWORD;
+  // SITE_UNLOCK_PASSWORD is server-side only — never exposed in the client
+  // bundle. We deliberately do NOT fall back to NEXT_PUBLIC_DROP_PASSWORD:
+  // that variable is inlined into client JS at build time, so using it as
+  // the gate password would let anyone read it from the bundle.
+  const correctPassword = process.env.SITE_UNLOCK_PASSWORD;
 
   if (!correctPassword) {
     return NextResponse.json(
