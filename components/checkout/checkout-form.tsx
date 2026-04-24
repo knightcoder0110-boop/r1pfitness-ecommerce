@@ -14,6 +14,7 @@ import { Field } from "./field";
 import { Button } from "@/components/ui/button";
 import { Price } from "@/components/ui/price";
 import { useCartActions, useCartItems, useCartSubtotal } from "@/lib/cart";
+import { trackBeginCheckout } from "@/lib/analytics";
 import type { CheckoutResult } from "@/lib/checkout/types";
 import { ROUTES } from "@/lib/constants";
 
@@ -164,6 +165,15 @@ export function CheckoutForm() {
         return;
       }
 
+      trackBeginCheckout({
+        items: items.map((item) => ({
+          productId: item.productId,
+          name: item.name,
+          price: item.unitPrice,
+          quantity: item.quantity,
+          variationId: item.variationId,
+        })),
+      });
       setCheckoutResult(json.data as CheckoutResult);
       setStep("payment");
     } catch {

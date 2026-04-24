@@ -58,3 +58,30 @@ export function trackRemoveFromCart(params: {
     payload: { item, cartValueCents: params.price.amount * (params.quantity ?? 1) },
   });
 }
+
+export function trackBeginCheckout(params: {
+  items: Array<{
+    productId: string;
+    name: string;
+    price: Money;
+    quantity?: number;
+    variationId?: string | undefined;
+    category?: string | undefined;
+  }>;
+}): void {
+  const mapped = params.items.map((i) =>
+    toItemPayload({
+      productId: i.productId,
+      name: i.name,
+      price: i.price,
+      quantity: i.quantity,
+      variationId: i.variationId,
+      category: i.category,
+    })
+  );
+  const valueCents = mapped.reduce(
+    (sum, item) => sum + item.priceCents * (item.quantity ?? 1),
+    0,
+  );
+  track({ name: "begin_checkout", payload: { items: mapped, valueCents } });
+}

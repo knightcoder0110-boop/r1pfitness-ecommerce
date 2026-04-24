@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useServerCart } from "@/lib/cart";
 import { useToastStore } from "@/lib/toast";
 import { useActiveVariationStore } from "@/lib/active-variation-store";
-import { trackAddToCart } from "@/lib/analytics";
+import { trackAddToCart, trackViewItem } from "@/lib/analytics";
 import type { Product, ProductVariation } from "@/lib/woo/types";
 
 export interface ProductPurchaseProps {
@@ -66,6 +66,18 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
   useEffect(() => {
     setVariantImage(matchingVariation?.image);
   }, [matchingVariation, setVariantImage]);
+
+  // Fire view_item once on mount so Klaviyo/GTM can track page views.
+  useEffect(() => {
+    trackViewItem({
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      category: product.categories.find((c) => c.slug !== "uncategorized")?.name,
+    });
+    // product is a stable server-rendered prop — tracking once on mount is correct.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id]);
 
   // Disabled when: no stock; OR has variations but selection incomplete;
   // OR selection complete but variation itself is OOS.

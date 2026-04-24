@@ -6,6 +6,7 @@ import { CartSyncProvider } from "@/lib/cart/sync";
 import { useToastStore } from "@/lib/toast";
 import Toast from "@/components/toast";
 import { initGtmAdapter } from "@/lib/analytics/gtm";
+import { initKlaviyoAdapter } from "@/lib/analytics/klaviyo-adapter";
 import type { ReactNode } from "react";
 
 /** Renders the global toast notification. Single instance at root level. */
@@ -18,6 +19,7 @@ function ToastRoot() {
 function AnalyticsInit() {
   useEffect(() => {
     initGtmAdapter();
+    initKlaviyoAdapter();
   }, []);
   return null;
 }
