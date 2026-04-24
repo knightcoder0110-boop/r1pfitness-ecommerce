@@ -52,6 +52,23 @@ export interface ProductCategory {
   id: string;
   name: string;
   slug: string;
+  /** Plain-text or HTML description from WooCommerce. */
+  description?: string;
+  /** Number of published products in this category. */
+  count?: number;
+  /** Parent category id; empty string or undefined for root. */
+  parentId?: string;
+  /** Cover image set on the category term in WordPress. */
+  image?: ImageRef;
+}
+
+/**
+ * Tree form of {@link ProductCategory}. Built on demand by the catalog
+ * adapter (see `listCategoryTree`). Each node carries its children so the
+ * UI can render nested pickers / breadcrumbs without extra fetches.
+ */
+export interface ProductCategoryNode extends ProductCategory {
+  children: ProductCategoryNode[];
 }
 
 export interface ProductVariation {

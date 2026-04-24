@@ -4,9 +4,11 @@ import {
   getStoreCategoryBySlug,
   getStoreProductBySlug,
   listStoreCategories,
+  listStoreCategoriesBySlugs,
   listStoreProducts,
+  listStoreTagIdsBySlugs,
 } from "@/lib/woo/products";
-import type { ProductSummary } from "@/lib/woo/types";
+import type { ProductCategory, ProductCategoryNode, ProductSummary } from "@/lib/woo/types";
 import type { CatalogDataSource, ListProductsQuery, ListProductsResult } from "./types";
 
 /**
@@ -42,6 +44,22 @@ function sortToStoreParams(sort: ListProductsQuery["sort"]): {
   }
 }
 
+/** Turn a flat list of categories into a nested tree via parentId. */
+function buildCategoryTree(flat: ProductCategory[]): ProductCategoryNode[] {
+  const byId = new Map<string, ProductCategoryNode>();
+  for (const c of flat) byId.set(c.id, { ...c, children: [] });
+
+  const roots: ProductCategoryNode[] = [];
+  for (const node of byId.values()) {
+    if (node.parentId && byId.has(node.parentId)) {
+      byId.get(node.parentId)!.children.push(node);
+    } else {
+      roots.push(node);
+    }
+  }
+  return roots;
+}
+
 export function createWooCatalog(): CatalogDataSource {
   return {
     async listProducts(query: ListProductsQuery): Promise<ListProductsResult> {
@@ -53,19 +71,63 @@ export function createWooCatalog(): CatalogDataSource {
       // /products endpoint. When filters are active we fetch a larger batch
       // and apply them in-process. Once Meilisearch is provisioned (Sprint 4),
       // filtered queries will bypass this adapter entirely.
-      const hasFilters =
+      const hasPostFilters =
         (query.sizes && query.sizes.length > 0) ||
         (query.colors && query.colors.length > 0) ||
         query.priceMin !== undefined ||
         query.priceMax !== undefined ||
         query.inStock;
 
-      const fetchPerPage = hasFilters ? Math.min(perPage * 4, 48) : perPage;
+      const fetchPerPage = hasPostFilters ? Math.min(perPage * 4, 48) : perPage;
+
+      // ── Resolve multi-value filters that require slug → id ──
+      // Woo's `category=<slug>` works for a SINGLE slug but multi-category
+      // filtering requires numeric IDs. Same story for tags.
+      const categoryIds =
+        query.categories && query.categories.length > 0
+          ? (await listStoreCategoriesBySlugs(query.categories)).map((c) => c.id)
+          : undefined;
+
+      const tagIds =
+        query.tags && query.tags.length > 0
+          ? await listStoreTagIdsBySlugs(query.tags)
+          : undefined;
+
+      // If the caller asked for slugs[] or ids[], run those as Woo queries.
+      // Woo's `slug` param accepts only ONE slug, so for multi-slug we
+      // parallel-fetch and merge (cheaper than fetching everything).
+      if (query.slugs && query.slugs.length > 0) {
+        const results = await Promise.all(
+          query.slugs.map((slug) =>
+            listStoreProducts({
+              slug,
+              perPage: 1,
+              orderby,
+              order,
+            }).then((r) => r.items[0]).catch(() => undefined),
+          ),
+        );
+        const items = results.filter(
+          (r): r is ProductSummary => r !== undefined,
+        );
+        return {
+          items,
+          total: items.length,
+          page: 1,
+          pageCount: 1,
+        };
+      }
 
       const res = await listStoreProducts({
         categorySlug: query.category,
+        categoryIds,
+        includeIds: query.ids,
+        tagSlug: query.tag,
+        tagIds,
+        featured: query.featured,
+        onSale: query.onSale,
         search: query.search,
-        page: hasFilters ? 1 : page,
+        page: hasPostFilters ? 1 : page,
         perPage: fetchPerPage,
         orderby,
         order,
@@ -73,7 +135,7 @@ export function createWooCatalog(): CatalogDataSource {
 
       let items: ProductSummary[] = res.items;
 
-      if (hasFilters) {
+      if (hasPostFilters) {
         if (query.sizes && query.sizes.length > 0) {
           const sizeSet = new Set(query.sizes.map((s) => s.toLowerCase()));
           items = items.filter((p) =>
@@ -129,6 +191,21 @@ export function createWooCatalog(): CatalogDataSource {
 
     async getCategoryBySlug(slug) {
       return getStoreCategoryBySlug(slug);
+    },
+
+    async listCategoriesBySlugs(slugs: string[]) {
+      if (slugs.length === 0) return [];
+      const resolved = await listStoreCategoriesBySlugs(slugs);
+      // Preserve caller order (Woo returns by its own ordering).
+      const bySlug = new Map(resolved.map((c) => [c.slug, c]));
+      return slugs
+        .map((s) => bySlug.get(s))
+        .filter((c): c is ProductCategory => c !== undefined);
+    },
+
+    async listCategoryTree() {
+      const flat = await listStoreCategories();
+      return buildCategoryTree(flat);
     },
   };
 }

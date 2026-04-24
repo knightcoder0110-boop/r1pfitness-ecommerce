@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getCatalog } from "@/lib/catalog";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
-import { ROUTES } from "@/lib/constants";
+import { CategoryCard } from "@/components/sections";
 
 export const metadata: Metadata = {
   title: "Collections — R1P FITNESS",
@@ -37,38 +36,16 @@ export default async function CollectionsPage() {
       {displayCategories.length > 0 ? (
         <ul
           role="list"
-          className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
+          className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 lg:grid-cols-4"
         >
-          {displayCategories.map((cat) => (
+          {displayCategories.map((cat, i) => (
             <li key={cat.slug}>
-              <Link
-                href={ROUTES.category(cat.slug)}
-                className="group relative flex flex-col overflow-hidden rounded-sm border border-border hover:border-gold/40 transition-colors duration-300"
-              >
-                {/* Category placeholder image */}
-                <div className="relative aspect-collection-cover overflow-hidden bg-[#1A1A1A] flex items-center justify-center">
-                  <span className="font-display text-6xl tracking-wider text-text/10 select-none">
-                    {cat.name.charAt(0).toUpperCase()}
-                  </span>
-                  {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                </div>
-
-                {/* Label */}
-                <div className="p-4 flex items-end justify-between">
-                  <div>
-                    <p className="font-display text-lg tracking-wider text-text group-hover:text-gold transition-colors">
-                      {cat.name}
-                    </p>
-                  </div>
-                  <span
-                    className="font-mono text-xs text-muted group-hover:text-gold group-hover:translate-x-1 transition-all duration-200"
-                    aria-hidden
-                  >
-                    →
-                  </span>
-                </div>
-              </Link>
+              <CategoryCard
+                category={cat}
+                index={i}
+                variant="portrait"
+                priority={i < 4}
+              />
             </li>
           ))}
         </ul>

@@ -3,8 +3,10 @@ import "server-only";
 import { storeFetch } from "./client";
 import { WooError } from "./errors";
 import {
+  mapCategory,
   mapProduct,
   mapProductSummary,
+  type RawStoreCategory,
   type RawStoreProduct,
 } from "./mappers";
 import type {
@@ -46,6 +48,27 @@ type StoreOrder = "asc" | "desc";
 export interface StoreListProductsParams {
   /** Category slug. Translated to Woo's `category` (which accepts slugs). */
   categorySlug?: string;
+  /**
+   * Multiple category IDs (comma-joined). Woo's `category` param only
+   * accepts SLUGS when singular; for multi-category filtering it requires
+   * numeric IDs. Resolve slugs → ids in the adapter before passing here.
+   */
+  categoryIds?: string[];
+  /** Product slug filter (Woo accepts a single slug via `?slug=`). */
+  slug?: string;
+  /** Numeric IDs — maps to Woo's `include` param. */
+  includeIds?: string[];
+  /**
+   * Single tag slug. Maps to Woo's `tag` param (accepts slug OR id — we
+   * pass whatever was given). For multi-tag filtering use `tagIds`.
+   */
+  tagSlug?: string;
+  /** Multiple tag IDs (comma-joined into `tag`). Resolve in adapter. */
+  tagIds?: string[];
+  /** Woo's native "Featured" flag. */
+  featured?: boolean;
+  /** Only products currently on sale. */
+  onSale?: boolean;
   /** Free-text search. */
   search?: string;
   /** 1-based page. */
@@ -73,7 +96,7 @@ export interface StoreListProductsResult {
 async function storeFetchWithHeaders<T>(
   path: string,
   init: {
-    searchParams?: Record<string, string | number | undefined>;
+    searchParams?: Record<string, string | number | boolean | undefined>;
     tags?: string[];
     revalidate?: number;
   },
@@ -159,11 +182,28 @@ export async function listStoreProducts(
   const tags: string[] = [WOO_TAGS.products];
   if (params.categorySlug) tags.push(WOO_TAGS.category(params.categorySlug));
 
+  // Woo's `category` accepts a single slug OR a comma list of numeric IDs.
+  // Prefer IDs when the caller resolved them (multi-category case).
+  const categoryParam =
+    params.categoryIds && params.categoryIds.length > 0
+      ? params.categoryIds.join(",")
+      : params.categorySlug;
+
+  const tagParam =
+    params.tagIds && params.tagIds.length > 0
+      ? params.tagIds.join(",")
+      : params.tagSlug;
+
   const { data, headers } = await storeFetchWithHeaders<RawStoreProduct[]>("/products", {
     searchParams: {
       page,
       per_page: perPage,
-      category: params.categorySlug,
+      category: categoryParam,
+      slug: params.slug,
+      include: params.includeIds && params.includeIds.length > 0 ? params.includeIds.join(",") : undefined,
+      tag: tagParam,
+      featured: params.featured === true ? true : undefined,
+      on_sale: params.onSale === true ? true : undefined,
       search: params.search,
       orderby: params.orderby,
       order: params.order,
@@ -291,20 +331,12 @@ export async function getStoreVariations(productId: string): Promise<ProductVari
   });
 }
 
-interface RawStoreCategory {
-  id: number;
-  name: string;
-  slug: string;
-  parent?: number;
-  count?: number;
-}
-
 export async function listStoreCategories(): Promise<ProductCategory[]> {
   const { data } = await storeFetchWithHeaders<RawStoreCategory[]>("/products/categories", {
     searchParams: { per_page: 100, hide_empty: "true" },
     tags: [WOO_TAGS.categories],
   });
-  return data.map((c) => ({ id: String(c.id), name: c.name, slug: c.slug }));
+  return data.map(mapCategory);
 }
 
 export async function getStoreCategoryBySlug(slug: string): Promise<ProductCategory | null> {
@@ -315,7 +347,53 @@ export async function getStoreCategoryBySlug(slug: string): Promise<ProductCateg
   });
   const raw = data[0];
   if (!raw) return null;
-  return { id: String(raw.id), name: raw.name, slug: raw.slug };
+  return mapCategory(raw);
+}
+
+/**
+ * Resolve one or more category slugs into their numeric IDs (Woo's
+ * `/products?category=` param requires IDs when you want to OR multiple
+ * categories — a single slug works on its own).
+ *
+ * Returns in the order Woo responds in (not necessarily the input order).
+ * Unknown slugs are silently dropped.
+ */
+export async function listStoreCategoriesBySlugs(
+  slugs: string[],
+): Promise<ProductCategory[]> {
+  if (slugs.length === 0) return [];
+  const { data } = await storeFetchWithHeaders<RawStoreCategory[]>(
+    "/products/categories",
+    {
+      searchParams: {
+        slug: slugs.join(","),
+        per_page: Math.min(100, Math.max(slugs.length, 10)),
+      },
+      tags: [WOO_TAGS.categories, ...slugs.map((s) => WOO_TAGS.category(s))],
+    },
+  );
+  return data.map(mapCategory);
+}
+
+/**
+ * Resolve one or more product-tag slugs into their numeric IDs. Used when
+ * filtering `/products?tag=` by multiple tags.
+ */
+export async function listStoreTagIdsBySlugs(
+  slugs: string[],
+): Promise<string[]> {
+  if (slugs.length === 0) return [];
+  const { data } = await storeFetchWithHeaders<Array<{ id: number; slug: string }>>(
+    "/products/tags",
+    {
+      searchParams: {
+        slug: slugs.join(","),
+        per_page: Math.min(100, Math.max(slugs.length, 10)),
+      },
+      tags: [WOO_TAGS.products],
+    },
+  );
+  return data.map((t) => String(t.id));
 }
 
 // storeFetch is re-exported for downstream modules (cart, checkout) that need

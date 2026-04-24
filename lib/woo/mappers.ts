@@ -112,6 +112,20 @@ export interface RawStoreCart {
 }
 
 /**
+ * Raw `/products/categories` entry from the Store API. Fields we care about;
+ * Woo returns more (`display`, `menu_order`, `review_count`) we don't map.
+ */
+export interface RawStoreCategory {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  parent?: number;
+  count?: number;
+  image?: RawStoreImage;
+}
+
+/**
  * Convert a raw price string (already in minor units per Store API contract)
  * into a number. Defensive against whitespace, empty strings, NaN input.
  */
@@ -162,6 +176,30 @@ function mapCategories(
 ): ProductCategory[] {
   if (!raw) return [];
   return raw.map((c) => ({ id: String(c.id), name: c.name, slug: c.slug }));
+}
+
+/**
+ * Map a full `/products/categories` entry into the domain type, including
+ * cover image, description, count, and parent id. Used by
+ * `listStoreCategories` / `getStoreCategoryBySlug`.
+ */
+export function mapCategory(raw: RawStoreCategory): ProductCategory {
+  const out: ProductCategory = {
+    id: String(raw.id),
+    name: raw.name,
+    slug: raw.slug,
+  };
+  if (raw.description) out.description = raw.description;
+  if (typeof raw.count === "number") out.count = raw.count;
+  // parent=0 means "root" in Woo — we normalise that to undefined.
+  if (typeof raw.parent === "number" && raw.parent > 0) {
+    out.parentId = String(raw.parent);
+  }
+  if (raw.image) {
+    const img = mapImage(raw.image);
+    if (img) out.image = img;
+  }
+  return out;
 }
 
 function mapAttributes(raw: RawStoreAttribute[] | undefined): ProductAttribute[] {
