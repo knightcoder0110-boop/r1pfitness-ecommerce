@@ -142,9 +142,15 @@ const DARK_ROMANCE_PRODUCT: Product = {
 };
 
 export const metadata: Metadata = {
-  title: "R1P FITNESS — REBORN 1N PARADISE",
+  // Use `absolute` to bypass the root layout title template (avoids double-appending "— R1P FITNESS").
+  title: { absolute: "R1P FITNESS — REBORN 1N PARADISE" },
   description:
     "Exclusive Hawaiian streetwear & fitness apparel. Limited drops, 24 hours only. Waipahu, HI.",
+  openGraph: {
+    title: "R1P FITNESS — REBORN 1N PARADISE",
+    description: "Exclusive Hawaiian streetwear & fitness apparel. Limited drops, 24 hours only. Waipahu, HI.",
+    url: "/",
+  },
 };
 
 export const revalidate = 3600;

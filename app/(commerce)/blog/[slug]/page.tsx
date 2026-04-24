@@ -30,7 +30,7 @@ export async function generateMetadata({
 
   if (!post) {
     return {
-      title: `Not Found — ${SITE.name}`,
+      title: "Not Found",
     };
   }
 
@@ -39,11 +39,11 @@ export async function generateMetadata({
     : `Read ${post.title} on the ${SITE.name} journal.`;
 
   return {
-    title: `${post.title} — ${SITE.name}`,
+    title: post.title,
     description,
     alternates: { canonical: ROUTES.blogPost(slug) },
     openGraph: {
-      title: post.title,
+      title: `${post.title} — ${SITE.name}`,
       description,
       images: post.featuredImage ? [{ url: post.featuredImage.src, alt: post.featuredImage.alt }] : [],
     },

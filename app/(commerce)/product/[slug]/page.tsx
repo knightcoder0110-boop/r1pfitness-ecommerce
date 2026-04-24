@@ -11,7 +11,8 @@ import { Heading } from "@/components/ui/heading";
 import { Price } from "@/components/ui/price";
 import { getCatalog } from "@/lib/catalog";
 import { ROUTES, SITE } from "@/lib/constants";
-import { productSchema } from "@/lib/seo";
+import { productSchema, breadcrumbSchema } from "@/lib/seo";
+import { getSiteUrl } from "@/lib/seo/site-url";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -53,7 +54,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
     product.compareAtPrice && product.compareAtPrice.amount > product.price.amount;
 
   const productUrl = `/product/${product.slug}`;
-  const ldJson = JSON.stringify(productSchema(product, productUrl));
+  const siteUrl = getSiteUrl();
+  const ldJson = JSON.stringify(productSchema(product, `${siteUrl}${productUrl}`));
 
   // Primary category for breadcrumb trail (first non-uncategorized match).
   const primaryCategory = product.categories.find(
@@ -68,11 +70,24 @@ export default async function ProductPage({ params }: ProductPageProps) {
     { label: product.name },
   ];
 
+  const breadcrumbLd = JSON.stringify(
+    breadcrumbSchema(
+      breadcrumbItems.map((item) => ({
+        name: item.label,
+        url: item.href ? `${siteUrl}${item.href}` : undefined,
+      }))
+    )
+  );
+
   return (
     <Container as="main" className="py-8 sm:py-10">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: ldJson }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: breadcrumbLd }}
       />
 
       <Breadcrumbs items={breadcrumbItems} className="mb-6 sm:mb-8" />

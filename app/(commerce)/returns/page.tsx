@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/container";
 import { SITE } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: `Returns & Refunds — ${SITE.name}`,
+  title: "Returns & Refunds",
   description: "Our return and refund policy for R1P FITNESS orders.",
   alternates: { canonical: "/returns" },
 };

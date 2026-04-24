@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/container";
 import { SITE } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: `Shipping Policy — ${SITE.name}`,
+  title: "Shipping",
   description: "Shipping methods, transit times, and delivery information for R1P FITNESS orders.",
   alternates: { canonical: "/shipping" },
 };

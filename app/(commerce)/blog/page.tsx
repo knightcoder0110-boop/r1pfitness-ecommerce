@@ -8,7 +8,7 @@ import { listPosts } from "@/lib/wp/client";
 import type { BlogPost } from "@/lib/wp/client";
 
 export const metadata: Metadata = {
-  title: `Blog — ${SITE.name}`,
+  title: "Blog",
   description: "Training tips, drop announcements, and culture from R1P FITNESS.",
   alternates: { canonical: "/blog" },
 };

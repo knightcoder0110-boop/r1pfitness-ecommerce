@@ -111,6 +111,16 @@ const nextConfig: NextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
           },
+          // HSTS — tell browsers to always use HTTPS for 2 years.
+          // Only sent in production; localhost with HTTPS would break dev.
+          ...(!isDev
+            ? [
+                {
+                  key: "Strict-Transport-Security",
+                  value: "max-age=63072000; includeSubDomains; preload",
+                },
+              ]
+            : []),
         ],
       },
     ];

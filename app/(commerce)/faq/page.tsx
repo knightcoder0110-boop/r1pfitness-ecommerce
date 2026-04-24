@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/container";
 import { SITE } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: `FAQ — ${SITE.name}`,
+  title: "FAQ",
   description: "Frequently asked questions about R1P FITNESS drops, orders, shipping, and sizing.",
   alternates: { canonical: "/faq" },
 };

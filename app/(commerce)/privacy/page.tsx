@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/container";
 import { SITE } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: `Privacy Policy — ${SITE.name}`,
+  title: "Privacy Policy",
   description: "How R1P FITNESS collects, uses, and protects your personal information.",
   alternates: { canonical: "/privacy" },
 };

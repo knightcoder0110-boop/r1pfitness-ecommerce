@@ -4,6 +4,8 @@ import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Providers } from "./providers";
+import { buildDefaultMetadata, organizationSchema, websiteSchema } from "@/lib/seo";
+import { getSiteUrl } from "@/lib/seo/site-url";
 import "./globals.css";
 
 const bebasNeue = Bebas_Neue({
@@ -28,14 +30,7 @@ const spaceMono = Space_Mono({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
-  ),
-  title: "R1P FITNESS — REBORN 1N PARADISE",
-  description:
-    "Exclusive Hawaiian streetwear & fitness apparel. Limited drops, 24 hours only. Waipahu, HI.",
-};
+export const metadata: Metadata = buildDefaultMetadata(process.env.NEXT_PUBLIC_SITE_URL);
 
 export default function RootLayout({
   children,
@@ -43,6 +38,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const gtmId = process.env.NEXT_PUBLIC_GTM_ID;
+  const siteUrl = getSiteUrl();
+  const orgLd = JSON.stringify(organizationSchema(siteUrl));
+  const webLd = JSON.stringify(websiteSchema(siteUrl));
   return (
     <html
       lang="en"
@@ -60,6 +58,9 @@ export default function RootLayout({
               title="Google Tag Manager"
             />
           </noscript>
+          {/* Site-wide JSON-LD — Organization + WebSite with SearchAction */}
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: orgLd }} />
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: webLd }} />
           <Providers>
             {children}
           </Providers>
@@ -77,6 +78,9 @@ export default function RootLayout({
       )}
       {!gtmId && (
         <body className="relative min-h-full flex flex-col z-10" suppressHydrationWarning>
+          {/* Site-wide JSON-LD — Organization + WebSite with SearchAction */}
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: orgLd }} />
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: webLd }} />
           <Providers>
             {children}
           </Providers>

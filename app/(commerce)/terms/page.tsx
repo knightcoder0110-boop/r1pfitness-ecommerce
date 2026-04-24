@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/container";
 import { SITE } from "@/lib/constants";
 
 export const metadata: Metadata = {
-  title: `Terms of Service — ${SITE.name}`,
+  title: "Terms of Service",
   description: "The terms and conditions governing your use of the R1P FITNESS website and purchases.",
   alternates: { canonical: "/terms" },
 };
