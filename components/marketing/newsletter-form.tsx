@@ -51,12 +51,12 @@ export function NewsletterForm({
         body: JSON.stringify({ email }),
       });
 
-      const data = (await res.json()) as { success: boolean; error?: string };
+      const data = (await res.json()) as { ok: boolean; error?: { message?: string } };
 
-      if (data.success) {
+      if (data.ok) {
         setState("success");
       } else {
-        setErrorMsg(data.error ?? "Something went wrong. Please try again.");
+        setErrorMsg(data.error?.message ?? "Something went wrong. Please try again.");
         setState("error");
       }
     } catch {

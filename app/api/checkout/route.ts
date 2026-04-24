@@ -166,7 +166,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   const result: CheckoutResult = { clientSecret, orderId, totalAmount, currency };
-  return NextResponse.json(result, { status: 200 });
+  return NextResponse.json({ ok: true, data: result }, { status: 200 });
 }
 
 function formatZodError(err: ZodError): Record<string, string[]> {

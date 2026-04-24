@@ -40,12 +40,12 @@ export default function SignupForm({ onSwitchToPassword }: SignupFormProps) {
 
       const data = await res.json();
 
-      if (res.ok && data.success) {
+      if (res.ok && data.ok) {
         setStatus("success");
         showToast("Welcome to the ohana! Check your inbox.", "success");
       } else {
         setStatus("error");
-        showToast(data.error || "Something went wrong. Try again.", "error");
+        showToast(data.error?.message || "Something went wrong. Try again.", "error");
       }
     } catch {
       setStatus("error");

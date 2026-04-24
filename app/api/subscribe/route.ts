@@ -1,41 +1,34 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { withApi } from "@/lib/api";
 import { subscribeToKlaviyo } from "@/lib/klaviyo";
+import { ApiError } from "@/lib/api/errors";
 
-export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const email = body?.email;
+const SubscribeSchema = z.object({
+  email: z.string().email("Valid email address required"),
+});
 
-    if (!email || typeof email !== "string") {
-      return NextResponse.json(
-        { success: false, error: "Email is required." },
-        { status: 400 }
-      );
+/**
+ * POST /api/newsletter/subscribe  (also aliased at /api/subscribe for back-compat)
+ *
+ * Subscribes an email to the Klaviyo list configured by KLAVIYO_LIST_ID.
+ * Returns the standard {ok, data} BFF envelope.
+ *
+ * Rate limited: 10 attempts / 5 min / IP to prevent list-stuffing.
+ */
+export const POST = withApi({
+  schema: SubscribeSchema,
+  rateLimit: { max: 10, windowMs: 5 * 60_000 },
+  handler: async ({ input }) => {
+    const result = await subscribeToKlaviyo(input.email);
+
+    if (!result.success) {
+      throw new ApiError({
+        code: "KLAVIYO_ERROR",
+        message: result.error ?? "Email service unavailable. Please try again.",
+        status: 502,
+      });
     }
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { success: false, error: "Invalid email address." },
-        { status: 400 }
-      );
-    }
-
-    const result = await subscribeToKlaviyo(email);
-
-    if (result.success) {
-      return NextResponse.json({ success: true });
-    }
-
-    return NextResponse.json(
-      { success: false, error: result.error },
-      { status: 500 }
-    );
-  } catch {
-    return NextResponse.json(
-      { success: false, error: "Server error. Please try again." },
-      { status: 500 }
-    );
-  }
-}
+    return { subscribed: true };
+  },
+});

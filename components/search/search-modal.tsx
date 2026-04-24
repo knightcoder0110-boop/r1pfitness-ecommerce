@@ -15,6 +15,12 @@ interface SearchResult {
   total: number;
 }
 
+/** Shape of the {ok, data} envelope returned by /api/search */
+interface SearchApiResponse {
+  ok: boolean;
+  data?: SearchResult;
+}
+
 // ── Recent-searches localStorage helpers ─────────────────────────────────────
 
 const RECENT_KEY = "r1p:recent-searches";
@@ -111,9 +117,9 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
 
     fetch(`/api/search?q=${encodeURIComponent(q)}&limit=8`)
       .then((r) => r.json())
-      .then((data: SearchResult) => {
+      .then((envelope: SearchApiResponse) => {
         if (!cancelled) {
-          setResults(data);
+          setResults(envelope.ok && envelope.data ? envelope.data : { items: [], total: 0 });
           setActiveIndex(-1);
           resultRefs.current = [];
         }

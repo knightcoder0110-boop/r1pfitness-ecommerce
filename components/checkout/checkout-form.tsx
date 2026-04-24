@@ -147,14 +147,24 @@ export function CheckoutForm() {
       const json = await res.json();
 
       if (!res.ok) {
-        if (json.issues) {
-          setFieldErrors(json.issues as Record<string, string[]>);
+        // 409 = cart drifted (price/qty changed between page load and submit)
+        if (res.status === 409) {
+          setServerError(
+            "Your cart has changed since you opened this page. " +
+              "Please review your cart and try again.",
+          );
+          return;
         }
-        setServerError(json.error ?? "Something went wrong. Please try again.");
+        if (json.error?.details ?? json.issues) {
+          setFieldErrors((json.error?.details ?? json.issues) as Record<string, string[]>);
+        }
+        setServerError(
+          json.error?.message ?? json.error ?? "Something went wrong. Please try again.",
+        );
         return;
       }
 
-      setCheckoutResult(json as CheckoutResult);
+      setCheckoutResult(json.data as CheckoutResult);
       setStep("payment");
     } catch {
       setServerError("Network error. Please check your connection and try again.");
