@@ -76,4 +76,12 @@ export const ROUTES = {
   about: "/about",
   collections: "/collections",
   forgotPassword: "/account/forgot-password",
+  blog: "/blog",
+  blogPost: (slug: string) => `/blog/${slug}`,
+  contact: "/contact",
+  privacy: "/privacy",
+  terms: "/terms",
+  shipping: "/shipping",
+  returns: "/returns",
+  faq: "/faq",
 } as const;

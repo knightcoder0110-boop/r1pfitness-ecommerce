@@ -42,6 +42,13 @@ export const env = createEnv({
     // Auth (Phase 4)
     NEXTAUTH_SECRET: z.string().min(16).optional(),
 
+    // WordPress CMS (Sprint 3)
+    WP_BASE_URL: z.string().url().optional(),
+
+    // Contact form
+    SUPPORT_EMAIL: z.string().email().optional(),
+    KLAVIYO_CONTACT_TEMPLATE_ID: z.string().optional(),
+
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   },
 
@@ -69,6 +76,9 @@ export const env = createEnv({
     MEILI_HOST: process.env.MEILI_HOST,
     MEILI_MASTER_KEY: process.env.MEILI_MASTER_KEY,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+    WP_BASE_URL: process.env.WP_BASE_URL,
+    SUPPORT_EMAIL: process.env.SUPPORT_EMAIL,
+    KLAVIYO_CONTACT_TEMPLATE_ID: process.env.KLAVIYO_CONTACT_TEMPLATE_ID,
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_DROP_PASSWORD: process.env.NEXT_PUBLIC_DROP_PASSWORD,
