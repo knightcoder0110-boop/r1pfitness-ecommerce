@@ -101,7 +101,7 @@ export default function SiteLockScreen() {
   };
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-bg">
+    <div className="relative min-h-screen w-full bg-bg overflow-x-clip">
       {/* ── Full-bleed background image ───────────────────────────── */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -163,7 +163,7 @@ export default function SiteLockScreen() {
       {/* ── Main layout ──────────────────────────────────────────── */}
       <div className="relative z-10 flex min-h-screen flex-col">
         {/* ─ Center section — content ─────────────────────────── */}
-        <div className="flex flex-1 items-center justify-center md:justify-start px-6 md:px-0 md:pl-[8%] xl:pl-[12%] py-20">
+        <div className="flex flex-1 items-center justify-center md:justify-start px-6 md:px-0 md:pl-[8%] xl:pl-[12%] py-10 md:py-20">
           <div className="w-full max-w-md">
             {/* Eyebrow */}
             <motion.div
@@ -188,16 +188,16 @@ export default function SiteLockScreen() {
               animate="show"
               className="font-display font-black uppercase leading-[0.88] tracking-tight mb-5"
             >
-              <span className="block text-text" style={{ fontSize: "clamp(2.6rem, 7vw, 4.5rem)" }}>
+              <span className="block text-text" style={{ fontSize: "clamp(2rem, 7vw, 4.5rem)" }}>
                 Early Access.
               </span>
-              <span className="block text-text" style={{ fontSize: "clamp(2.6rem, 7vw, 4.5rem)" }}>
+              <span className="block text-text" style={{ fontSize: "clamp(2rem, 7vw, 4.5rem)" }}>
                 Exclusive Drops.
               </span>
               <span
                 className="block"
                 style={{
-                  fontSize: "clamp(2.6rem, 7vw, 4.5rem)",
+                  fontSize: "clamp(2rem, 7vw, 4.5rem)",
                   color: "var(--brand-gold)",
                 }}
               >
@@ -320,11 +320,11 @@ export default function SiteLockScreen() {
           className="border-t border-border/50 bg-bg/70 backdrop-blur-sm"
         >
           <div className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-y divide-border/40 sm:divide-y-0 sm:divide-x sm:divide-border/40">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
               {FEATURES.map((feature) => (
                 <div
                   key={feature.title}
-                  className="flex flex-col items-center text-center gap-2 py-6 px-4"
+                  className="flex flex-col items-center text-center gap-2 py-6 px-4 border-b border-r border-border/20"
                 >
                   <span className="text-gold">{feature.icon}</span>
                   <p className="font-mono text-[11px] font-bold tracking-[0.2em] uppercase text-text">
@@ -337,7 +337,7 @@ export default function SiteLockScreen() {
               ))}
 
               {/* Member card — last cell */}
-              <div className="flex flex-col items-center justify-center gap-1 py-6 px-4 col-span-2 sm:col-span-1">
+              <div className="flex flex-col items-center justify-center gap-1 py-6 px-4 border-b border-r border-border/20">
                 <div
                   className="w-full max-w-30 aspect-[1.6/1] rounded-md flex flex-col items-center justify-center gap-1 border border-gold/30"
                   style={{
