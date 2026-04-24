@@ -17,6 +17,10 @@ const wooHostname = process.env.WOO_BASE_URL
   : null;
 
 const nextConfig: NextConfig = {
+  // Allow the local network IP so phones/tablets on the same WiFi can
+  // access HMR and dev resources without cross-origin errors.
+  allowedDevOrigins: ["192.168.0.108"],
+
   images: {
     // Cache images for 30 days on the Next.js image proxy.
     // Without this every unique URL re-fetches from Hostinger on expiry.
