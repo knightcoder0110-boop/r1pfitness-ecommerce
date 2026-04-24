@@ -146,7 +146,7 @@ export function HeroRebirth({
                 className={cn(
                   "mt-6 md:mt-8",
                   "font-display uppercase text-text",
-                  "text-[clamp(3.25rem,12vw,8.5rem)]",
+                  "text-[clamp(2rem,12vw,8.5rem)]",
                   "leading-[0.88] tracking-[0.02em]",
                 )}
               >

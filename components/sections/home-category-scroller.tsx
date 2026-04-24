@@ -51,7 +51,7 @@ export function HomeCategoryScroller({
   return (
     <section
       aria-label={title}
-      className={cn("py-12 sm:py-16 lg:py-20 border-b border-border", className)}
+      className={cn("py-12 sm:py-16 lg:py-20 border-b border-border overflow-hidden", className)}
     >
       <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
         {/* Header */}
@@ -78,7 +78,7 @@ export function HomeCategoryScroller({
         <div
           className={cn(
             "flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory",
-            "-mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pb-2",
+            "pb-2",
             "[-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
           )}
           role="list"

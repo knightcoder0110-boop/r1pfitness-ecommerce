@@ -28,15 +28,21 @@ export function HeroFeatureStrip({
     >
       <ul
         role="list"
-        className={cn(
-          "grid grid-cols-2 md:grid-cols-4",
-          "divide-y divide-border md:divide-y-0 md:divide-x",
-        )}
+        className="grid grid-cols-2 md:grid-cols-4"
       >
-        {items.map((item) => (
+        {items.map((item, i) => (
           <li
             key={item.title}
-            className="flex items-center gap-3 px-5 py-4 md:px-6 md:py-5"
+            className={cn(
+              "flex items-center gap-3 px-5 py-4 md:px-6 md:py-5",
+              "border-border/40",
+              // Mobile (2-col): right border on left column (even index)
+              i % 2 === 0 && "border-r",
+              // Mobile (2-col): bottom border on first row
+              i < 2 && "border-b md:border-b-0",
+              // Desktop (4-col): right border on all but last item
+              i < 3 && "md:border-r",
+            )}
           >
             <span className="text-gold" aria-hidden="true">
               {item.icon}
