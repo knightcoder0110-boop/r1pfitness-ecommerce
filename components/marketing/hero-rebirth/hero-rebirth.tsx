@@ -123,20 +123,20 @@ export function HeroRebirth({
         <Container size="page">
           <div
             className={cn(
-              "relative flex h-full min-h-full flex-col justify-center",
+              "relative flex h-full min-h-full flex-col justify-center items-center md:items-start",
               "py-16 md:py-20 lg:py-24",
             )}
           >
             <div
               className={cn(
-                "max-w-xl lg:max-w-2xl",
+                "w-full max-w-md sm:max-w-xl lg:max-w-2xl",
                 "text-center md:text-left mx-auto md:mx-0",
               )}
             >
               {/* Eyebrow */}
-              <div className="flex items-center justify-center md:justify-start gap-3">
-                <span className="h-px w-8 bg-gold" aria-hidden="true" />
-                <p className="font-mono text-[10px] uppercase tracking-[0.55em] text-gold">
+              <div className="flex items-center justify-center md:justify-start gap-2 sm:gap-3">
+                <span className="h-px w-6 sm:w-8 bg-gold" aria-hidden="true" />
+                <p className="font-mono text-[10px] uppercase tracking-[0.38em] sm:tracking-[0.55em] text-gold">
                   {eyebrow}
                 </p>
               </div>
@@ -146,7 +146,7 @@ export function HeroRebirth({
                 className={cn(
                   "mt-6 md:mt-8",
                   "font-display uppercase text-text",
-                  "text-[clamp(2rem,12vw,8.5rem)]",
+                  "text-[clamp(1.85rem,11vw,8.5rem)]",
                   "leading-[0.88] tracking-[0.02em]",
                 )}
               >
@@ -158,7 +158,7 @@ export function HeroRebirth({
               </h1>
 
               {/* Tagline */}
-              <p className="mt-6 md:mt-8 font-mono text-[11px] sm:text-xs uppercase tracking-[0.42em] text-muted">
+              <p className="mt-6 md:mt-8 px-2 sm:px-0 font-mono text-[11px] sm:text-xs uppercase tracking-[0.28em] sm:tracking-[0.42em] text-muted">
                 {tagline}
               </p>
 
@@ -172,18 +172,24 @@ export function HeroRebirth({
                 className={cn(
                   "mt-8 md:mt-10",
                   "flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4",
-                  "justify-center md:justify-start",
+                  "justify-center md:justify-start items-center md:items-start",
                 )}
               >
                 <Link
                   href={primaryCta.href}
-                  className={buttonVariants({ variant: "primary", size: "lg" })}
+                  className={cn(
+                    buttonVariants({ variant: "primary", size: "lg" }),
+                    "w-full max-w-[18rem] sm:w-auto sm:max-w-none",
+                  )}
                 >
                   {primaryCta.label}
                 </Link>
                 <Link
                   href={secondaryCta.href}
-                  className={buttonVariants({ variant: "tertiary", size: "lg" })}
+                  className={cn(
+                    buttonVariants({ variant: "tertiary", size: "lg" }),
+                    "w-full max-w-[18rem] sm:w-auto sm:max-w-none",
+                  )}
                 >
                   {secondaryCta.label}
                 </Link>
