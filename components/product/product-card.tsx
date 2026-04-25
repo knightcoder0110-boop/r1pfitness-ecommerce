@@ -95,6 +95,7 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
         <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5">
           {product.isLimited ? <Badge tone="gold">Limited</Badge> : null}
           {onSale ? <Badge tone="coral">Sale</Badge> : null}
+          {outOfStock ? <Badge tone="danger">Sold Out</Badge> : null}
           {lowStock ? <Badge tone="neutral">Low stock</Badge> : null}
         </div>
 
