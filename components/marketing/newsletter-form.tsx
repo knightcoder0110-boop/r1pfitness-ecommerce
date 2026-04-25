@@ -98,7 +98,7 @@ export function NewsletterForm({
         /* Override the global input styling — form wrapper owns the border now. */
         className="flex-1 min-w-0 h-14 bg-transparent !border-0 !ring-0 !shadow-none px-5 font-mono text-sm text-text placeholder:text-faint/90 focus:outline-none disabled:opacity-50 transition-opacity !rounded-none"
       />
-      <Button type="submit" size="md" loading={state === "loading"} className="shrink-0 !rounded-none">
+      <Button type="submit" size="lg" loading={state === "loading"} className="shrink-0 !rounded-none !px-5 sm:!px-9">
         {buttonLabel}
       </Button>
 

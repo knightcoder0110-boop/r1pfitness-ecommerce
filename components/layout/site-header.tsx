@@ -90,31 +90,29 @@ export function SiteHeader() {
         style={{ height: "var(--size-header)" }}
       >
           <Container className="flex h-full items-center justify-between gap-4">
-            {/* Left: mobile menu + brand */}
-            <div className="flex items-center gap-2">
-              <MobileNav links={NAV_LINKS} />
-              <Link
-                href={ROUTES.home}
-                aria-label={`${SITE.name} home`}
-                className="group inline-flex flex-col leading-none transition-opacity hover:opacity-90"
-              >
-                <span className="font-display text-[1.35rem] sm:text-[1.6rem] tracking-[0.22em] text-text">
-                  REBORN <span className="text-gold">1N</span> PARADISE
-                </span>
-                <span className="hidden sm:block font-mono text-[9px] uppercase tracking-[0.55em] text-gold/80 mt-1">
-                  R1P · Fitness
-                </span>
-              </Link>
-            </div>
+            {/* Left: brand */}
+            <Link
+              href={ROUTES.home}
+              aria-label={`${SITE.name} home`}
+              className="group inline-flex flex-col leading-none transition-opacity hover:opacity-90"
+            >
+              <span className="font-display text-[1.35rem] sm:text-[1.6rem] tracking-[0.22em] text-text">
+                REBORN <span className="text-gold">1N</span> PARADISE
+              </span>
+              <span className="hidden sm:block font-mono text-[9px] uppercase tracking-[0.55em] text-gold/80 mt-1">
+                R1P · Fitness
+              </span>
+            </Link>
 
             {/* Desktop nav — includes mega menu */}
             <DesktopNav links={NAV_LINKS} />
 
-            {/* Right: search + account + cart */}
+            {/* Right: search + account + cart + mobile menu */}
             <div className="flex items-center gap-1">
               <SearchButton />
               <AccountButton />
               <CartButton />
+              <MobileNav links={NAV_LINKS} />
             </div>
           </Container>
         </header>
