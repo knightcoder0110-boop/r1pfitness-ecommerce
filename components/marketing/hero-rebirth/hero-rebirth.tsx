@@ -20,8 +20,10 @@ export interface HeroRebirthProps {
   primaryCta?: { label: string; href: string };
   /** Secondary CTA (dark obsidian). */
   secondaryCta?: { label: string; href: string };
-  /** Background image path (public dir). */
+  /** Background image path (public dir) — shown on md+ (desktop/tablet). */
   backgroundImage?: string;
+  /** Background image path (public dir) — shown below md (mobile). Falls back to backgroundImage if omitted. */
+  mobileBackgroundImage?: string;
   /** Whether to render the feature strip beneath the hero. */
   showFeatureStrip?: boolean;
   /** Optional extra className for the outer wrapper. */
@@ -35,6 +37,7 @@ const DEFAULTS = {
   primaryCta: { label: "Shop All", href: ROUTES.shop },
   secondaryCta: { label: "Join the Ohana", href: "#newsletter" },
   backgroundImage: "/images/hero/hero-cover-desktop-mode.png",
+  mobileBackgroundImage: "/images/hero/hero-cover-mobile-mode.png",
   showFeatureStrip: true,
 } as const;
 
@@ -61,6 +64,7 @@ export function HeroRebirth({
   primaryCta = DEFAULTS.primaryCta,
   secondaryCta = DEFAULTS.secondaryCta,
   backgroundImage = DEFAULTS.backgroundImage,
+  mobileBackgroundImage = DEFAULTS.mobileBackgroundImage,
   showFeatureStrip = DEFAULTS.showFeatureStrip,
   className,
 }: HeroRebirthProps) {
@@ -74,15 +78,34 @@ export function HeroRebirth({
         className="relative isolate overflow-hidden bg-bg aspect-hero-surface min-h-[34rem] md:min-h-[42rem]"
       >
         {/* ─── Background image + overlays ──────────────────────── */}
-        <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 -z-10 overflow-clip">
+          {/*
+           * Mobile background — portrait image, shown below md.
+           * `sizes` tells the browser this image only fills the viewport
+           * at mobile widths, so it won't waste bandwidth on desktop.
+           */}
+          <Image
+            src={mobileBackgroundImage}
+            alt=""
+            aria-hidden
+            fill
+            priority
+            sizes="(max-width: 767px) 100vw, 1px"
+            className="object-cover object-top md:hidden"
+          />
+
+          {/*
+           * Desktop background — landscape image, shown at md+.
+           * Hidden on mobile so the browser skips it on small screens.
+           */}
           <Image
             src={backgroundImage}
             alt=""
             aria-hidden
             fill
             priority
-            sizes="100vw"
-            className="object-cover object-center"
+            sizes="(min-width: 768px) 100vw, 1px"
+            className="object-cover object-center hidden md:block"
           />
 
           {/* Mobile: uniform darken for text legibility. */}
@@ -115,7 +138,7 @@ export function HeroRebirth({
           {/* Warm radial glow from bottom-left. */}
           <div
             aria-hidden
-            className="pointer-events-none absolute -bottom-32 -left-32 w-[520px] h-[520px] rounded-full bg-gold/5 blur-[120px]"
+            className="pointer-events-none absolute -bottom-20 -left-20 w-[360px] h-[360px] rounded-full bg-gold/5 blur-[90px]"
           />
         </div>
 
