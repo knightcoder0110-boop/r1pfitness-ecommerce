@@ -242,7 +242,11 @@ export async function getStoreProductBySlug(slug: string): Promise<Product | nul
 
   // Attach variations if this is a variable product.
   if (raw.variations && raw.variations.length > 0) {
-    const variations = await getStoreVariations(String(raw.id));
+    // Pass the parent product's raw attributes so the variation mapper can
+    // key attributes by taxonomy slug (e.g. "pa_size") rather than display
+    // name ("Size"). This is required for the selection-matching logic in
+    // the Quick Add modal to work correctly.
+    const variations = await getStoreVariations(String(raw.id), raw.attributes ?? []);
     return { ...base, variations };
   }
 
@@ -255,9 +259,25 @@ export async function getStoreProductBySlug(slug: string): Promise<Product | nul
  * The WooCommerce Store API (/wc/store/v1) does NOT expose a
  * /products/{id}/variations endpoint — that only exists in the authenticated
  * REST API v3.  We call the v3 endpoint here using the server-only credentials.
+ *
+ * @param parentAttrs - The parent product's raw Store API attributes. Used to
+ *   build a display-name → taxonomy-slug map (e.g. "Size" → "pa_size") so
+ *   that variation attribute records are keyed consistently with
+ *   `ProductAttribute.id`, enabling variation-selection matching in the UI.
  */
-export async function getStoreVariations(productId: string): Promise<ProductVariation[]> {
+export async function getStoreVariations(
+  productId: string,
+  parentAttrs: import("./mappers").RawStoreAttribute[] = [],
+): Promise<ProductVariation[]> {
   if (!productId) return [];
+
+  // Build "Display Name" → "pa_taxonomy" lookup from the parent product.
+  // Falls back to the name itself when no taxonomy is present (e.g. for
+  // custom attributes that are not registered as global taxonomies).
+  const nameToKey: Record<string, string> = {};
+  for (const a of parentAttrs) {
+    nameToKey[a.name] = a.taxonomy ?? a.name;
+  }
 
   const base = (process.env.WOO_BASE_URL ?? "").replace(/\/$/, "");
   const key    = process.env.WOO_CONSUMER_KEY    ?? "";
@@ -316,7 +336,10 @@ export async function getStoreVariations(productId: string): Promise<ProductVari
         : "out_of_stock";
 
     const attrs: Record<string, string> = {};
-    for (const a of v.attributes) attrs[a.name] = a.option;
+    // Key by taxonomy slug (e.g. "pa_size") so it matches ProductAttribute.id
+    // which is also keyed by taxonomy slug. This ensures variation-selection
+    // lookup in the Quick Add modal finds the right match.
+    for (const a of v.attributes) attrs[nameToKey[a.name] ?? a.name] = a.option;
 
     return {
       id: String(v.id),
