@@ -116,12 +116,14 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
       <Link
         href={ROUTES.product(product.slug)}
         className={cn(
-          "flex flex-col gap-1 pt-3.5 pb-1",
+          "flex flex-col gap-1.5 pt-3.5 pb-1",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
         )}
       >
-        {/* Product name */}
-        <h3 className="line-clamp-2 font-display text-base leading-snug tracking-[0.15em] text-text transition-colors duration-200 group-hover:text-gold">
+        {/* Product name — serif (Cormorant) reads far better at card scale
+            than the all-caps Bebas Neue display face. Slight letter-spacing
+            tightening keeps it editorial without sacrificing legibility. */}
+        <h3 className="line-clamp-2 font-serif text-[15px] leading-snug tracking-normal text-text transition-colors duration-200 group-hover:text-gold">
           {product.name}
         </h3>
 
@@ -130,7 +132,7 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
           <Price
             price={product.price}
             {...(product.compareAtPrice ? { compareAtPrice: product.compareAtPrice } : {})}
-            size="sm"
+            size="md"
           />
           <span
             aria-hidden
@@ -140,19 +142,12 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
           </span>
         </div>
 
-        {/* Swatches + size range — one compact row */}
-        {(product.colorOptions?.length || product.sizeOptions?.length) ? (
-          <div className="mt-1.5 flex items-center justify-between gap-2">
-            {product.colorOptions?.length ? (
-              <ColorSwatches options={product.colorOptions} />
-            ) : <span />}
-            {product.sizeOptions?.length ? (
-              <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-muted">
-                {product.sizeOptions.length > 2
-                  ? `${product.sizeOptions[0]}–${product.sizeOptions[product.sizeOptions.length - 1]}`
-                  : product.sizeOptions.join(" / ")}
-              </span>
-            ) : null}
+        {/* Color swatches only — size is intentionally omitted from the card.
+            It clutters the editorial layout and is always available on the
+            PDP / Quick Add modal anyway. */}
+        {product.colorOptions?.length ? (
+          <div className="mt-1.5">
+            <ColorSwatches options={product.colorOptions} />
           </div>
         ) : null}
       </Link>

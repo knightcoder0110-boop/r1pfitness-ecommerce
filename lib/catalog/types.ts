@@ -64,7 +64,15 @@ export interface ListProductsResult {
  */
 export interface CatalogDataSource {
   listProducts(query: ListProductsQuery): Promise<ListProductsResult>;
-  getProductBySlug(slug: string): Promise<Product | null>;
+  /**
+   * Resolve a product by its public slug.
+   *
+   * @param hints - Optional optimistic data the caller already has. When
+   *   `productId` is supplied the adapter MAY use it to parallelise its
+   *   internal fetches (e.g. fire a variations request before the slug
+   *   lookup resolves). The hint is verified before being trusted.
+   */
+  getProductBySlug(slug: string, hints?: { productId?: string }): Promise<Product | null>;
   listCategories(): Promise<ProductCategory[]>;
   getCategoryBySlug(slug: string): Promise<ProductCategory | null>;
   /**

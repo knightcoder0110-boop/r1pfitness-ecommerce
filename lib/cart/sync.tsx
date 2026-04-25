@@ -140,24 +140,36 @@ export function useServerCart() {
       if (quantity === 0) {
         const result = await bffRemoveItem({ key: serverKey });
         if (result?.ok) {
-          // Server confirmed. Replace local state with server truth so the
-          // item is definitely gone and can't reappear on next refresh.
           forceSync(result.data);
-        } else {
-          // BFF failed — roll back: restore item at its previous quantity.
-          insertItem(item);
-          localActions.setQuantity(key, item.quantity);
-          showToast("Couldn't remove item — please try again", "error");
+          return;
         }
+        // CART_ITEM_NOT_FOUND — the item is already gone on WC's side
+        // (stale wooKey from a rotated cart-token, or already-removed item).
+        // Treat as success: keep the local removal, sync from a fresh GET.
+        if (result && !result.ok && result.error?.code === "CART_ITEM_NOT_FOUND") {
+          const fresh = await bffGetCart();
+          if (fresh?.ok) forceSync(fresh.data);
+          return;
+        }
+        // Genuine failure — roll back: restore item at its previous quantity.
+        insertItem(item);
+        localActions.setQuantity(key, item.quantity);
+        showToast("Couldn't remove item — please try again", "error");
       } else {
         const result = await bffUpdateItem({ key: serverKey, quantity });
         if (result?.ok) {
           forceSync(result.data);
-        } else {
-          // Roll back to previous quantity.
-          localActions.setQuantity(key, item.quantity);
-          showToast("Couldn't update quantity — please try again", "error");
+          return;
         }
+        if (result && !result.ok && result.error?.code === "CART_ITEM_NOT_FOUND") {
+          // Item disappeared server-side. Resync from server, keep local change.
+          const fresh = await bffGetCart();
+          if (fresh?.ok) forceSync(fresh.data);
+          return;
+        }
+        // Roll back to previous quantity.
+        localActions.setQuantity(key, item.quantity);
+        showToast("Couldn't update quantity — please try again", "error");
       }
     },
 
@@ -166,7 +178,10 @@ export function useServerCart() {
      *
      * On success: force-syncs local state from the server response so the
      * item is definitively gone and won't reappear on the next page refresh.
-     * On failure: rolls back the optimistic remove and shows a toast.
+     * On CART_ITEM_NOT_FOUND: the item is already gone server-side (stale
+     * wooKey from a rotated cart-token). Keep the local removal and pull a
+     * fresh server cart so the two stay in sync.
+     * On other failures: roll back the optimistic remove and toast.
      */
     removeItem: async (key: string) => {
       const items = useCartStore.getState().items;
@@ -180,18 +195,24 @@ export function useServerCart() {
       const result = await bffRemoveItem({ key: serverKey });
 
       if (result?.ok) {
-        // Server confirmed removal. Overwrite local with the authoritative
-        // server state (which won't include this item). This is the key fix:
-        // it prevents the item from reappearing on the next page refresh via
-        // CartSyncProvider → syncFromServer, because local is now in sync
-        // with WC and correctly empty (or has only the remaining items).
         forceSync(result.data);
-      } else {
-        // BFF failed — roll back the optimistic remove so the item stays
-        // visible and the user can try again.
-        insertItem(item);
-        showToast("Couldn't remove item — please try again", "error");
+        return;
       }
+
+      // Stale wooKey — the item is already absent on WC's side. Treat as
+      // success and pull a fresh cart to make absolutely sure local matches
+      // the server. This is the common case after a cart-token rotation
+      // (e.g. when a fresh tab is opened and our token cookie expired).
+      if (result && !result.ok && result.error?.code === "CART_ITEM_NOT_FOUND") {
+        const fresh = await bffGetCart();
+        if (fresh?.ok) forceSync(fresh.data);
+        return;
+      }
+
+      // Genuine failure (network, 5xx, validation) — roll back the optimistic
+      // remove so the item stays visible and the user can retry.
+      insertItem(item);
+      showToast("Couldn't remove item — please try again", "error");
     },
 
     /**

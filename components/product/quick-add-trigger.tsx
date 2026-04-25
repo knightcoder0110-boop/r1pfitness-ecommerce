@@ -60,9 +60,10 @@ export function QuickAddTrigger({ product, className }: QuickAddTriggerProps) {
   function startPrefetch() {
     if (fetchingRef.current || prefetched) return;
     fetchingRef.current = true;
-    void fetch(`/api/product/${encodeURIComponent(product.slug)}`, {
-      headers: { accept: "application/json" },
-    })
+    void fetch(
+      `/api/product/${encodeURIComponent(product.slug)}?id=${encodeURIComponent(product.id)}`,
+      { headers: { accept: "application/json" } },
+    )
       .then((r) => r.json() as Promise<{ ok: true; data: Product } | { ok: false }>)
       .then((json) => {
         if (json.ok) setPrefetched(json.data);
@@ -91,9 +92,10 @@ export function QuickAddTrigger({ product, className }: QuickAddTriggerProps) {
       try {
         let full: Product | null = prefetched;
         if (!full) {
-          const res = await fetch(`/api/product/${encodeURIComponent(product.slug)}`, {
-            headers: { accept: "application/json" },
-          });
+          const res = await fetch(
+            `/api/product/${encodeURIComponent(product.slug)}?id=${encodeURIComponent(product.id)}`,
+            { headers: { accept: "application/json" } },
+          );
           const json = (await res.json()) as
             | { ok: true; data: Product }
             | { ok: false; error: { message: string } };

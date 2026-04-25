@@ -134,9 +134,12 @@ export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: Qui
 
     void (async () => {
       try {
-        const res = await fetch(`/api/product/${encodeURIComponent(summary.slug)}`, {
-          headers: { accept: "application/json" },
-        });
+        // Pass the productId hint so the BFF can fire the slug + variations
+        // fetches in parallel — significantly faster on cold cache.
+        const res = await fetch(
+          `/api/product/${encodeURIComponent(summary.slug)}?id=${encodeURIComponent(summary.id)}`,
+          { headers: { accept: "application/json" } },
+        );
         const json = (await res.json()) as
           | { ok: true; data: Product }
           | { ok: false; error: { code: string; message: string } };
