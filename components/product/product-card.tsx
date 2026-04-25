@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Price } from "@/components/ui/price";
 import { ColorSwatches } from "@/components/product/color-swatches";
+import { QuickAddTrigger } from "@/components/product/quick-add-trigger";
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils/cn";
 import type { ProductSummary } from "@/lib/woo/types";
@@ -99,28 +100,10 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
           {lowStock ? <Badge tone="neutral">Low stock</Badge> : null}
         </div>
 
-        {/* Quick-view strip — dark frosted glass slides up on hover */}
-        {!outOfStock && (
-          <Link
-            href={ROUTES.product(product.slug)}
-            tabIndex={-1}
-            aria-hidden
-            className={cn(
-              "absolute inset-x-0 bottom-0 z-10",
-              "flex items-center justify-between gap-2 px-4 py-3",
-              "bg-bg/88 backdrop-blur-[4px] border-t border-white/[0.06]",
-              "translate-y-full group-hover:translate-y-0",
-              "transition-transform duration-300 ease-out",
-            )}
-          >
-            <span className="font-mono text-[10px] font-medium uppercase tracking-[0.4em] text-gold">
-              Quick View
-            </span>
-            <span aria-hidden className="text-sm leading-none text-gold">
-              →
-            </span>
-          </Link>
-        )}
+        {/* Quick Add — real action: variable products open the modal,
+            simple products add to cart in one click. Hidden when sold out
+            (those redirect to PDP for the back-in-stock form). */}
+        {!outOfStock && <QuickAddTrigger product={product} />}
 
         {/* Gold sweep — brand signature bottom accent */}
         <div
