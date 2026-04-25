@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,6 +22,12 @@ interface QuickAddModalProps {
   onClose: () => void;
   /** Listing-card summary — used as instant header content while the full Product loads. */
   summary: ProductSummary;
+  /**
+   * Pre-fetched full Product from the trigger's hover-prefetch.
+   * When provided, the modal skips its own fetch and renders the picker
+   * immediately — no loading skeleton visible to the user.
+   */
+  prefetchedProduct?: Product | null;
 }
 
 interface FetchState {
@@ -50,17 +56,57 @@ interface FetchState {
  *  - Uses createPortal to escape any backdrop-filter / transform stacking
  *    context on parents (consistent with mobile-nav).
  */
-export function QuickAddModal({ open, onClose, summary }: QuickAddModalProps) {
+export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: QuickAddModalProps) {
   const [mounted, setMounted] = useState(false);
-  const [fetchState, setFetchState] = useState<FetchState>({ status: "idle" });
-  const [selected, setSelected] = useState<Record<string, string>>({});
+  // If the trigger already prefetched the product (hover), initialise
+  // directly to "ready" so the modal shows the picker with zero latency.
+  const [fetchState, setFetchState] = useState<FetchState>(() =>
+    prefetchedProduct
+      ? { status: "ready", product: prefetchedProduct }
+      : { status: "idle" },
+  );
+  const [selected, setSelected] = useState<Record<string, string>>(() => {
+    // Pre-select first option for every variation attribute when we already
+    // have the product (prefetch case).
+    if (!prefetchedProduct) return {};
+    const initial: Record<string, string> = {};
+    for (const a of prefetchedProduct.attributes) {
+      if (a.variation && a.options[0]) initial[a.id] = a.options[0];
+    }
+    return initial;
+  });
   const [isPending, setIsPending] = useState(false);
+  // Track whether we've already seeded the selection once so we don't
+  // clobber the user's choices if the component re-renders.
+  const selectionSeeded = useRef(false);
+  if (prefetchedProduct && !selectionSeeded.current) {
+    selectionSeeded.current = true;
+  }
 
   const { addItem, open: openCart } = useServerCart();
   const showToast = useToastStore((s) => s.show);
 
   // Hydration guard — createPortal needs document.
   useEffect(() => setMounted(true), []);
+
+  // When the prefetchedProduct prop arrives (prefetch completes while modal
+  // is already open), update fetch state immediately.
+  useEffect(() => {
+    if (!prefetchedProduct) return;
+    setFetchState((prev) => {
+      if (prev.status === "ready") return prev;
+      return { status: "ready", product: prefetchedProduct };
+    });
+    if (!selectionSeeded.current) {
+      selectionSeeded.current = true;
+      const initial: Record<string, string> = {};
+      for (const a of prefetchedProduct.attributes) {
+        if (a.variation && a.options[0]) initial[a.id] = a.options[0];
+      }
+      setSelected(initial);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefetchedProduct]);
 
   // Body scroll lock + Esc key — only while open.
   useEffect(() => {
@@ -77,11 +123,11 @@ export function QuickAddModal({ open, onClose, summary }: QuickAddModalProps) {
     };
   }, [open, onClose]);
 
-  // Fetch full product on first open. Only refetch if the slug changes.
+  // Fetch full product on first open ONLY when we don't already have data.
   useEffect(() => {
     if (!open) return;
-    if (fetchState.status === "ready" && fetchState.product?.slug === summary.slug) return;
-    if (fetchState.status === "loading") return;
+    if (fetchState.status === "ready") return;  // prefetch or previous fetch done
+    if (fetchState.status === "loading") return; // already in flight
 
     let cancelled = false;
     setFetchState({ status: "loading" });
@@ -107,11 +153,14 @@ export function QuickAddModal({ open, onClose, summary }: QuickAddModalProps) {
         setFetchState({ status: "ready", product: json.data });
 
         // Pre-select first option of every variation attribute.
-        const initial: Record<string, string> = {};
-        for (const a of json.data.attributes) {
-          if (a.variation && a.options[0]) initial[a.id] = a.options[0];
+        if (!selectionSeeded.current) {
+          selectionSeeded.current = true;
+          const initial: Record<string, string> = {};
+          for (const a of json.data.attributes) {
+            if (a.variation && a.options[0]) initial[a.id] = a.options[0];
+          }
+          setSelected(initial);
         }
-        setSelected(initial);
       } catch (err) {
         if (cancelled) return;
         setFetchState({
@@ -124,7 +173,11 @@ export function QuickAddModal({ open, onClose, summary }: QuickAddModalProps) {
     return () => {
       cancelled = true;
     };
-  }, [open, summary.slug, fetchState.status, fetchState.product?.slug]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, summary.slug]);
+  // Intentionally exclude fetchState.status from deps — we guard with early
+  // returns at the top; adding it would cause spurious re-runs on every status
+  // transition.
 
   const product = fetchState.product;
 

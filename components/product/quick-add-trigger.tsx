@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ShoppingBag } from "lucide-react";
 import { QuickAddModal } from "@/components/product/quick-add-modal";
 import { useServerCart } from "@/lib/cart";
@@ -34,6 +34,11 @@ interface QuickAddTriggerProps {
 export function QuickAddTrigger({ product, className }: QuickAddTriggerProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [pending, setPending] = useState(false);
+  // Prefetched full Product — populated on hover/touchstart so the modal
+  // can display instantly when the user actually clicks.
+  const [prefetched, setPrefetched] = useState<Product | null>(null);
+  const fetchingRef = useRef(false);
+
   const { addItem, open: openCart } = useServerCart();
   const showToast = useToastStore((s) => s.show);
 
@@ -46,6 +51,25 @@ export function QuickAddTrigger({ product, className }: QuickAddTriggerProps) {
     (product.sizeOptions?.length ?? 0) > 0;
 
   const label = isVariable ? "Quick Add" : "Add to Cart";
+
+  /**
+   * Start a prefetch to the BFF. Called on hover (desktop) and touchstart
+   * (mobile) so the data is already in flight — or fully cached — by the
+   * time the user clicks. Idempotent: only one in-flight request at a time.
+   */
+  function startPrefetch() {
+    if (fetchingRef.current || prefetched) return;
+    fetchingRef.current = true;
+    void fetch(`/api/product/${encodeURIComponent(product.slug)}`, {
+      headers: { accept: "application/json" },
+    })
+      .then((r) => r.json() as Promise<{ ok: true; data: Product } | { ok: false }>)
+      .then((json) => {
+        if (json.ok) setPrefetched(json.data);
+      })
+      .catch(() => { /* silent — modal will retry on open */ })
+      .finally(() => { fetchingRef.current = false; });
+  }
 
   function handleClick(event: React.MouseEvent<HTMLButtonElement>) {
     // The card's image and title are both anchors to the PDP; this button
@@ -61,23 +85,24 @@ export function QuickAddTrigger({ product, className }: QuickAddTriggerProps) {
       return;
     }
 
-    // Simple product — fetch full Product, then add 1 to cart.
+    // Simple product — use prefetched data if available, else fetch now.
     setPending(true);
     void (async () => {
       try {
-        const res = await fetch(`/api/product/${encodeURIComponent(product.slug)}`, {
-          headers: { accept: "application/json" },
-        });
-        const json = (await res.json()) as
-          | { ok: true; data: Product }
-          | { ok: false; error: { message: string } };
-
-        if (!res.ok || !json.ok) {
-          showToast("Could not add to cart — try opening the product page", "error");
-          return;
+        let full: Product | null = prefetched;
+        if (!full) {
+          const res = await fetch(`/api/product/${encodeURIComponent(product.slug)}`, {
+            headers: { accept: "application/json" },
+          });
+          const json = (await res.json()) as
+            | { ok: true; data: Product }
+            | { ok: false; error: { message: string } };
+          if (!res.ok || !json.ok) {
+            showToast("Could not add to cart — try opening the product page", "error");
+            return;
+          }
+          full = json.data;
         }
-
-        const full = json.data;
 
         // Defensive: stock could have changed since the listing rendered.
         if (full.stockStatus === "out_of_stock") {
@@ -107,6 +132,8 @@ export function QuickAddTrigger({ product, className }: QuickAddTriggerProps) {
       <button
         type="button"
         onClick={handleClick}
+        onMouseEnter={startPrefetch}
+        onTouchStart={startPrefetch}
         disabled={pending}
         aria-label={`${label}: ${product.name}`}
         className={cn(
@@ -136,6 +163,7 @@ export function QuickAddTrigger({ product, className }: QuickAddTriggerProps) {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         summary={product}
+        prefetchedProduct={prefetched}
       />
     </>
   );

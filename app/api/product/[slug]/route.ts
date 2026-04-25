@@ -8,14 +8,15 @@ import { fail, ok } from "@/lib/api";
  * for client-side surfaces that only have a `ProductSummary` to start with —
  * e.g. the Quick Add modal launched from a product card.
  *
- * Notes:
- *  - Light-weight: no auth / cookies needed; this is the same data the public
- *    PDP is built from.
- *  - Cached at the edge for 60s — the listing pages already use the same
- *    catalog source so this stays cheap.
- *  - Returns NOT_FOUND (404) if the slug doesn't resolve, so the client UI
- *    can degrade to a "View full details" link.
+ * Caching notes:
+ *  - Do NOT set `force-dynamic` here — that opts all fetch() calls in this
+ *    route out of the Next.js Data Cache, making every hit go to WooCommerce.
+ *  - The underlying Woo fetch helpers already carry `next: { revalidate: 300 }`
+ *    so they use the Data Cache automatically.
+ *  - We also send public browser-cache headers so repeated opens of the same
+ *    product's Quick Add modal skip the network entirely on the client side.
  */
+
 export async function GET(
   _req: NextRequest,
   ctx: { params: Promise<{ slug: string }> },
@@ -33,7 +34,8 @@ export async function GET(
     }
     return NextResponse.json(ok(product), {
       headers: {
-        "Cache-Control": "public, max-age=60, s-maxage=60, stale-while-revalidate=300",
+        // Let the browser cache for 60s and serve stale up to 5 min while revalidating.
+        "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
       },
     });
   } catch (err) {
@@ -41,5 +43,3 @@ export async function GET(
     return NextResponse.json(fail("BACKEND_OFFLINE", message), { status: 503 });
   }
 }
-
-export const dynamic = "force-dynamic";
