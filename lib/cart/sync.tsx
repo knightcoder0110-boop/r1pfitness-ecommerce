@@ -24,6 +24,7 @@ import { useShallow } from "zustand/react/shallow";
 import { useCartStore } from "./store";
 import { useCartActions } from "./hooks";
 import { lineKey } from "./reducer";
+import { useToastStore } from "@/lib/toast";
 import {
   bffGetCart,
   bffAddItem,
@@ -59,9 +60,15 @@ export function CartSyncProvider({ children }: { children: ReactNode }) {
  */
 export function useServerCart() {
   const localActions = useCartActions();
-  const { patchWooKey, setCoupon } = useCartStore(
-    useShallow((s) => ({ patchWooKey: s.patchWooKey, setCoupon: s.setCoupon })),
+  const { patchWooKey, setCoupon, forceSync, insertItem } = useCartStore(
+    useShallow((s) => ({
+      patchWooKey: s.patchWooKey,
+      setCoupon: s.setCoupon,
+      forceSync: s.forceSync,
+      insertItem: s.insertItem,
+    })),
   );
+  const showToast = useToastStore((s) => s.show);
 
   return {
     // ── Passthrough actions (no BFF call needed) ──────────────────────
@@ -114,34 +121,77 @@ export function useServerCart() {
      * (n === 0). Uses the wooKey if available so the request reaches the right
      * WC cart item. Falls back to the local key (which IS the WC key for
      * server-reconciled items).
+     *
+     * On success: force-syncs local state from the server response so local
+     * and WC never drift.
+     * On failure: rolls back the optimistic change and shows a toast.
      */
     setQuantity: async (key: string, quantity: number) => {
       // Read CURRENT state — don't rely on stale hook snapshot.
       const items = useCartStore.getState().items;
-      localActions.setQuantity(key, quantity);
-
       const item = items.find((i) => i.key === key);
       if (!item) return;
+
+      // Optimistic update first.
+      localActions.setQuantity(key, quantity);
+
       const serverKey = item.wooKey ?? item.key;
 
       if (quantity === 0) {
-        await bffRemoveItem({ key: serverKey });
+        const result = await bffRemoveItem({ key: serverKey });
+        if (result?.ok) {
+          // Server confirmed. Replace local state with server truth so the
+          // item is definitely gone and can't reappear on next refresh.
+          forceSync(result.data);
+        } else {
+          // BFF failed — roll back: restore item at its previous quantity.
+          insertItem(item);
+          localActions.setQuantity(key, item.quantity);
+          showToast("Couldn't remove item — please try again", "error");
+        }
       } else {
-        await bffUpdateItem({ key: serverKey, quantity });
+        const result = await bffUpdateItem({ key: serverKey, quantity });
+        if (result?.ok) {
+          forceSync(result.data);
+        } else {
+          // Roll back to previous quantity.
+          localActions.setQuantity(key, item.quantity);
+          showToast("Couldn't update quantity — please try again", "error");
+        }
       }
     },
 
     /**
      * Remove an item. Optimistic-first, then syncs to server.
+     *
+     * On success: force-syncs local state from the server response so the
+     * item is definitively gone and won't reappear on the next page refresh.
+     * On failure: rolls back the optimistic remove and shows a toast.
      */
     removeItem: async (key: string) => {
       const items = useCartStore.getState().items;
-      localActions.removeItem(key);
-
       const item = items.find((i) => i.key === key);
       if (!item) return;
+
+      // Optimistic remove first.
+      localActions.removeItem(key);
+
       const serverKey = item.wooKey ?? item.key;
-      await bffRemoveItem({ key: serverKey });
+      const result = await bffRemoveItem({ key: serverKey });
+
+      if (result?.ok) {
+        // Server confirmed removal. Overwrite local with the authoritative
+        // server state (which won't include this item). This is the key fix:
+        // it prevents the item from reappearing on the next page refresh via
+        // CartSyncProvider → syncFromServer, because local is now in sync
+        // with WC and correctly empty (or has only the remaining items).
+        forceSync(result.data);
+      } else {
+        // BFF failed — roll back the optimistic remove so the item stays
+        // visible and the user can try again.
+        insertItem(item);
+        showToast("Couldn't remove item — please try again", "error");
+      }
     },
 
     /**

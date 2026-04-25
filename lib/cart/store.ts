@@ -40,6 +40,18 @@ export interface CartStoreState extends CartState {
    * No-op when local cart already has items (local wins).
    */
   syncFromServer: (cart: Cart) => void;
+  /**
+   * Unconditionally replace the local cart with the server-side Cart.
+   * Use this after confirmed BFF mutations (remove, update) to keep
+   * local state authoritative and prevent stale WC items from reappearing
+   * on the next page refresh.
+   */
+  forceSync: (cart: Cart) => void;
+  /**
+   * Re-insert a CartLineItem directly. Used to roll back an optimistic
+   * remove when the BFF call fails, restoring the item to the cart.
+   */
+  insertItem: (item: CartLineItem) => void;
   /** Set or clear the applied coupon + discount. */
   setCoupon: (coupon: CartState["coupon"]) => void;
   open: () => void;
@@ -80,12 +92,30 @@ export const useCartStore = create<CartStoreState>()(
       syncFromServer: (cart) =>
         set((s) => {
           // Local wins: if user already has items, don't clobber them.
+          // This is intentionally conservative — forceSync is used when we
+          // want the server state to be the truth (after confirmed mutations).
           if (s.items.length > 0) return {};
           const coupon =
             cart.coupons.length > 0
               ? { code: cart.coupons[0]!.code, discount: cart.coupons[0]!.discount }
               : null;
           return { items: cart.items, currency: cart.currency, coupon };
+        }),
+
+      forceSync: (cart) =>
+        set(() => {
+          const coupon =
+            cart.coupons.length > 0
+              ? { code: cart.coupons[0]!.code, discount: cart.coupons[0]!.discount }
+              : null;
+          return { items: cart.items, currency: cart.currency, coupon };
+        }),
+
+      insertItem: (item) =>
+        set((s) => {
+          // No-op if already present (prevents duplicates on re-insert).
+          if (s.items.some((i) => i.key === item.key)) return {};
+          return { items: [...s.items, item] };
         }),
 
       setCoupon: (coupon) => set((s) => setCouponReducer({ items: s.items, currency: s.currency, coupon: s.coupon }, coupon)),
