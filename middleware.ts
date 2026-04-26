@@ -16,6 +16,8 @@ const LOCK_BYPASS_PREFIXES = [
   // follows the redirect to /locked, receives HTML, and logs
   // "The requested resource isn't a valid image ... received null".
   "/api/image-proxy",
+  // Health check used by uptime monitors (BetterStack/UptimeRobot).
+  "/api/health",
 ];
 
 function isBypassPath(pathname: string): boolean {

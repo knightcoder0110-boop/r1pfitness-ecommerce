@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ProductGrid } from "@/components/product";
-import { ActiveFilterChips, Pagination, ShopToolbar } from "@/components/shop";
+import { ActiveFilterChips, FilterSidebar, Pagination, ShopToolbar } from "@/components/shop";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
@@ -92,7 +92,7 @@ async function ShopProducts({ searchParams }: ShopPageProps) {
 
 function ShopSkeleton() {
   return (
-    <ul className="mt-8 grid grid-cols-2 gap-x-5 gap-y-12 sm:grid-cols-3 lg:grid-cols-5">
+    <ul className="mt-8 grid grid-cols-2 gap-x-5 gap-y-12 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {Array.from({ length: 8 }).map((_, i) => (
         <li key={i} className="flex flex-col gap-3">
           <Skeleton className="aspect-product w-full" />
@@ -121,11 +121,24 @@ export default async function ShopPage(props: ShopPageProps) {
 
       <ShopToolbar activeSlug={null} currentSort={searchParams.sort} />
 
-      <ActiveFilterChips className="mt-6 mb-2" />
+      {/* Main content: sidebar (desktop) + product grid */}
+      <div className="mt-8 flex flex-col gap-6 lg:flex-row lg:gap-10">
+        {/*
+         * FilterSidebar is self-contained:
+         *  - Desktop (lg+): renders as an inline w-56 aside
+         *  - Mobile: renders only the trigger button; drawer is fixed-position
+         */}
+        <FilterSidebar />
 
-      <Suspense key={suspenseKey} fallback={<ShopSkeleton />}>
-        <ShopProducts searchParams={props.searchParams} />
-      </Suspense>
+        <div className="flex-1 min-w-0">
+          {/* Active filter chips (visible when any filter is set) */}
+          <ActiveFilterChips className="mb-5" />
+
+          <Suspense key={suspenseKey} fallback={<ShopSkeleton />}>
+            <ShopProducts searchParams={props.searchParams} />
+          </Suspense>
+        </div>
+      </div>
     </Container>
   );
 }

@@ -223,28 +223,11 @@
   .py-section-lg { padding-block: var(--space-section-lg-lg); }
 }
 
-/* Hero / collection-cover aspect utilities.
- *
- * `width: 100%` is REQUIRED, not cosmetic.
- *
- * Bug it prevents: when a box has `aspect-ratio` AND a `min-height` larger
- * than `parent-width × ratio`, CSS reverses the calculation and computes
- * width FROM height, inflating the box past its parent (e.g. a hero with
- * aspect 4/5 + min-h 34rem becomes 27.2rem ≈ 435px wide regardless of
- * the viewport). The overflow gets clipped by `body { overflow-x: clip }`,
- * so visually nothing breaks — but every centered child sits offset from
- * the viewport center, and the page looks "shifted".
- *
- * Locking width to 100% means aspect-ratio only drives the *baseline*
- * height; `min-height` may grow it taller (breaking the ratio), but the
- * box never grows wider than its container. */
 .aspect-hero-surface {
-  width: 100%;
   aspect-ratio: var(--aspect-hero-mobile);
 }
 
 .aspect-collection-cover {
-  width: 100%;
   aspect-ratio: var(--aspect-collection-mobile);
 }
 
@@ -262,15 +245,14 @@
    BASE
    ═══════════════════════════════════════════════════════════════════ */
 
-html,
-body {
+html, body {
   background: var(--color-bg);
   color: var(--color-text);
+}
+
+html {
   /* clip does NOT create a scroll container (unlike hidden), so
-     position: sticky on child elements continues to work correctly.
-     Applied to both html AND body — html alone is insufficient because
-     absolutely-positioned children of body can still expand body's
-     scroll width and cause horizontal page shift on mobile. */
+     position: sticky on child elements continues to work correctly. */
   overflow-x: clip;
 }
 

@@ -169,7 +169,6 @@ export function createFixtureCatalog(): CatalogDataSource {
     },
 
     async getProductBySlug(slug) {
-      // Fixtures don't benefit from the productId hint — single in-memory lookup.
       return findProductBySlug(slug) ?? null;
     },
 

@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/api/ratelimit";
 
 /**
  * POST /api/auth/forgot-password
@@ -10,11 +11,31 @@ import { type NextRequest, NextResponse } from "next/server";
  * Response: { success: boolean, error?: string }
  *
  * Security:
- *  - Rate-limit the route in production via middleware or an edge WAF.
+ *  - Per-IP rate-limit: 3 requests / 15 minutes (blocks reset-spam attacks).
  *  - Always returns success=true when the email format is valid (no account
  *    enumeration — same behaviour as WP's own UI).
  */
 export async function POST(req: NextRequest) {
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown";
+  const rl = checkRateLimit(`forgot-password:${ip}`, {
+    max: 3,
+    windowMs: 15 * 60_000,
+  });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { success: false, error: "Too many attempts. Try again later." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
+        },
+      },
+    );
+  }
+
   try {
     const body = await req.json() as { email?: string };
     const email = body?.email?.trim();

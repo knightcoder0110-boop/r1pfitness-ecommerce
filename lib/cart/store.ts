@@ -41,15 +41,14 @@ export interface CartStoreState extends CartState {
    */
   syncFromServer: (cart: Cart) => void;
   /**
-   * Unconditionally replace the local cart with the server-side Cart.
-   * Use this after confirmed BFF mutations (remove, update) to keep
-   * local state authoritative and prevent stale WC items from reappearing
-   * on the next page refresh.
+   * Unconditionally replace local cart state with the given server cart.
+   * Used after successful BFF mutations to converge local + server state.
    */
   forceSync: (cart: Cart) => void;
   /**
-   * Re-insert a CartLineItem directly. Used to roll back an optimistic
-   * remove when the BFF call fails, restoring the item to the cart.
+   * Insert a single line item back into the cart (used to roll back a
+   * failed optimistic remove). If an item with the same key already exists
+   * it is replaced.
    */
   insertItem: (item: CartLineItem) => void;
   /** Set or clear the applied coupon + discount. */
@@ -92,8 +91,6 @@ export const useCartStore = create<CartStoreState>()(
       syncFromServer: (cart) =>
         set((s) => {
           // Local wins: if user already has items, don't clobber them.
-          // This is intentionally conservative — forceSync is used when we
-          // want the server state to be the truth (after confirmed mutations).
           if (s.items.length > 0) return {};
           const coupon =
             cart.coupons.length > 0
@@ -113,8 +110,12 @@ export const useCartStore = create<CartStoreState>()(
 
       insertItem: (item) =>
         set((s) => {
-          // No-op if already present (prevents duplicates on re-insert).
-          if (s.items.some((i) => i.key === item.key)) return {};
+          const idx = s.items.findIndex((i) => i.key === item.key);
+          if (idx >= 0) {
+            const next = [...s.items];
+            next[idx] = item;
+            return { items: next };
+          }
           return { items: [...s.items, item] };
         }),
 

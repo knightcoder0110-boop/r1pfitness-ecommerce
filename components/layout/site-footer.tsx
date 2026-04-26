@@ -272,17 +272,17 @@ export function SiteFooter() {
               role="list"
             >
               <li>
-                <Link href="#" className="text-subtle hover:text-gold cursor-pointer transition-colors">
+                <Link href={ROUTES.privacy} className="text-subtle hover:text-gold cursor-pointer transition-colors">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-subtle hover:text-gold cursor-pointer transition-colors">
+                <Link href={ROUTES.terms} className="text-subtle hover:text-gold cursor-pointer transition-colors">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-subtle hover:text-gold cursor-pointer transition-colors">
+                <Link href={ROUTES.returns} className="text-subtle hover:text-gold cursor-pointer transition-colors">
                   Refund Policy
                 </Link>
               </li>

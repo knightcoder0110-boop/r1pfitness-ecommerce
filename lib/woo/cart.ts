@@ -153,20 +153,7 @@ function codeForCartStatus(status: number, details: unknown) {
   if (woocode.includes("invalid_token")) return "CART_INVALID_TOKEN";
   if (woocode.includes("out_of_stock") || woocode.includes("not_purchasable")) return "OUT_OF_STOCK";
   if (woocode.includes("invalid_quantity")) return "INVALID_QUANTITY";
-  // Various "item is gone / key doesn't exist" shapes the Store API can emit:
-  //   404 — typical for unknown cart item keys
-  //   409 — sometimes returned for stale/conflicting cart-item keys after a
-  //         cart-token rotation or when the item was already removed
-  //   code substrings: "invalid_key", "not_found", "no_items", "item_invalid"
-  if (
-    woocode.includes("invalid_key") ||
-    woocode.includes("not_found") ||
-    woocode.includes("no_items") ||
-    woocode.includes("item_invalid")
-  ) {
-    return "CART_ITEM_NOT_FOUND";
-  }
-  if (status === 404 || status === 409) return "CART_ITEM_NOT_FOUND";
+  if (status === 404) return "CART_ITEM_NOT_FOUND";
   if (status === 400) return "VALIDATION_FAILED";
   return "WOO_UNEXPECTED";
 }

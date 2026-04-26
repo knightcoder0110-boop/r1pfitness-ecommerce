@@ -5,7 +5,7 @@ const COOKIE_NAME = "r1p_site_unlocked";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
 export async function POST(request: Request) {
-  // Rate limit before touching the body. 5 attempts / 10 min / IP is
+  // Rate limit before touching the body. 3 attempts / 15 min / IP is
   // aggressive enough to make brute-force impractical while still allowing
   // a legitimate user a few typos.
   const ip =
@@ -13,8 +13,8 @@ export async function POST(request: Request) {
     request.headers.get("x-real-ip") ??
     "unknown";
   const rl = checkRateLimit(`site-unlock:${ip}`, {
-    max: 5,
-    windowMs: 10 * 60_000,
+    max: 3,
+    windowMs: 15 * 60_000,
   });
   if (!rl.ok) {
     return NextResponse.json(

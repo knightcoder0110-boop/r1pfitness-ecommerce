@@ -27,20 +27,13 @@ export async function GET(
     return NextResponse.json(fail("VALIDATION_FAILED", "Invalid product slug"), { status: 422 });
   }
 
-  // Optional `?id=` hint from the caller (Quick Add trigger sends the numeric
-  // product ID it already has from the listing surface). When present we pass
-  // it through so the catalog can parallelise the slug + variations fetches
-  // — cuts cold-cache Quick Add latency roughly in half. We validate strictly:
-  // numeric only, max 12 digits, otherwise dropped.
+  // Optional `?id=` hint accepted but currently unused — the catalog adapter
+  // resolves by slug. Kept to avoid breaking existing client callers.
   const idHintRaw = req.nextUrl.searchParams.get("id");
-  const idHint =
-    idHintRaw && /^[0-9]{1,12}$/.test(idHintRaw) ? idHintRaw : undefined;
+  void idHintRaw;
 
   try {
-    const product = await getCatalog().getProductBySlug(
-      slug,
-      idHint ? { productId: idHint } : undefined,
-    );
+    const product = await getCatalog().getProductBySlug(slug);
     if (!product) {
       return NextResponse.json(fail("NOT_FOUND", "Product not found"), { status: 404 });
     }

@@ -85,3 +85,61 @@ export function trackBeginCheckout(params: {
   );
   track({ name: "begin_checkout", payload: { items: mapped, valueCents } });
 }
+
+export function trackPurchase(params: {
+  orderId: string;
+  items: Array<{
+    productId: string;
+    name: string;
+    price: Money;
+    quantity?: number;
+    variationId?: string | undefined;
+    category?: string | undefined;
+  }>;
+  valueCents: number;
+  coupon?: string;
+}): void {
+  const items = params.items.map((i) =>
+    toItemPayload({
+      productId: i.productId,
+      name: i.name,
+      price: i.price,
+      quantity: i.quantity,
+      variationId: i.variationId,
+      category: i.category,
+    })
+  );
+  track({
+    name: "purchase",
+    payload: {
+      orderId: params.orderId,
+      items,
+      valueCents: params.valueCents,
+      ...(params.coupon ? { coupon: params.coupon } : {}),
+    },
+  });
+}
+
+export function trackViewItemList(params: {
+  list: string;
+  items: Array<{
+    productId: string;
+    name: string;
+    price: Money;
+    category?: string | undefined;
+  }>;
+}): void {
+  const items = params.items.map((i) =>
+    toItemPayload({
+      productId: i.productId,
+      name: i.name,
+      price: i.price,
+      category: i.category,
+    })
+  );
+  track({ name: "view_item_list", payload: { list: params.list, items } });
+}
+
+export function trackNewsletterSignup(source: string): void {
+  track({ name: "newsletter_signup", payload: { source } });
+}

@@ -70,6 +70,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    // Reduced from 30 to 7 days. JWTs are not server-revocable; a shorter
+    // window limits the blast radius of a stolen session token.
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+    // Slide the cookie expiration each time the user is active, but only
+    // re-issue the JWT once per day to avoid a write on every request.
+    updateAge: 24 * 60 * 60, // 24 hours
   },
 });

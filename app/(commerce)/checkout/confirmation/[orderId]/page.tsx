@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { Heading } from "@/components/ui/heading";
 import { Price } from "@/components/ui/price";
+import { TrackPurchaseClient } from "@/components/analytics/track-purchase-client";
 import { getWooOrder } from "@/lib/checkout/woo-order";
 import { ROUTES } from "@/lib/constants";
 
@@ -30,6 +31,16 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
 
   return (
     <Container size="md" as="main" className="py-12 sm:py-20">
+      {order && (
+        <TrackPurchaseClient
+          order={{
+            id: order.id,
+            number: order.number,
+            total: order.total,
+            items: order.items,
+          }}
+        />
+      )}
       {/* Hero */}
       <div className="flex flex-col items-center gap-4 text-center">
         <span

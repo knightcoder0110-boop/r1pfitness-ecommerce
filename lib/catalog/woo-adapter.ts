@@ -194,8 +194,8 @@ export function createWooCatalog(): CatalogDataSource {
       };
     },
 
-    async getProductBySlug(slug, hints) {
-      return getStoreProductBySlug(slug, hints);
+    async getProductBySlug(slug) {
+      return getStoreProductBySlug(slug);
     },
 
     async listCategories() {
