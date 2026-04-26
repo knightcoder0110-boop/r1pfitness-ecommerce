@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductGrid } from "@/components/product";
-import { ActiveFilterChips, FilterSidebar, Pagination, ShopToolbar } from "@/components/shop";
+import { ActiveFilterChips, Pagination, ShopToolbar } from "@/components/shop";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
@@ -177,14 +177,10 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
       <ShopToolbar activeSlug={match.slug} currentSort={raw.sort} />
 
-      {/* Main content: sidebar + grid */}
-      <div className="mt-8 flex flex-col gap-6 lg:flex-row lg:gap-10">
-        <FilterSidebar />
+      {/* Active filter chips + grid */}
+      <ActiveFilterChips className="mt-6 mb-2" />
 
-        <div className="flex-1 min-w-0">
-          <ActiveFilterChips className="mb-5" />
-
-          {items.length === 0 ? (
+      {items.length === 0 ? (
             <div className="flex flex-col items-center gap-4 border border-dashed border-border py-16 text-center">
               <p className="font-display text-2xl tracking-wider text-muted">
                 Nothing here yet
@@ -204,8 +200,6 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
               />
             </>
           )}
-        </div>
-      </div>
     </Container>
   );
 }
