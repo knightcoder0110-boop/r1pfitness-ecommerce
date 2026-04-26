@@ -27,13 +27,18 @@ export async function GET(
     return NextResponse.json(fail("VALIDATION_FAILED", "Invalid product slug"), { status: 422 });
   }
 
-  // Optional `?id=` hint accepted but currently unused — the catalog adapter
-  // resolves by slug. Kept to avoid breaking existing client callers.
+  // Optional `?id=` hint from quick-add surfaces. When valid we forward it so
+  // the catalog can kick off the variations fetch in parallel with the slug
+  // lookup, which is materially faster on a cold cache.
   const idHintRaw = req.nextUrl.searchParams.get("id");
-  void idHintRaw;
+  const idHint =
+    idHintRaw && /^[0-9]{1,12}$/.test(idHintRaw) ? idHintRaw : undefined;
 
   try {
-    const product = await getCatalog().getProductBySlug(slug);
+    const product = await getCatalog().getProductBySlug(
+      slug,
+      idHint ? { productId: idHint } : undefined,
+    );
     if (!product) {
       return NextResponse.json(fail("NOT_FOUND", "Product not found"), { status: 404 });
     }

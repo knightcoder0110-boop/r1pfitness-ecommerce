@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Price } from "@/components/ui/price";
 import { Badge } from "@/components/ui/badge";
 import { VariantPicker } from "@/components/product/variant-picker";
+import { getCachedQuickAddProduct, loadQuickAddProduct } from "@/components/product/quick-add-product-cache";
 import { useServerCart } from "@/lib/cart";
 import { useToastStore } from "@/lib/toast";
 import { trackAddToCart } from "@/lib/analytics";
@@ -31,9 +32,20 @@ interface QuickAddModalProps {
 }
 
 interface FetchState {
-  status: "idle" | "loading" | "ready" | "error";
+  status: "idle" | "ready" | "error";
   product?: Product;
   errorMessage?: string;
+}
+
+const subscribe = () => () => {};
+
+function buildInitialSelection(product?: Product | null) {
+  if (!product) return {};
+  const initial: Record<string, string> = {};
+  for (const attr of product.attributes) {
+    if (attr.variation && attr.options[0]) initial[attr.id] = attr.options[0];
+  }
+  return initial;
 }
 
 /**
@@ -57,56 +69,25 @@ interface FetchState {
  *    context on parents (consistent with mobile-nav).
  */
 export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: QuickAddModalProps) {
-  const [mounted, setMounted] = useState(false);
+  const isClient = useSyncExternalStore(subscribe, () => true, () => false);
+  const cachedProduct = getCachedQuickAddProduct(summary.slug, summary.id);
   // If the trigger already prefetched the product (hover), initialise
   // directly to "ready" so the modal shows the picker with zero latency.
   const [fetchState, setFetchState] = useState<FetchState>(() =>
-    prefetchedProduct
-      ? { status: "ready", product: prefetchedProduct }
+    prefetchedProduct ?? cachedProduct
+      ? { status: "ready", product: prefetchedProduct ?? cachedProduct ?? undefined }
       : { status: "idle" },
   );
-  const [selected, setSelected] = useState<Record<string, string>>(() => {
-    // Pre-select first option for every variation attribute when we already
-    // have the product (prefetch case).
-    if (!prefetchedProduct) return {};
-    const initial: Record<string, string> = {};
-    for (const a of prefetchedProduct.attributes) {
-      if (a.variation && a.options[0]) initial[a.id] = a.options[0];
-    }
-    return initial;
-  });
+  const [selected, setSelected] = useState<Record<string, string>>({});
   const [isPending, setIsPending] = useState(false);
-  // Track whether we've already seeded the selection once so we don't
-  // clobber the user's choices if the component re-renders.
-  const selectionSeeded = useRef(false);
-  if (prefetchedProduct && !selectionSeeded.current) {
-    selectionSeeded.current = true;
-  }
 
   const { addItem, open: openCart } = useServerCart();
   const showToast = useToastStore((s) => s.show);
 
-  // Hydration guard — createPortal needs document.
-  useEffect(() => setMounted(true), []);
-
-  // When the prefetchedProduct prop arrives (prefetch completes while modal
-  // is already open), update fetch state immediately.
-  useEffect(() => {
-    if (!prefetchedProduct) return;
-    setFetchState((prev) => {
-      if (prev.status === "ready") return prev;
-      return { status: "ready", product: prefetchedProduct };
-    });
-    if (!selectionSeeded.current) {
-      selectionSeeded.current = true;
-      const initial: Record<string, string> = {};
-      for (const a of prefetchedProduct.attributes) {
-        if (a.variation && a.options[0]) initial[a.id] = a.options[0];
-      }
-      setSelected(initial);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [prefetchedProduct]);
+  const product = prefetchedProduct ?? cachedProduct ?? fetchState.product;
+  const resolvedSelection = Object.keys(selected).length > 0
+    ? selected
+    : buildInitialSelection(product);
 
   // Body scroll lock + Esc key — only while open.
   useEffect(() => {
@@ -126,44 +107,23 @@ export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: Qui
   // Fetch full product on first open ONLY when we don't already have data.
   useEffect(() => {
     if (!open) return;
-    if (fetchState.status === "ready") return;  // prefetch or previous fetch done
-    if (fetchState.status === "loading") return; // already in flight
+    if (product) return;
+    if (fetchState.status === "error") return;
 
     let cancelled = false;
-    setFetchState({ status: "loading" });
 
     void (async () => {
       try {
-        // Pass the productId hint so the BFF can fire the slug + variations
-        // fetches in parallel — significantly faster on cold cache.
-        const res = await fetch(
-          `/api/product/${encodeURIComponent(summary.slug)}?id=${encodeURIComponent(summary.id)}`,
-          { headers: { accept: "application/json" } },
-        );
-        const json = (await res.json()) as
-          | { ok: true; data: Product }
-          | { ok: false; error: { code: string; message: string } };
+        const product = await loadQuickAddProduct(summary.slug, summary.id);
 
         if (cancelled) return;
 
-        if (!res.ok || !json.ok) {
-          const message =
-            !json.ok && json.error?.message ? json.error.message : "Could not load product details";
-          setFetchState({ status: "error", errorMessage: message });
+        if (!product) {
+          setFetchState({ status: "error", errorMessage: "Could not load product details" });
           return;
         }
 
-        setFetchState({ status: "ready", product: json.data });
-
-        // Pre-select first option of every variation attribute.
-        if (!selectionSeeded.current) {
-          selectionSeeded.current = true;
-          const initial: Record<string, string> = {};
-          for (const a of json.data.attributes) {
-            if (a.variation && a.options[0]) initial[a.id] = a.options[0];
-          }
-          setSelected(initial);
-        }
+        setFetchState({ status: "ready", product });
       } catch (err) {
         if (cancelled) return;
         setFetchState({
@@ -176,27 +136,21 @@ export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: Qui
     return () => {
       cancelled = true;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, summary.slug]);
-  // Intentionally exclude fetchState.status from deps — we guard with early
-  // returns at the top; adding it would cause spurious re-runs on every status
-  // transition.
-
-  const product = fetchState.product;
+  }, [open, summary.slug, summary.id, product, fetchState.status]);
 
   const requiredAttrs = useMemo(
     () => product?.attributes.filter((a) => a.variation) ?? [],
     [product],
   );
-  const allSelected = requiredAttrs.every((a) => Boolean(selected[a.id]));
+  const allSelected = requiredAttrs.every((a) => Boolean(resolvedSelection[a.id]));
 
   // Resolve matching variation from the current attribute selection.
   const matchingVariation: ProductVariation | undefined = useMemo(() => {
     if (!product?.variations.length || !allSelected) return undefined;
     return product.variations.find((v) =>
-      Object.entries(selected).every(([k, val]) => v.attributes[k] === val),
+      Object.entries(resolvedSelection).every(([k, val]) => v.attributes[k] === val),
     );
-  }, [product, selected, allSelected]);
+  }, [product, resolvedSelection, allSelected]);
 
   const productOutOfStock = product?.stockStatus === "out_of_stock";
   const variationOutOfStock = matchingVariation?.stockStatus === "out_of_stock";
@@ -261,7 +215,7 @@ export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: Qui
     onClose();
   }
 
-  if (!mounted) return null;
+  if (!isClient) return null;
 
   const overlay = (
     <AnimatePresence>
