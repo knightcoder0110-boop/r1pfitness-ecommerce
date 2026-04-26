@@ -7,8 +7,7 @@ export interface ProductGridProps {
   /**
    * Controls the maximum column count and the breakpoint scale.
    *
-   * `4` — Product rail mode: 2 cols on mobile → 4 cols on desktop (lg+).
-   *       Use when showing exactly 4 featured/highlighted items.
+  * `4` — Listing mode: 2 cols on mobile → 3 on tablet → 4 on desktop.
    *
    * `5` — Full listing mode: 2 → 3 → 4 → 5 cols across breakpoints.
    *       Used on /shop, /search, /collections.
@@ -26,7 +25,7 @@ export interface ProductGridProps {
 export function ProductGrid({ items, columns = 5, className }: ProductGridProps) {
   if (items.length === 0) {
     return (
-      <div className="flex min-h-[240px] items-center justify-center rounded-sm border border-dashed border-border-strong">
+      <div className="flex min-h-60 items-center justify-center rounded-sm border border-dashed border-border-strong">
         <p className="font-mono text-xs uppercase tracking-[0.3em] text-subtle">
           No products match these filters
         </p>
@@ -39,7 +38,7 @@ export function ProductGrid({ items, columns = 5, className }: ProductGridProps)
       className={cn(
         "grid gap-x-5 gap-y-12",
         columns === 4
-          ? "grid-cols-2 lg:grid-cols-4"
+            ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
           : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5",
         className,
       )}

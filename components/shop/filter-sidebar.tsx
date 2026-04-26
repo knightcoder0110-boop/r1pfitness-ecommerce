@@ -91,7 +91,7 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
   const filters = parseFilters(params);
   const activeCount = countActiveFilters(filters);
 
-  // Mobile drawer open/close state.
+  // Drawer open/close state.
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Body-scroll lock when drawer is open.
@@ -159,8 +159,7 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
 
   const filterPanel = (
     <div className="flex flex-col gap-5">
-      {/* Header row — shown inside drawer only */}
-      <div className="flex items-center justify-between lg:hidden">
+      <div className="flex items-center justify-between">
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-text">
           Filters {activeCount > 0 && `(${activeCount})`}
         </span>
@@ -173,17 +172,6 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
           <X className="h-4 w-4" />
         </button>
       </div>
-
-      {/* Clear all — only on desktop header or when filters are active */}
-      {activeCount > 0 && (
-        <button
-          type="button"
-          onClick={clearAll}
-          className="self-start font-mono text-[10px] uppercase tracking-[0.2em] text-muted underline-offset-4 hover:underline hover:text-text transition-colors hidden lg:inline"
-        >
-          Clear all ({activeCount})
-        </button>
-      )}
 
       {/* ── Size ── */}
       <FilterGroup title="Size">
@@ -268,8 +256,7 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
         </button>
       </div>
 
-      {/* Mobile-only footer: clear + apply */}
-      <div className="mt-auto flex gap-3 border-t border-border pt-5 lg:hidden">
+      <div className="mt-auto flex gap-3 border-t border-border pt-5">
         {activeCount > 0 && (
           <button
             type="button"
@@ -292,12 +279,11 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
 
   return (
     <>
-      {/* ── Mobile trigger button ── */}
       <button
         type="button"
         onClick={() => setDrawerOpen(true)}
         className={cn(
-          "inline-flex items-center gap-2 border border-border px-4 py-2 font-mono text-xs uppercase tracking-[0.25em] text-muted transition-colors hover:border-border-strong hover:text-text lg:hidden",
+          "inline-flex items-center gap-2 border border-border px-4 py-2 font-mono text-xs uppercase tracking-[0.25em] text-muted transition-colors hover:border-border-strong hover:text-text",
           activeCount > 0 && "border-text text-text",
           className,
         )}
@@ -312,35 +298,12 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
         )}
       </button>
 
-      {/* ── Desktop inline sidebar ── */}
-      <aside
-        aria-label="Product filters"
-        className={cn("hidden w-56 shrink-0 flex-col gap-5 lg:flex", className)}
-      >
-        <div className="flex items-baseline justify-between">
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-text">
-            Filters
-          </span>
-          {activeCount > 0 && (
-            <button
-              type="button"
-              onClick={clearAll}
-              className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted underline-offset-4 hover:underline hover:text-text transition-colors"
-            >
-              Clear ({activeCount})
-            </button>
-          )}
-        </div>
-        {filterPanel}
-      </aside>
-
-      {/* ── Mobile slide-in drawer ── */}
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Product filters"
         aria-hidden={!drawerOpen}
-        className="fixed inset-0 z-[60] pointer-events-none lg:hidden"
+          className="fixed inset-0 z-60 pointer-events-none"
       >
         {/* Backdrop */}
         <button
@@ -349,7 +312,7 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
           onClick={() => setDrawerOpen(false)}
           tabIndex={drawerOpen ? 0 : -1}
           className={cn(
-            "absolute inset-0 bg-bg/70 backdrop-blur-sm transition-opacity duration-[var(--dur-slow)]",
+            "absolute inset-0 bg-bg/70 backdrop-blur-sm transition-opacity duration-(--dur-slow)",
             drawerOpen ? "pointer-events-auto opacity-100" : "opacity-0",
           )}
         />
@@ -358,7 +321,7 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
         <aside
           className={cn(
             "absolute left-0 top-0 flex h-full w-full max-w-xs flex-col gap-0 bg-bg border-r border-border shadow-overlay overflow-y-auto p-6",
-            "transition-transform duration-[var(--dur-slow)] ease-out",
+              "transition-transform duration-(--dur-slow) ease-out",
             drawerOpen ? "pointer-events-auto translate-x-0" : "-translate-x-full",
           )}
         >

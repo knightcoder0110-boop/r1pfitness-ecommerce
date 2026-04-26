@@ -33,7 +33,11 @@ import {
   bffApplyCoupon,
   bffRemoveCoupon,
 } from "./bff";
-import type { Product, ProductVariation } from "@/lib/woo/types";
+import type { CartLineItem, Product, ProductVariation } from "@/lib/woo/types";
+
+function isSameCartLine(current: CartLineItem, target: CartLineItem) {
+  return current.productId === target.productId && current.variationId === target.variationId;
+}
 
 /**
  * Provider that reconciles the local cart with the server cart on mount.
@@ -69,6 +73,31 @@ export function useServerCart() {
     })),
   );
   const showToast = useToastStore((s) => s.show);
+
+  async function recoverFailedRemoval(item: CartLineItem) {
+    const fresh = await bffGetCart();
+    if (!fresh?.ok) return false;
+
+    const matching = fresh.data.items.find((candidate) => isSameCartLine(candidate, item));
+
+    if (!matching) {
+      forceSync(fresh.data);
+      return true;
+    }
+
+    const retryKey = matching.wooKey ?? matching.key;
+    // Retry once after the fresh cart sync even if the key did not change.
+    // A rotated cart token can make the first remove fail with the same key,
+    // while the second request succeeds after GET /api/cart refreshes cookies.
+    const retried = await bffRemoveItem({ key: retryKey });
+    if (retried?.ok) {
+      forceSync(retried.data);
+      return true;
+    }
+
+    forceSync(fresh.data);
+    return false;
+  }
 
   return {
     // ── Passthrough actions (no BFF call needed) ──────────────────────
@@ -143,14 +172,7 @@ export function useServerCart() {
           forceSync(result.data);
           return;
         }
-        // CART_ITEM_NOT_FOUND — the item is already gone on WC's side
-        // (stale wooKey from a rotated cart-token, or already-removed item).
-        // Treat as success: keep the local removal, sync from a fresh GET.
-        if (result && !result.ok && result.error?.code === "CART_ITEM_NOT_FOUND") {
-          const fresh = await bffGetCart();
-          if (fresh?.ok) forceSync(fresh.data);
-          return;
-        }
+          if (await recoverFailedRemoval(item)) return;
         // Genuine failure — roll back: restore item at its previous quantity.
         insertItem(item);
         localActions.setQuantity(key, item.quantity);
@@ -199,13 +221,7 @@ export function useServerCart() {
         return;
       }
 
-      // Stale wooKey — the item is already absent on WC's side. Treat as
-      // success and pull a fresh cart to make absolutely sure local matches
-      // the server. This is the common case after a cart-token rotation
-      // (e.g. when a fresh tab is opened and our token cookie expired).
-      if (result && !result.ok && result.error?.code === "CART_ITEM_NOT_FOUND") {
-        const fresh = await bffGetCart();
-        if (fresh?.ok) forceSync(fresh.data);
+        if (await recoverFailedRemoval(item)) {
         return;
       }
 
