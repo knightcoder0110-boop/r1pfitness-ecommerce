@@ -141,6 +141,40 @@ function money(amount: string | number | undefined | null, currency: string): Mo
   return { amount: toMinorUnits(amount), currency };
 }
 
+/**
+ * Resolve the display price and optional compare-at price from raw Store API
+ * price fields.
+ *
+ * WooCommerce sets `price = "0"` for out-of-stock / non-purchasable products.
+ * In that situation the UI must NOT show "$0.00" — it should fall back to
+ * `regular_price` (the real price) so customers always see a meaningful value.
+ *
+ * Logic:
+ *  - If `price === 0` but `regular_price > 0` → display `regular_price`, no
+ *    compare-at (the zero is an OOS marker, not a sale discount).
+ *  - If `price > 0` and `regular_price > price` → it's on sale; display
+ *    `price` with `regular_price` as compare-at.
+ *  - Otherwise → display `price` as-is, no compare-at.
+ */
+function resolvePrices(
+  prices: RawStorePrices,
+): { priceAmount: number; compareAtAmount?: number } {
+  const priceAmt = toMinorUnits(prices.price);
+  const regularAmt = toMinorUnits(prices.regular_price);
+
+  // OOS fallback: WooCommerce zeroes the price for non-purchasable items.
+  if (priceAmt === 0 && regularAmt > 0) {
+    return { priceAmount: regularAmt };
+  }
+
+  // On-sale: regular_price > current price.
+  if (regularAmt > 0 && regularAmt !== priceAmt) {
+    return { priceAmount: priceAmt, compareAtAmount: regularAmt };
+  }
+
+  return { priceAmount: priceAmt };
+}
+
 function mapImage(raw: RawStoreImage | undefined): ImageRef | undefined {
   if (!raw) return undefined;
   return {
@@ -244,6 +278,7 @@ function mapMetaDataRecord(raw: RawStoreProduct["meta_data"]): Record<string, un
 export function mapProduct(raw: RawStoreProduct): Product {
   const currency = raw.prices.currency_code;
   const meta = mapMetaDataRecord(raw.meta_data);
+  const { priceAmount, compareAtAmount } = resolvePrices(raw.prices);
 
   return {
     id: String(raw.id),
@@ -251,10 +286,8 @@ export function mapProduct(raw: RawStoreProduct): Product {
     name: raw.name,
     description: raw.description ?? "",
     shortDescription: raw.short_description ?? "",
-    price: money(raw.prices.price, currency),
-    ...(raw.prices.regular_price && raw.prices.regular_price !== raw.prices.price
-      ? { compareAtPrice: money(raw.prices.regular_price, currency) }
-      : {}),
+    price: { amount: priceAmount, currency },
+    ...(compareAtAmount ? { compareAtPrice: { amount: compareAtAmount, currency } } : {}),
     images: mapImages(raw.images),
     categories: mapCategories(raw.categories),
     tags: (raw.tags ?? []).map((t) => t.name),
@@ -298,6 +331,7 @@ export function mapProductSummary(raw: RawStoreProduct): ProductSummary {
   const first = raw.images?.[0];
   const second = raw.images?.[1];
   const meta = mapMetaDataRecord(raw.meta_data);
+  const { priceAmount, compareAtAmount } = resolvePrices(raw.prices);
 
   // Extract color / size option lists for swatch rendering on cards.
   const attrs = raw.attributes ?? [];
@@ -310,10 +344,8 @@ export function mapProductSummary(raw: RawStoreProduct): ProductSummary {
     id: String(raw.id),
     slug: raw.slug,
     name: raw.name,
-    price: money(raw.prices.price, currency),
-    ...(raw.prices.regular_price && raw.prices.regular_price !== raw.prices.price
-      ? { compareAtPrice: money(raw.prices.regular_price, currency) }
-      : {}),
+    price: { amount: priceAmount, currency },
+    ...(compareAtAmount ? { compareAtPrice: { amount: compareAtAmount, currency } } : {}),
     ...(first ? { image: mapImage(first) } : {}),
     ...(second ? { hoverImage: mapImage(second) } : {}),
     stockStatus: deriveStockStatus(raw),
@@ -329,13 +361,12 @@ export function mapVariation(raw: RawStoreVariation): ProductVariation {
   const currency = raw.prices.currency_code;
   const attributes: Record<string, string> = {};
   for (const a of raw.attributes) attributes[a.name] = a.value;
+  const { priceAmount, compareAtAmount } = resolvePrices(raw.prices);
   return {
     id: String(raw.id),
     sku: raw.sku ?? "",
-    price: money(raw.prices.price, currency),
-    ...(raw.prices.regular_price && raw.prices.regular_price !== raw.prices.price
-      ? { compareAtPrice: money(raw.prices.regular_price, currency) }
-      : {}),
+    price: { amount: priceAmount, currency },
+    ...(compareAtAmount ? { compareAtPrice: { amount: compareAtAmount, currency } } : {}),
     stockStatus: deriveStockStatus(raw),
     ...(typeof raw.stock_quantity === "number" ? { stockQuantity: raw.stock_quantity } : {}),
     attributes,

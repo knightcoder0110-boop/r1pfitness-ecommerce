@@ -156,10 +156,11 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
       q: null,
     });
   }
+
   const filterPanel = (
     <div className="flex flex-col gap-5">
-      {/* Header row */}
-      <div className="flex items-center justify-between">
+      {/* Header row — shown inside drawer only */}
+      <div className="flex items-center justify-between lg:hidden">
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-text">
           Filters {activeCount > 0 && `(${activeCount})`}
         </span>
@@ -173,7 +174,16 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
         </button>
       </div>
 
-
+      {/* Clear all — only on desktop header or when filters are active */}
+      {activeCount > 0 && (
+        <button
+          type="button"
+          onClick={clearAll}
+          className="self-start font-mono text-[10px] uppercase tracking-[0.2em] text-muted underline-offset-4 hover:underline hover:text-text transition-colors hidden lg:inline"
+        >
+          Clear all ({activeCount})
+        </button>
+      )}
 
       {/* ── Size ── */}
       <FilterGroup title="Size">
@@ -258,8 +268,8 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
         </button>
       </div>
 
-      {/* Footer: clear + apply */}
-      <div className="mt-auto flex gap-3 border-t border-border pt-5">
+      {/* Mobile-only footer: clear + apply */}
+      <div className="mt-auto flex gap-3 border-t border-border pt-5 lg:hidden">
         {activeCount > 0 && (
           <button
             type="button"
@@ -282,12 +292,12 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
 
   return (
     <>
-      {/* ── Trigger button — all screen sizes ── */}
+      {/* ── Mobile trigger button ── */}
       <button
         type="button"
         onClick={() => setDrawerOpen(true)}
         className={cn(
-          "inline-flex items-center gap-2 border border-border px-4 py-2 font-mono text-xs uppercase tracking-[0.25em] text-muted transition-colors hover:border-border-strong hover:text-text",
+          "inline-flex items-center gap-2 border border-border px-4 py-2 font-mono text-xs uppercase tracking-[0.25em] text-muted transition-colors hover:border-border-strong hover:text-text lg:hidden",
           activeCount > 0 && "border-text text-text",
           className,
         )}
@@ -302,13 +312,35 @@ export function FilterSidebar({ className }: FilterSidebarProps) {
         )}
       </button>
 
-      {/* ── Slide-in drawer — all screen sizes ── */}
+      {/* ── Desktop inline sidebar ── */}
+      <aside
+        aria-label="Product filters"
+        className={cn("hidden w-56 shrink-0 flex-col gap-5 lg:flex", className)}
+      >
+        <div className="flex items-baseline justify-between">
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-text">
+            Filters
+          </span>
+          {activeCount > 0 && (
+            <button
+              type="button"
+              onClick={clearAll}
+              className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted underline-offset-4 hover:underline hover:text-text transition-colors"
+            >
+              Clear ({activeCount})
+            </button>
+          )}
+        </div>
+        {filterPanel}
+      </aside>
+
+      {/* ── Mobile slide-in drawer ── */}
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Product filters"
         aria-hidden={!drawerOpen}
-        className="fixed inset-0 z-[60] pointer-events-none"
+        className="fixed inset-0 z-[60] pointer-events-none lg:hidden"
       >
         {/* Backdrop */}
         <button

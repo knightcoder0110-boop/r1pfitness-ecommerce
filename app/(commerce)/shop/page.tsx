@@ -119,7 +119,7 @@ export default async function ShopPage(props: ShopPageProps) {
         className="mb-8 sm:mb-10"
       />
 
-      <ShopToolbar activeSlug={null} currentSort={searchParams.sort} />
+      <ShopToolbar activeSlug={null} currentSort={searchParams.sort} showSearch />
 
       {/* Main content: sidebar (desktop) + product grid */}
       <div className="mt-8 flex flex-col gap-6 lg:flex-row lg:gap-10">

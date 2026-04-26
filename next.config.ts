@@ -16,12 +16,6 @@ const wooHostname = process.env.WOO_BASE_URL
   ? hostnameFromUrl(process.env.WOO_BASE_URL)
   : null;
 
-// In development we allow loose patterns so LocalWP / wp.com hosted images work.
-// In production we only trust explicit hostnames — wildcards on `*.local`,
-// `*.test`, `*.wp.com`, `*.wordpress.com` would let an attacker craft URLs
-// that bypass the image proxy origin allow-list (SSRF-ish surface).
-const isProd = process.env.NODE_ENV === "production";
-
 const nextConfig: NextConfig = {
   // Allow the local network IP so phones/tablets on the same WiFi can
   // access HMR and dev resources without cross-origin errors.
@@ -44,23 +38,19 @@ const nextConfig: NextConfig = {
       ...(wooHostname
         ? [{ protocol: "https" as const, hostname: wooHostname }]
         : []),
-      // Current Cloudways WooCommerce instance (post-recovery URL).
-      { protocol: "https" as const, hostname: "woocommerce-1617708-6377079.cloudwaysapps.com" },
+      // Cloudways WooCommerce instance (fallback in case WOO_BASE_URL isn't set at build time).
+      { protocol: "https" as const, hostname: "woocommerce-1616698-6370177.cloudwaysapps.com" },
+      // Previous Hostinger WooCommerce instance (products seeded from here may still reference it).
+      { protocol: "https" as const, hostname: "lightslategrey-ibex-799942.hostingersite.com" },
+      // Local WordPress development (common patterns: localhost, *.local, *.test).
+      { protocol: "http" as const, hostname: "localhost" },
+      { protocol: "http" as const, hostname: "*.local" },
+      { protocol: "http" as const, hostname: "*.test" },
+      // WP.com CDN and common managed WP hosts.
+      { protocol: "https" as const, hostname: "*.wp.com" },
+      { protocol: "https" as const, hostname: "*.wordpress.com" },
       // Shopify CDN — product images seeded from Shopify CSV reference these URLs.
       { protocol: "https" as const, hostname: "cdn.shopify.com" },
-      // Dev-only patterns: LocalWP + wp.com staging. Excluded from prod to
-      // remove SSRF/abuse surface on /api/image-proxy.
-      ...(isProd
-        ? []
-        : [
-            { protocol: "http" as const, hostname: "localhost" },
-            { protocol: "http" as const, hostname: "*.local" },
-            { protocol: "http" as const, hostname: "*.test" },
-            { protocol: "https" as const, hostname: "*.wp.com" },
-            { protocol: "https" as const, hostname: "*.wordpress.com" },
-            { protocol: "https" as const, hostname: "lightslategrey-ibex-799942.hostingersite.com" },
-            { protocol: "https" as const, hostname: "woocommerce-1616698-6370177.cloudwaysapps.com" },
-          ]),
     ],
   },
 
@@ -89,30 +79,20 @@ const nextConfig: NextConfig = {
       [
         "img-src 'self' data: blob:",
         wooHostname ? wooHostname : "",
-        "woocommerce-1617708-6377079.cloudwaysapps.com",
+        "woocommerce-1616698-6370177.cloudwaysapps.com",
+        "lightslategrey-ibex-799942.hostingersite.com",
         "cdn.shopify.com",
-        // Dev-only image origins (excluded in prod to harden CSP).
-        ...(isProd
-          ? []
-          : [
-              "woocommerce-1616698-6370177.cloudwaysapps.com",
-              "lightslategrey-ibex-799942.hostingersite.com",
-              "*.wp.com *.wordpress.com",
-            ]),
+        "*.wp.com *.wordpress.com",
       ]
         .filter(Boolean)
         .join(" "),
-      // XHR / fetch targets. The browser only ever talks to our own /api/*
-      // routes for Woo data — never directly to WP — so we do NOT add
-      // wooHostname here. Adding it would expose the backend origin to
-      // anyone who reads the CSP header.
+      // XHR / fetch targets
       [
         "connect-src 'self'",
         "api.stripe.com",
         "*.klaviyo.com",
-        "www.google-analytics.com",
-        "*.analytics.google.com",
-        "vitals.vercel-insights.com",
+        // Allow the woo origin for direct API calls made from the browser (if any)
+        process.env.NEXT_PUBLIC_WOO_BASE_URL ?? "",
       ]
         .filter(Boolean)
         .join(" "),
@@ -136,27 +116,12 @@ const nextConfig: NextConfig = {
           { key: "Content-Security-Policy", value: csp },
           // Prevent browsers from MIME-sniffing scripts.
           { key: "X-Content-Type-Options", value: "nosniff" },
-          // Belt-and-braces against clickjacking (CSP frame-ancestors
-          // already covers this in modern browsers).
-          { key: "X-Frame-Options", value: "DENY" },
           // Only send the origin (no full URL) as Referer to third-parties.
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          // Block sensitive sensor APIs site-wide. Allow `payment` on self
-          // for Apple Pay / Google Pay via Stripe Payment Request Button.
+          // Allow camera/mic only on checkout where Stripe might need them.
           {
             key: "Permissions-Policy",
-            value: [
-              "camera=()",
-              "microphone=()",
-              "geolocation=()",
-              "interest-cohort=()",
-              "browsing-topics=()",
-              "payment=(self \"https://js.stripe.com\")",
-              "usb=()",
-              "magnetometer=()",
-              "accelerometer=()",
-              "gyroscope=()",
-            ].join(", "),
+            value: "camera=(), microphone=(), geolocation=()",
           },
           // HSTS — tell browsers to always use HTTPS for 2 years.
           // Only sent in production; localhost with HTTPS would break dev.

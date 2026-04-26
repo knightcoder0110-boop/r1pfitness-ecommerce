@@ -226,9 +226,27 @@ export async function listStoreProducts(
 /**
  * Fetch a single product by slug. Uses the Store API `slug=` filter because
  * Store API has no `/products/by-slug/{slug}` endpoint.
+ *
+ * @param hints - Optional optimistic data from the caller (e.g. a listing
+ *   surface that already has the product's numeric ID). When `productId` is
+ *   supplied we kick off the v3 variations fetch in parallel with the slug
+ *   lookup, cutting Quick Add latency roughly in half. The hint is verified
+ *   against the resolved product ID before the parallel result is used — if
+ *   they don't match (stale listing data, slug collision, etc.) we discard
+ *   the parallel response and re-fetch with the correct ID.
  */
-export async function getStoreProductBySlug(slug: string): Promise<Product | null> {
+export async function getStoreProductBySlug(
+  slug: string,
+  hints?: { productId?: string },
+): Promise<Product | null> {
   if (!slug) return null;
+
+  // Kick off variations fetch in parallel when we have an ID hint. Errors
+  // are swallowed here — we'll fall back to a serial fetch below if needed.
+  const parallelVariationsPromise =
+    hints?.productId && hints.productId.length > 0
+      ? fetchRawV3Variations(hints.productId).catch(() => null)
+      : null;
 
   const { data } = await storeFetchWithHeaders<RawStoreProduct[]>("/products", {
     searchParams: { slug, per_page: 1 },
@@ -242,7 +260,19 @@ export async function getStoreProductBySlug(slug: string): Promise<Product | nul
 
   // Attach variations if this is a variable product.
   if (raw.variations && raw.variations.length > 0) {
-    const variations = await getStoreVariations(String(raw.id));
+    let rawVariations: RawV3Variation[] | null = null;
+
+    // Use the parallel result only if the hint matched the resolved id.
+    if (parallelVariationsPromise && hints?.productId === String(raw.id)) {
+      rawVariations = await parallelVariationsPromise;
+    }
+
+    // Fallback: hint missing, mismatched, or parallel fetch failed.
+    if (!rawVariations) {
+      rawVariations = await fetchRawV3Variations(String(raw.id));
+    }
+
+    const variations = mapRawV3Variations(rawVariations, raw.attributes ?? []);
     return { ...base, variations };
   }
 
@@ -250,13 +280,27 @@ export async function getStoreProductBySlug(slug: string): Promise<Product | nul
 }
 
 /**
- * List variations for a variable product.
- *
- * The WooCommerce Store API (/wc/store/v1) does NOT expose a
- * /products/{id}/variations endpoint — that only exists in the authenticated
- * REST API v3.  We call the v3 endpoint here using the server-only credentials.
+ * Raw v3 REST variation shape. Prices are dollar strings ("65.00") here —
+ * v3 differs from the Store API which returns minor units.
  */
-export async function getStoreVariations(productId: string): Promise<ProductVariation[]> {
+interface RawV3Variation {
+  id: number;
+  sku?: string;
+  price?: string;
+  regular_price?: string;
+  sale_price?: string;
+  stock_status?: string;
+  stock_quantity?: number | null;
+  image?: { id: number; src: string; alt?: string };
+  attributes: Array<{ name: string; option: string }>;
+}
+
+/**
+ * Network-only fetch for v3 variations. Split out from `getStoreVariations`
+ * so it can be fired in parallel with the slug lookup (we don't yet know
+ * the parent's `attributes` array at that point — the mapping happens later).
+ */
+async function fetchRawV3Variations(productId: string): Promise<RawV3Variation[]> {
   if (!productId) return [];
 
   const base = (process.env.WOO_BASE_URL ?? "").replace(/\/$/, "");
@@ -281,23 +325,26 @@ export async function getStoreVariations(productId: string): Promise<ProductVari
     return [];
   }
 
-  // v3 REST API shape — prices are dollar strings ("65.00"), not minor unit strings ("6500")
-  type V3Variation = {
-    id: number;
-    sku?: string;
-    price?: string;
-    regular_price?: string;
-    sale_price?: string;
-    stock_status?: string;
-    stock_quantity?: number | null;
-    image?: { id: number; src: string; alt?: string };
-    attributes: Array<{ name: string; option: string }>;
-  };
+  return (await res.json()) as RawV3Variation[];
+}
 
-  const raw: V3Variation[] = (await res.json()) as V3Variation[];
+/**
+ * Pure mapper from raw v3 variations to domain `ProductVariation[]`. Keys
+ * variation attributes by taxonomy slug (e.g. "pa_size") rather than the
+ * display name ("Size") so they match `ProductAttribute.id` in the UI.
+ */
+function mapRawV3Variations(
+  raw: RawV3Variation[],
+  parentAttrs: import("./mappers").RawStoreAttribute[] = [],
+): ProductVariation[] {
+  // Build "Display Name" → "pa_taxonomy" lookup from the parent product.
+  // Falls back to the name itself when no taxonomy is present (custom attrs).
+  const nameToKey: Record<string, string> = {};
+  for (const a of parentAttrs) {
+    nameToKey[a.name] = a.taxonomy ?? a.name;
+  }
+
   const currency = "USD";
-
-  // Convert v3 dollar-string prices to minor units (cents) for our Money type
   const dollarToMinor = (s: string | undefined): number => {
     if (!s) return 0;
     return Math.round(parseFloat(s) * 100);
@@ -316,7 +363,7 @@ export async function getStoreVariations(productId: string): Promise<ProductVari
         : "out_of_stock";
 
     const attrs: Record<string, string> = {};
-    for (const a of v.attributes) attrs[a.name] = a.option;
+    for (const a of v.attributes) attrs[nameToKey[a.name] ?? a.name] = a.option;
 
     return {
       id: String(v.id),
@@ -329,6 +376,26 @@ export async function getStoreVariations(productId: string): Promise<ProductVari
       ...(v.image ? { image: { id: String(v.image.id), url: v.image.src, alt: v.image.alt ?? "" } } : {}),
     };
   });
+}
+
+/**
+ * List variations for a variable product.
+ *
+ * The WooCommerce Store API (/wc/store/v1) does NOT expose a
+ * /products/{id}/variations endpoint — that only exists in the authenticated
+ * REST API v3.  We call the v3 endpoint here using the server-only credentials.
+ *
+ * @param parentAttrs - The parent product's raw Store API attributes. Used to
+ *   build a display-name → taxonomy-slug map (e.g. "Size" → "pa_size") so
+ *   that variation attribute records are keyed consistently with
+ *   `ProductAttribute.id`, enabling variation-selection matching in the UI.
+ */
+export async function getStoreVariations(
+  productId: string,
+  parentAttrs: import("./mappers").RawStoreAttribute[] = [],
+): Promise<ProductVariation[]> {
+  const raw = await fetchRawV3Variations(productId);
+  return mapRawV3Variations(raw, parentAttrs);
 }
 
 export async function listStoreCategories(): Promise<ProductCategory[]> {
