@@ -8,6 +8,7 @@ const WISHLIST_META_KEY = "_r1p_wishlist";
 
 interface RawWooOrder {
   id: number;
+  customer_id?: number;
   number: string;
   status: string;
   currency: string;
@@ -134,14 +135,17 @@ export async function getCustomerOrders(customerId: string): Promise<Order[]> {
 /** Fetch a single order, verifying it belongs to the given customer. */
 export async function getCustomerOrder(
   orderId: string,
-  _customerId: string,
+  customerId: string,
 ): Promise<Order | null> {
+  if (!customerId || customerId === "0") return null;
+
   try {
     const raw = await adminFetch<RawWooOrder>({
       path: `/orders/${orderId}`,
       next: { revalidate: 30 },
     });
     if (String(raw.id) !== orderId) return null;
+    if (String(raw.customer_id ?? 0) !== customerId) return null;
     return mapOrder(raw);
   } catch {
     return null;

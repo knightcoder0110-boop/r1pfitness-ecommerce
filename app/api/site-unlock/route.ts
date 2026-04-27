@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { assertSameOrigin } from "@/lib/api/request-security";
 import { checkRateLimit } from "@/lib/api/ratelimit";
 import {
   createSiteUnlockCookieValue,
@@ -7,6 +8,8 @@ import {
 } from "@/lib/site-lock-cookie";
 
 export async function POST(request: Request) {
+  assertSameOrigin(request);
+
   // Rate limit before touching the body. 3 attempts / 15 min / IP is
   // aggressive enough to make brute-force impractical while still allowing
   // a legitimate user a few typos.
@@ -64,7 +67,16 @@ export async function POST(request: Request) {
 
   const response = NextResponse.json({ ok: true });
 
-  const cookieValue = await createSiteUnlockCookieValue();
+  let cookieValue: string;
+  try {
+    cookieValue = await createSiteUnlockCookieValue();
+  } catch (error) {
+    console.error("[site-unlock] cookie signing secret is not configured:", error);
+    return NextResponse.json(
+      { ok: false, error: "Site lock cookie signing secret is not configured." },
+      { status: 503 },
+    );
+  }
 
   response.cookies.set(SITE_UNLOCK_COOKIE, cookieValue, {
     httpOnly: true,

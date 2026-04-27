@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/auth";
+import { assertSameOrigin } from "@/lib/api/request-security";
 import { updateCustomerAddress } from "@/lib/auth/woo-customer";
 
 const AddressDataSchema = z.object({
@@ -21,6 +22,8 @@ const RequestSchema = z.object({
 });
 
 export async function POST(req: Request): Promise<NextResponse> {
+  assertSameOrigin(req);
+
   const session = await auth();
   if (!session?.user.wooCustomerId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

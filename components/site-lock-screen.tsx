@@ -155,13 +155,24 @@ export default function SiteLockScreen() {
         body: JSON.stringify({ password }),
       });
 
+      const data = (await res.json().catch(() => null)) as
+        | { ok?: boolean; error?: string }
+        | null;
+
       if (res.ok) {
         // Reload to the home page — the cookie is now set server-side
         window.location.href = "/";
       } else {
-        setError("Wrong password. Join the Ohana to get it first.");
+        const message =
+          res.status === 401
+            ? "Wrong password. Join the Ohana to get it first."
+            : (data?.error ?? "Something went wrong. Try again.");
+
+        setError(message);
         setShake(true);
-        setPassword("");
+        if (res.status === 401) {
+          setPassword("");
+        }
         setTimeout(() => setShake(false), 600);
       }
     } catch {

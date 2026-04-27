@@ -12,16 +12,35 @@ export default function PasswordGate({ onSwitchToSignup }: PasswordGateProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [shaking, setShaking] = useState(false);
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === siteConfig.dropPassword) {
-      window.location.href = siteConfig.dropRedirectUrl;
-    } else {
+    if (!password.trim() || loading) return;
+
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/site-unlock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+
+      if (response.ok) {
+        window.location.href = siteConfig.dropRedirectUrl;
+        return;
+      }
+
       setError("Wrong password. Join the ohana to get it first.");
       setShaking(true);
+      setPassword("");
       setTimeout(() => setShaking(false), 500);
+    } catch {
+      setError("Something went wrong. Try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -55,6 +74,7 @@ export default function PasswordGate({ onSwitchToSignup }: PasswordGateProps) {
           }`}
           placeholder="••••••••"
           autoComplete="off"
+          disabled={loading}
         />
 
         {error && (
@@ -71,9 +91,10 @@ export default function PasswordGate({ onSwitchToSignup }: PasswordGateProps) {
           type="submit"
           whileHover={{ y: -2, boxShadow: "0 0 20px rgba(201,168,76,0.25)" }}
           whileTap={{ scale: 0.97 }}
+          disabled={loading}
           className="w-full py-3 bg-text text-bg font-display text-lg tracking-[0.2em] uppercase rounded-sm transition-colors hover:bg-gold"
         >
-          Enter The Drop
+          {loading ? "Checking..." : "Enter The Drop"}
         </motion.button>
       </form>
 

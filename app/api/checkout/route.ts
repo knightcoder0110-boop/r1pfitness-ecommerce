@@ -8,6 +8,7 @@ import {
   createPaymentIntent,
   createWooOrder,
 } from "@/lib/checkout";
+import { assertSameOrigin } from "@/lib/api/request-security";
 import { checkRateLimit } from "@/lib/api/ratelimit";
 import { getCart } from "@/lib/woo/cart";
 import type { CartLineItem } from "@/lib/woo/types";
@@ -42,6 +43,8 @@ import type { CartLineItem } from "@/lib/woo/types";
  * `payment_intent.succeeded` and transitions the Woo order to "processing".
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  assertSameOrigin(req);
+
   // Rate limit: 5 checkout attempts per IP per minute.
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??

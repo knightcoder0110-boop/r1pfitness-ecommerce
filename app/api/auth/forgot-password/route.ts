@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { assertSameOrigin } from "@/lib/api/request-security";
 import { checkRateLimit } from "@/lib/api/ratelimit";
 
 /**
@@ -16,6 +17,8 @@ import { checkRateLimit } from "@/lib/api/ratelimit";
  *    enumeration — same behaviour as WP's own UI).
  */
 export async function POST(req: NextRequest) {
+  assertSameOrigin(req);
+
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     req.headers.get("x-real-ip") ??

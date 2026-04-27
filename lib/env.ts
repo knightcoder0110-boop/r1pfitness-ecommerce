@@ -55,7 +55,6 @@ export const env = createEnv({
 
   client: {
     NEXT_PUBLIC_SITE_URL: z.string().url().optional(),
-    NEXT_PUBLIC_DROP_PASSWORD: z.string().optional(),
     NEXT_PUBLIC_NEXT_DROP_DATE: z.string().optional(),
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
     NEXT_PUBLIC_MEILI_SEARCH_KEY: z.string().optional(),
@@ -83,7 +82,6 @@ export const env = createEnv({
     KLAVIYO_CONTACT_TEMPLATE_ID: process.env.KLAVIYO_CONTACT_TEMPLATE_ID,
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
-    NEXT_PUBLIC_DROP_PASSWORD: process.env.NEXT_PUBLIC_DROP_PASSWORD,
     NEXT_PUBLIC_NEXT_DROP_DATE: process.env.NEXT_PUBLIC_NEXT_DROP_DATE,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     NEXT_PUBLIC_MEILI_SEARCH_KEY: process.env.NEXT_PUBLIC_MEILI_SEARCH_KEY,

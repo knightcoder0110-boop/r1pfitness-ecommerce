@@ -1,4 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { assertSameOrigin } from "@/lib/api/request-security";
+import { checkRateLimit } from "@/lib/api/ratelimit";
 
 /**
  * POST /api/back-in-stock
@@ -14,6 +16,28 @@ import { type NextRequest, NextResponse } from "next/server";
  * Response: { success: boolean, error?: string }
  */
 export async function POST(req: NextRequest) {
+  assertSameOrigin(req);
+
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown";
+  const rl = checkRateLimit(`back-in-stock:${ip}`, {
+    max: 5,
+    windowMs: 10 * 60_000,
+  });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { success: false, error: "Too many attempts. Try again later." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
+        },
+      },
+    );
+  }
+
   try {
     const body = (await req.json()) as {
       email?: string;

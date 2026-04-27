@@ -7,7 +7,8 @@ import { Heading } from "@/components/ui/heading";
 import { Price } from "@/components/ui/price";
 import { CheckoutSuccessSync } from "@/components/checkout/checkout-success-sync";
 import { TrackPurchaseClient } from "@/components/analytics/track-purchase-client";
-import { getWooOrder } from "@/lib/checkout/woo-order";
+import { auth } from "@/auth";
+import { getCustomerOrder } from "@/lib/auth/woo-customer";
 import { ROUTES, SITE } from "@/lib/constants";
 
 interface ConfirmationPageProps {
@@ -30,7 +31,9 @@ export const metadata: Metadata = {
  */
 export default async function ConfirmationPage({ params }: ConfirmationPageProps) {
   const { orderId } = await params;
-  const order = await getWooOrder(orderId);
+  const session = await auth();
+  const customerId = session?.user.wooCustomerId ?? "0";
+  const order = await getCustomerOrder(orderId, customerId);
   const itemCount = order?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
   const shippingName = order
     ? [order.shipping.firstName, order.shipping.lastName].filter(Boolean).join(" ")

@@ -53,22 +53,47 @@ interface CampaignCountdownProps {
 
 export function CampaignCountdown({ dropDate, onExpired }: CampaignCountdownProps) {
   const target = new Date(dropDate);
-  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(() => calc(target));
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const tick = () => {
       const t = calc(target);
       setTimeLeft(t);
       if (!t) {
-        clearInterval(interval);
         onExpired?.();
       }
+      return t;
+    };
+
+    const initial = tick();
+    if (!initial) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      const next = tick();
+      if (!next) {
+        clearInterval(interval);
+      }
     }, 1000);
+
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dropDate]);
 
-  if (!timeLeft) return null;
+  if (!timeLeft) {
+    return (
+      <div aria-hidden className="flex items-start gap-4 sm:gap-6 invisible">
+        <Digit value={0} label="Days" />
+        <span className="font-display text-4xl sm:text-6xl text-muted mt-1">:</span>
+        <Digit value={0} label="Hours" />
+        <span className="font-display text-4xl sm:text-6xl text-muted mt-1">:</span>
+        <Digit value={0} label="Min" />
+        <span className="font-display text-4xl sm:text-6xl text-muted mt-1">:</span>
+        <Digit value={0} label="Sec" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-start gap-4 sm:gap-6">

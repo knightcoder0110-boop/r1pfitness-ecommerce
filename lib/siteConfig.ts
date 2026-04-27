@@ -11,11 +11,6 @@ export const siteConfig = {
   tagline: "REBORN 1N PARADISE",
   address: "94-111 Leokane St, Waipahu, HI 96797",
 
-  // ── Drop Password ─────────────────────────────────────
-  // This is checked client-side. For production, set the
-  // DROP_PASSWORD env variable instead (takes priority).
-  dropPassword: process.env.NEXT_PUBLIC_DROP_PASSWORD || "r1p2026",
-
   // ── Drop Countdown ────────────────────────────────────
   // Set to an ISO date string, e.g. "2026-05-01T00:00:00"
   // Set to "" or leave NEXT_PUBLIC_NEXT_DROP_DATE empty to HIDE the countdown.

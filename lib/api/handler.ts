@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { ZodError, type ZodType } from "zod";
 import { WooError } from "@/lib/woo/errors";
 import { ApiError } from "./errors";
+import { assertSameOrigin } from "./request-security";
 import { fail, ok, type ApiMeta, type ApiResponse } from "./response";
 import { checkRateLimit, type RateLimitOptions } from "./ratelimit";
 
@@ -50,6 +51,8 @@ export function withApi<TSchema extends ZodType | undefined, TData>(
 ) {
   return async function routeHandler(req: NextRequest): Promise<NextResponse<ApiResponse<TData>>> {
     try {
+      assertSameOrigin(req);
+
       // --- Rate limiting ---
       if (config.rateLimit !== undefined) {
         const ip =

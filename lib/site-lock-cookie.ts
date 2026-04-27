@@ -5,11 +5,20 @@ const COOKIE_VERSION = "v1";
 const CLOCK_SKEW_SECONDS = 60;
 const encoder = new TextEncoder();
 
+function firstNonEmptyEnv(...values: Array<string | undefined>): string | undefined {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) {
+      return value;
+    }
+  }
+  return undefined;
+}
+
 function getSigningSecret(): string | undefined {
-  return (
-    process.env.SITE_UNLOCK_COOKIE_SECRET ??
-    process.env.NEXTAUTH_SECRET ??
-    process.env.SITE_UNLOCK_PASSWORD
+  return firstNonEmptyEnv(
+    process.env.SITE_UNLOCK_COOKIE_SECRET,
+    process.env.NEXTAUTH_SECRET,
+    process.env.SITE_UNLOCK_PASSWORD,
   );
 }
 
