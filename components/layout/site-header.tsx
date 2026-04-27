@@ -4,10 +4,10 @@ import { Container } from "@/components/ui/container";
 import { ROUTES, SITE } from "@/lib/constants";
 import { MobileNav } from "./mobile-nav";
 import { DesktopNav, type NavLinkItem } from "./desktop-nav";
-import { AccountButton } from "./account-button";
 import { AnnouncementBar } from "./announcement-bar";
 import { ScrollAwareHeader } from "./scroll-aware-header";
 import { SearchButton } from "@/components/search/search-button";
+import { WishlistHeaderButton } from "./wishlist-header-button";
 
 /**
  * Primary nav links. Declared once — both desktop nav and `<MobileNav />`
@@ -32,42 +32,50 @@ const NAV_LINKS: NavLinkItem[] = [
       {
         title: "New",
         items: [
-          { label: "New Arrivals",  href: ROUTES.category("drops"),      description: "Latest releases"       },
-          { label: "Faith Collection", href: ROUTES.category("faith"),   description: "Faith over fear"       },
-          { label: "All Products",  href: ROUTES.shop,                   description: "Browse everything"     },
+          { label: "New Arrivals", href: ROUTES.category("drops"), description: "Latest releases" },
+          {
+            label: "Faith Collection",
+            href: ROUTES.category("faith"),
+            description: "Faith over fear",
+          },
+          { label: "All Products", href: ROUTES.shop, description: "Browse everything" },
         ],
       },
       {
         title: "Tops",
         items: [
-          { label: "Tees",    href: ROUTES.category("tees"),    description: "Graphic & essentials" },
-          { label: "Hoodies", href: ROUTES.category("hoodies"), description: "Heavyweight fleece"   },
-          { label: "All Tops",href: ROUTES.category("tops"),    description: "Full apparel line"    },
+          { label: "Tees", href: ROUTES.category("tees"), description: "Graphic & essentials" },
+          { label: "Hoodies", href: ROUTES.category("hoodies"), description: "Heavyweight fleece" },
+          { label: "All Tops", href: ROUTES.category("tops"), description: "Full apparel line" },
         ],
       },
       {
         title: "Bottoms & More",
         items: [
-          { label: "Joggers",     href: ROUTES.category("joggers"),     description: "Everyday fleece"     },
-          { label: "Shorts",      href: ROUTES.category("shorts"),      description: "Training cuts"       },
-          { label: "Hats",        href: ROUTES.category("headwear"),    description: "Caps & beanies"      },
-          { label: "Accessories", href: ROUTES.category("accessories"), description: "Bags, socks & more"  },
+          { label: "Joggers", href: ROUTES.category("joggers"), description: "Everyday fleece" },
+          { label: "Shorts", href: ROUTES.category("shorts"), description: "Training cuts" },
+          { label: "Hats", href: ROUTES.category("headwear"), description: "Caps & beanies" },
+          {
+            label: "Accessories",
+            href: ROUTES.category("accessories"),
+            description: "Bags, socks & more",
+          },
         ],
       },
     ],
     featured: {
-      image:    "/images/hero/king-of-kings-collection-cover-image.jpg",
-      badge:    "New Collection",
-      title:    "KING OF KINGS",
+      image: "/images/hero/king-of-kings-collection-cover-image.jpg",
+      badge: "New Collection",
+      title: "KING OF KINGS",
       subtitle: "Limited Edition · Waipahu, HI",
-      href:     ROUTES.shop,
-      cta:      "Shop the collection",
+      href: ROUTES.shop,
+      cta: "Shop the collection",
     },
   },
-  { label: "Tees",        href: ROUTES.category("tees")        },
-  { label: "Hoodies",     href: ROUTES.category("hoodies")     },
-  { label: "Hats",        href: ROUTES.category("headwear")    },
-  { label: "Faith",       href: ROUTES.category("faith")       },
+  { label: "Tees", href: ROUTES.category("tees") },
+  { label: "Hoodies", href: ROUTES.category("hoodies") },
+  { label: "Hats", href: ROUTES.category("headwear") },
+  { label: "Faith", href: ROUTES.category("faith") },
   { label: "Accessories", href: ROUTES.category("accessories") },
 ];
 
@@ -86,36 +94,36 @@ export function SiteHeader() {
     <ScrollAwareHeader>
       <AnnouncementBar />
       <header
-        className="relative w-full border-b border-border bg-bg/85 backdrop-blur-lg shadow-soft"
+        className="border-border bg-bg/85 shadow-soft relative w-full border-b backdrop-blur-lg"
         style={{ height: "var(--size-header)" }}
       >
-          <Container className="flex h-full items-center justify-between gap-4">
-            {/* Left: brand */}
-            <Link
-              href={ROUTES.home}
-              aria-label={`${SITE.name} home`}
-              className="group inline-flex flex-col leading-none transition-opacity hover:opacity-90"
-            >
-              <span className="font-display text-[1.35rem] sm:text-[1.6rem] tracking-[0.22em] text-text">
-                REBORN <span className="text-gold">1N</span> PARADISE
-              </span>
-              <span className="hidden sm:block font-mono text-[9px] uppercase tracking-[0.55em] text-gold/80 mt-1">
-                R1P · Fitness
-              </span>
-            </Link>
+        <Container className="flex h-full items-center justify-between gap-4">
+          {/* Left: brand */}
+          <Link
+            href={ROUTES.home}
+            aria-label={`${SITE.name} home`}
+            className="group inline-flex flex-col leading-none transition-opacity hover:opacity-90"
+          >
+            <span className="font-display text-text text-[1.35rem] tracking-[0.22em] sm:text-[1.6rem]">
+              REBORN <span className="text-gold">1N</span> PARADISE
+            </span>
+            <span className="text-gold/80 mt-1 hidden font-mono text-[9px] tracking-[0.55em] uppercase sm:block">
+              R1P · Fitness
+            </span>
+          </Link>
 
-            {/* Desktop nav — includes mega menu */}
-            <DesktopNav links={NAV_LINKS} />
+          {/* Desktop nav — includes mega menu */}
+          <DesktopNav links={NAV_LINKS} />
 
-            {/* Right: search + account + cart + mobile menu */}
-            <div className="flex items-center gap-1">
-              <SearchButton />
-              <AccountButton />
-              <CartButton />
-              <MobileNav links={NAV_LINKS} />
-            </div>
-          </Container>
-        </header>
+          {/* Right: search + wishlist + cart + mobile menu */}
+          <div className="flex items-center gap-1">
+            <SearchButton />
+            <WishlistHeaderButton />
+            <CartButton />
+            <MobileNav links={NAV_LINKS} />
+          </div>
+        </Container>
+      </header>
     </ScrollAwareHeader>
   );
 }

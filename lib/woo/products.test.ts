@@ -190,6 +190,64 @@ describe("getStoreProductBySlug", () => {
   });
 });
 
+describe("getQuickAddProduct", () => {
+  it("fetches by product id and attaches only variation attributes", async () => {
+    const { getQuickAddProduct } = await import("./products");
+    const variableProduct = {
+      ...PRODUCT_SHIRT,
+      attributes: [
+        {
+          id: 4,
+          name: "Size",
+          taxonomy: "pa_size",
+          has_variations: true,
+          terms: [{ name: "M", slug: "m" }],
+        },
+        {
+          id: 5,
+          name: "Fabric",
+          taxonomy: "pa_fabric",
+          has_variations: false,
+          terms: [{ name: "Cotton", slug: "cotton" }],
+        },
+      ],
+      variations: [{ id: 101, attributes: [] }],
+    };
+    const { calls } = captureFetchMock([
+      jsonResponse([variableProduct]),
+      jsonResponse([VARIATION_V3]),
+    ]);
+
+    const product = await getQuickAddProduct("42");
+
+    expect(product?.id).toBe("42");
+    expect(product?.description).toBe("");
+    expect(product?.categories).toEqual([]);
+    expect(product?.attributes).toHaveLength(1);
+    expect(product?.attributes[0]?.id).toBe("pa_size");
+    expect(product?.variations).toHaveLength(1);
+    expect(product?.variations[0]?.attributes).toEqual({ pa_size: "M" });
+
+    expect(calls).toHaveLength(2);
+    const productUrl = new URL(calls[0]!.url);
+    expect(productUrl.pathname).toBe("/wp-json/wc/store/v1/products");
+    expect(productUrl.searchParams.get("include")).toBe("42");
+    expect(productUrl.searchParams.has("slug")).toBe(false);
+    expect(calls[1]!.url).toContain("/wp-json/wc/v3/products/42/variations");
+  });
+
+  it("returns null for an invalid product id without hitting the network", async () => {
+    const { getQuickAddProduct } = await import("./products");
+    const fn = vi.fn();
+    globalThis.fetch = fn as unknown as typeof fetch;
+
+    const product = await getQuickAddProduct("bad-id");
+
+    expect(product).toBeNull();
+    expect(fn).not.toHaveBeenCalled();
+  });
+});
+
 describe("listStoreCategories / getStoreCategoryBySlug", () => {
   it("normalizes IDs to strings", async () => {
     const { listStoreCategories } = await import("./products");

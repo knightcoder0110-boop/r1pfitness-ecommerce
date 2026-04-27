@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Price } from "@/components/ui/price";
 import { ColorSwatches } from "@/components/product/color-swatches";
 import { QuickAddTrigger } from "@/components/product/quick-add-trigger";
+import { WishlistButton } from "@/components/product/wishlist-button";
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils/cn";
 import type { ProductSummary } from "@/lib/woo/types";
@@ -35,13 +36,9 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
   const lowStock = product.stockStatus === "low_stock";
 
   return (
-    <article
-      aria-label={product.name}
-      className={cn("group relative flex flex-col", className)}
-    >
+    <article aria-label={product.name} className={cn("group relative flex flex-col", className)}>
       {/* ── Image block ─────────────────────────────────────────────── */}
-      <div className="relative aspect-product w-full overflow-hidden rounded-sm bg-surface-2">
-
+      <div className="aspect-product bg-surface-2 relative w-full overflow-hidden rounded-sm">
         {/* Primary image */}
         {product.image ? (
           <Image
@@ -54,14 +51,14 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
               "object-cover transition-[transform,opacity] duration-700 ease-out",
               !outOfStock && !product.hoverImage && "group-hover:scale-[1.04]",
               !outOfStock && product.hoverImage && "group-hover:opacity-0",
-              outOfStock && "grayscale opacity-40",
+              outOfStock && "opacity-40 grayscale",
             )}
           />
         ) : (
           /* Branded placeholder when no image */
           <div className="flex h-full w-full items-center justify-center">
             <span
-              className="select-none font-display text-6xl tracking-widest text-surface-3"
+              className="font-display text-surface-3 text-6xl tracking-widest select-none"
               aria-hidden="true"
             >
               R1P
@@ -93,12 +90,14 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
         )}
 
         {/* Badges — top-left */}
-        <div className="absolute left-3 top-3 z-10 flex flex-col gap-1.5">
+        <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
           {product.isLimited ? <Badge tone="gold">Limited</Badge> : null}
           {onSale ? <Badge tone="coral">Sale</Badge> : null}
           {outOfStock ? <Badge tone="danger">Sold Out</Badge> : null}
           {lowStock ? <Badge tone="neutral">Low stock</Badge> : null}
         </div>
+
+        <WishlistButton product={product} />
 
         {/* Quick Add — real action: variable products open the modal,
             simple products add to cart in one click. Hidden when sold out
@@ -108,7 +107,7 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
         {/* Gold sweep — brand signature bottom accent */}
         <div
           aria-hidden
-          className="pointer-events-none absolute bottom-0 left-0 h-[2px] w-0 bg-gold transition-[width] duration-500 ease-out group-hover:w-full"
+          className="bg-gold pointer-events-none absolute bottom-0 left-0 h-[2px] w-0 transition-[width] duration-500 ease-out group-hover:w-full"
         />
       </div>
 
@@ -117,13 +116,13 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
         href={ROUTES.product(product.slug)}
         className={cn(
           "flex flex-col gap-1.5 pt-3.5 pb-1",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
+          "focus-visible:ring-gold focus-visible:ring-offset-bg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
         )}
       >
         {/* Product name — serif (Cormorant) reads far better at card scale
             than the all-caps Bebas Neue display face. Slight letter-spacing
             tightening keeps it editorial without sacrificing legibility. */}
-        <h3 className="line-clamp-2 font-serif text-[15px] leading-snug tracking-normal text-text transition-colors duration-200 group-hover:text-gold">
+        <h3 className="text-text group-hover:text-gold line-clamp-2 font-serif text-[15px] leading-snug tracking-normal transition-colors duration-200">
           {product.name}
         </h3>
 
@@ -136,7 +135,7 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
           />
           <span
             aria-hidden
-            className="font-mono text-[9px] uppercase tracking-[0.3em] text-gold opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+            className="text-gold font-mono text-[9px] tracking-[0.3em] uppercase opacity-0 transition-opacity duration-200 group-hover:opacity-100"
           >
             →
           </span>

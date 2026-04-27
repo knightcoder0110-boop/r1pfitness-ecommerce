@@ -2,6 +2,9 @@ import "server-only";
 
 import { adminFetch } from "@/lib/woo/client";
 import type { Order } from "@/lib/woo/types";
+import type { WishlistItem } from "@/lib/wishlist/types";
+
+const WISHLIST_META_KEY = "_r1p_wishlist";
 
 interface RawWooOrder {
   id: number;
@@ -32,6 +35,7 @@ interface RawWooCustomer {
   last_name: string;
   billing: Record<string, string>;
   shipping: Record<string, string>;
+  meta_data?: Array<{ id?: number; key: string; value: unknown }>;
 }
 
 export interface CustomerProfile {
@@ -195,6 +199,80 @@ export async function updateCustomerAddress(
       path: `/customers/${customerId}`,
       method: "PUT",
       body: { [type]: data },
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function normalizeWishlistValue(value: unknown): WishlistItem[] {
+  let raw = value;
+  if (typeof raw === "string") {
+    try {
+      raw = JSON.parse(raw) as unknown;
+    } catch {
+      return [];
+    }
+  }
+
+  if (!Array.isArray(raw)) return [];
+
+  return raw
+    .filter((item): item is WishlistItem => {
+      if (typeof item !== "object" || item === null) return false;
+      const record = item as Record<string, unknown>;
+      return (
+        typeof record.productId === "string" &&
+        typeof record.slug === "string" &&
+        typeof record.name === "string" &&
+        typeof record.addedAt === "string" &&
+        typeof record.price === "object" &&
+        record.price !== null &&
+        typeof (record.price as Record<string, unknown>).amount === "number" &&
+        typeof (record.price as Record<string, unknown>).currency === "string" &&
+        (record.stockStatus === "in_stock" ||
+          record.stockStatus === "low_stock" ||
+          record.stockStatus === "out_of_stock") &&
+        typeof record.isLimited === "boolean"
+      );
+    })
+    .slice(0, 100);
+}
+
+export async function getCustomerWishlist(customerId: string): Promise<WishlistItem[]> {
+  if (!customerId || customerId === "0") return [];
+
+  try {
+    const raw = await adminFetch<RawWooCustomer>({
+      path: `/customers/${customerId}`,
+      next: { revalidate: 60 },
+    });
+    const meta = raw.meta_data?.find((item) => item.key === WISHLIST_META_KEY);
+    return normalizeWishlistValue(meta?.value);
+  } catch {
+    return [];
+  }
+}
+
+export async function updateCustomerWishlist(
+  customerId: string,
+  items: WishlistItem[],
+): Promise<boolean> {
+  if (!customerId || customerId === "0") return false;
+
+  try {
+    await adminFetch({
+      path: `/customers/${customerId}`,
+      method: "PUT",
+      body: {
+        meta_data: [
+          {
+            key: WISHLIST_META_KEY,
+            value: JSON.stringify(items.slice(0, 100)),
+          },
+        ],
+      },
     });
     return true;
   } catch {

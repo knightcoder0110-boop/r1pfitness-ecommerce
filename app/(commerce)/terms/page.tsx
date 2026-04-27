@@ -5,29 +5,25 @@ import { SITE } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: "The terms and conditions governing your use of the R1P FITNESS website and purchases.",
+  description:
+    "The terms and conditions governing your use of the R1P FITNESS website and purchases.",
   alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {
   return (
     <Container className="py-16 sm:py-24">
-      <Breadcrumbs
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Terms of Service" },
-        ]}
-      />
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Terms of Service" }]} />
 
-      <div className="mx-auto mt-10 max-w-2xl space-y-10 font-sans text-sm leading-relaxed text-text/80">
+      <div className="text-text/80 mx-auto mt-10 max-w-2xl space-y-10 font-sans text-sm leading-relaxed">
         <header className="space-y-3">
-          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+          <p className="text-muted font-mono text-[10px] tracking-[0.3em] uppercase">
             Last updated: April 2026
           </p>
-          <h1 className="font-serif text-4xl text-text">Terms of Service</h1>
+          <h1 className="text-text font-serif text-4xl">Terms of Service</h1>
           <p>
-            By accessing or purchasing from {SITE.name} you agree to these Terms of Service.
-            Please read them carefully.
+            By accessing or purchasing from {SITE.name} you agree to these Terms of Service. Please
+            read them carefully.
           </p>
         </header>
 
@@ -75,7 +71,7 @@ export default function TermsPage() {
           <p>
             Shipping times are estimates only. We are not responsible for carrier delays. Risk of
             loss passes to you upon handoff to the carrier. See our{" "}
-            <a href="/shipping" className="underline hover:text-gold">
+            <a href="/shipping" className="hover:text-gold underline">
               Shipping Policy
             </a>{" "}
             for full details.
@@ -85,19 +81,18 @@ export default function TermsPage() {
         <Section title="6. Returns & Refunds">
           <p>
             See our{" "}
-            <a href="/returns" className="underline hover:text-gold">
+            <a href="/returns" className="hover:text-gold underline">
               Returns Policy
             </a>{" "}
-            for full details. Due to the limited-edition nature of our products, we cannot
-            guarantee exchanges for the same item.
+            for full details. Due to the limited-edition nature of our products, we cannot guarantee
+            exchanges for the same item.
           </p>
         </Section>
 
         <Section title="7. Intellectual Property">
           <p>
-            All content on this site — including logos, graphics, copy, and product photography —
-            is the property of {SITE.legalName} and may not be reproduced without written
-            permission.
+            All content on this site — including logos, graphics, copy, and product photography — is
+            the property of {SITE.legalName} and may not be reproduced without written permission.
           </p>
         </Section>
 
@@ -119,8 +114,8 @@ export default function TermsPage() {
         <Section title="10. Contact">
           <p>
             Questions about these terms? Email{" "}
-            <a href="mailto:legal@r1pfitness.com" className="underline hover:text-gold">
-              legal@r1pfitness.com
+            <a href={`mailto:${SITE.emails.legal}`} className="hover:text-gold underline">
+              {SITE.emails.legal}
             </a>
             .
           </p>
@@ -133,7 +128,7 @@ export default function TermsPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-3">
-      <h2 className="font-serif text-xl text-text">{title}</h2>
+      <h2 className="text-text font-serif text-xl">{title}</h2>
       {children}
     </section>
   );

@@ -36,7 +36,7 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
     a: (
       <>
         Domestic orders typically arrive in 5–8 business days via standard shipping. See our{" "}
-        <a href="/shipping" className="underline hover:text-gold">
+        <a href="/shipping" className="hover:text-gold underline">
           Shipping Policy
         </a>{" "}
         for all options including international.
@@ -49,14 +49,14 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
   },
   {
     q: "Can I change or cancel my order?",
-    a: "We process orders quickly. If you need to change or cancel, email support@r1pfitness.com immediately after placing your order. We cannot guarantee changes once an order has been processed.",
+    a: `We process orders quickly. If you need to change or cancel, email ${SITE.emails.support} immediately after placing your order. We cannot guarantee changes once an order has been processed.`,
   },
   {
     q: "What is your return policy?",
     a: (
       <>
         We accept unworn, unwashed returns within 14 days of delivery. See our{" "}
-        <a href="/returns" className="underline hover:text-gold">
+        <a href="/returns" className="hover:text-gold underline">
           Returns Policy
         </a>{" "}
         for full details.
@@ -65,7 +65,7 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
   },
   {
     q: "My order arrived damaged — what do I do?",
-    a: "Email support@r1pfitness.com within 7 days with your order number and photos of the damage. We'll make it right.",
+    a: `Email ${SITE.emails.support} within 7 days with your order number and photos of the damage. We'll make it right.`,
   },
   {
     q: "Do you have a physical store?",
@@ -75,12 +75,8 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
     q: "How do I create an account?",
     a: (
       <>
-        Visit{" "}
-        <a href="/account/register" className="underline hover:text-gold">
-          /account/register
-        </a>{" "}
-        to create an account. An account lets you track orders, save addresses, and get early drop
-        access.
+        Customer account creation is currently unavailable. If that changes later, we&apos;ll add it
+        back to the site.
       </>
     ),
   },
@@ -89,7 +85,7 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
     a: (
       <>
         Use the{" "}
-        <a href="/account/forgot-password" className="underline hover:text-gold">
+        <a href="/account/forgot-password" className="hover:text-gold underline">
           Forgot Password
         </a>{" "}
         page to reset it via your email address.
@@ -109,35 +105,30 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
 export default function FaqPage() {
   return (
     <Container className="py-16 sm:py-24">
-      <Breadcrumbs
-        items={[
-          { label: "Home", href: "/" },
-          { label: "FAQ" },
-        ]}
-      />
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "FAQ" }]} />
 
       <div className="mx-auto mt-10 max-w-2xl">
         <header className="mb-12 space-y-3">
-          <h1 className="font-serif text-4xl text-text">Frequently Asked Questions</h1>
-          <p className="text-sm text-text/70">
+          <h1 className="text-text font-serif text-4xl">Frequently Asked Questions</h1>
+          <p className="text-text/70 text-sm">
             Can&apos;t find your answer?{" "}
-            <a href="/contact" className="underline hover:text-gold">
+            <a href="/contact" className="hover:text-gold underline">
               Contact us
             </a>
             .
           </p>
         </header>
 
-        <div className="divide-y divide-border">
+        <div className="divide-border divide-y">
           {FAQS.map(({ q, a }) => (
             <details key={q} className="group py-5">
-              <summary className="flex cursor-pointer list-none items-start justify-between gap-6 font-serif text-base text-text">
+              <summary className="text-text flex cursor-pointer list-none items-start justify-between gap-6 font-serif text-base">
                 <span>{q}</span>
-                <span className="mt-0.5 shrink-0 font-mono text-lg text-muted transition-transform group-open:rotate-45">
+                <span className="text-muted mt-0.5 shrink-0 font-mono text-lg transition-transform group-open:rotate-45">
                   +
                 </span>
               </summary>
-              <p className="mt-4 text-sm leading-relaxed text-text/70">{a}</p>
+              <p className="text-text/70 mt-4 text-sm leading-relaxed">{a}</p>
             </details>
           ))}
         </div>

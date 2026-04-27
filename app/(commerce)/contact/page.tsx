@@ -1,14 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import type { Metadata } from "next";
 import { Container } from "@/components/ui/container";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { SITE } from "@/lib/constants";
-
-// Contact page is a client component only because of the form state.
-// Metadata is exported as a const and works with client pages in Next.js 13+.
 
 const SUBJECTS = [
   "Order question",
@@ -33,9 +29,9 @@ function Field({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
+      <span className="text-muted font-mono text-[10px] tracking-[0.2em] uppercase">
         {label}
-        {required && <span className="ml-0.5 text-coral">*</span>}
+        {required && <span className="text-coral ml-0.5">*</span>}
       </span>
       {children}
     </label>
@@ -81,34 +77,42 @@ export default function ContactPage() {
 
   return (
     <Container className="py-16 sm:py-24">
-      <Breadcrumbs
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Contact" },
-        ]}
-      />
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Contact" }]} />
 
       <div className="mx-auto mt-10 grid max-w-4xl gap-16 lg:grid-cols-[1fr_2fr]">
         {/* ── Sidebar ── */}
-        <aside className="space-y-8 text-sm text-text/70">
+        <aside className="text-text/70 space-y-8 text-sm">
           <div className="space-y-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
-              Support
+            <p className="text-muted font-mono text-[10px] tracking-[0.3em] uppercase">
+              Admin &amp; Support
             </p>
             <a
-              href="mailto:support@r1pfitness.com"
-              className="block text-text underline-offset-4 hover:underline hover:text-gold"
+              href={`mailto:${SITE.emails.support}`}
+              className="text-text hover:text-gold block underline-offset-4 hover:underline"
             >
-              support@r1pfitness.com
+              {SITE.emails.support}
             </a>
             <p className="text-xs">Response within 1 business day.</p>
           </div>
 
           <div className="space-y-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+            <p className="text-muted font-mono text-[10px] tracking-[0.3em] uppercase">
+              Press / Media
+            </p>
+            <a
+              href={`mailto:${SITE.emails.press}`}
+              className="text-text hover:text-gold block underline-offset-4 hover:underline"
+            >
+              {SITE.emails.press}
+            </a>
+            <p className="text-xs">PR, media, and collaboration inquiries.</p>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-muted font-mono text-[10px] tracking-[0.3em] uppercase">
               Mailing Address
             </p>
-            <address className="not-italic leading-relaxed">
+            <address className="leading-relaxed not-italic">
               {SITE.legalName}
               <br />
               {SITE.address.street}
@@ -118,14 +122,12 @@ export default function ContactPage() {
           </div>
 
           <div className="space-y-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
-              Instagram
-            </p>
+            <p className="text-muted font-mono text-[10px] tracking-[0.3em] uppercase">Instagram</p>
             <a
               href={SITE.social.instagram}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-text underline-offset-4 hover:underline hover:text-gold"
+              className="text-text hover:text-gold underline-offset-4 hover:underline"
             >
               @r1pfitness
             </a>
@@ -135,12 +137,12 @@ export default function ContactPage() {
         {/* ── Form ── */}
         <div>
           {status === "success" ? (
-            <div className="space-y-4 border border-border p-8">
-              <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-gold">
+            <div className="border-border space-y-4 border p-8">
+              <p className="text-gold font-mono text-[10px] tracking-[0.3em] uppercase">
                 Message sent ✓
               </p>
-              <p className="font-serif text-2xl text-text">We&apos;ll be in touch.</p>
-              <p className="text-sm text-text/70">
+              <p className="text-text font-serif text-2xl">We&apos;ll be in touch.</p>
+              <p className="text-text/70 text-sm">
                 Expect a reply within 1 business day. Check your spam folder if you don&apos;t hear
                 back.
               </p>
@@ -192,7 +194,7 @@ export default function ContactPage() {
               </Field>
 
               {error && (
-                <p role="alert" className="text-sm text-coral">
+                <p role="alert" className="text-coral text-sm">
                   {error}
                 </p>
               )}

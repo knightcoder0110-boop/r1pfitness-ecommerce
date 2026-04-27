@@ -6,6 +6,7 @@ import {
   mapCategory,
   mapProduct,
   mapProductSummary,
+  type RawStoreAttribute,
   type RawStoreCategory,
   type RawStoreProduct,
 } from "./mappers";
@@ -14,6 +15,7 @@ import type {
   ProductCategory,
   ProductSummary,
   ProductVariation,
+  StockStatus,
 } from "./types";
 
 /**
@@ -190,9 +192,7 @@ export async function listStoreProducts(
       : params.categorySlug;
 
   const tagParam =
-    params.tagIds && params.tagIds.length > 0
-      ? params.tagIds.join(",")
-      : params.tagSlug;
+    params.tagIds && params.tagIds.length > 0 ? params.tagIds.join(",") : params.tagSlug;
 
   const { data, headers } = await storeFetchWithHeaders<RawStoreProduct[]>("/products", {
     searchParams: {
@@ -200,7 +200,8 @@ export async function listStoreProducts(
       per_page: perPage,
       category: categoryParam,
       slug: params.slug,
-      include: params.includeIds && params.includeIds.length > 0 ? params.includeIds.join(",") : undefined,
+      include:
+        params.includeIds && params.includeIds.length > 0 ? params.includeIds.join(",") : undefined,
       tag: tagParam,
       featured: params.featured === true ? true : undefined,
       on_sale: params.onSale === true ? true : undefined,
@@ -280,6 +281,51 @@ export async function getStoreProductBySlug(
 }
 
 /**
+ * Fetch the smallest Product-shaped payload needed by Quick Add.
+ *
+ * Quick Add already knows the numeric Woo product id from the product card, so
+ * this avoids the slower slug lookup used by the PDP and returns only the
+ * fields needed for variant selection and cart insertion.
+ */
+export async function getQuickAddProduct(productId: string): Promise<Product | null> {
+  if (!productId || !/^\d+$/.test(productId)) return null;
+
+  const productPromise = storeFetchWithHeaders<RawStoreProduct[]>("/products", {
+    searchParams: { include: productId, per_page: 1 },
+    tags: [WOO_TAGS.product(productId)],
+  });
+  const variationsPromise = fetchRawV3Variations(productId).catch(() => [] as RawV3Variation[]);
+
+  const [{ data }, rawVariations] = await Promise.all([productPromise, variationsPromise]);
+  const raw = data.find((item) => String(item.id) === productId) ?? data[0];
+  if (!raw) return null;
+
+  const base = mapProduct(raw);
+  const variations = raw.variations?.length
+    ? mapRawV3Variations(rawVariations, raw.attributes ?? [])
+    : [];
+
+  return {
+    id: base.id,
+    slug: base.slug,
+    name: base.name,
+    description: "",
+    shortDescription: "",
+    price: base.price,
+    ...(base.compareAtPrice ? { compareAtPrice: base.compareAtPrice } : {}),
+    images: base.images.slice(0, 2),
+    categories: [],
+    tags: [],
+    attributes: base.attributes.filter((attribute) => attribute.variation),
+    variations,
+    stockStatus: base.stockStatus,
+    ...(base.stockQuantity !== undefined ? { stockQuantity: base.stockQuantity } : {}),
+    meta: { ...(base.meta.isLimited ? { isLimited: true } : {}) },
+    seo: {},
+  };
+}
+
+/**
  * Raw v3 REST variation shape. Prices are dollar strings ("65.00") here —
  * v3 differs from the Store API which returns minor units.
  */
@@ -304,7 +350,7 @@ async function fetchRawV3Variations(productId: string): Promise<RawV3Variation[]
   if (!productId) return [];
 
   const base = (process.env.WOO_BASE_URL ?? "").replace(/\/$/, "");
-  const key    = process.env.WOO_CONSUMER_KEY    ?? "";
+  const key = process.env.WOO_CONSUMER_KEY ?? "";
   const secret = process.env.WOO_CONSUMER_SECRET ?? "";
 
   if (!base || !key || !secret) {
@@ -335,7 +381,7 @@ async function fetchRawV3Variations(productId: string): Promise<RawV3Variation[]
  */
 function mapRawV3Variations(
   raw: RawV3Variation[],
-  parentAttrs: import("./mappers").RawStoreAttribute[] = [],
+  parentAttrs: RawStoreAttribute[] = [],
 ): ProductVariation[] {
   // Build "Display Name" → "pa_taxonomy" lookup from the parent product.
   // Falls back to the name itself when no taxonomy is present (custom attrs).
@@ -351,15 +397,15 @@ function mapRawV3Variations(
   };
 
   return raw.map((v): ProductVariation => {
-    const priceMinor   = dollarToMinor(v.price);
+    const priceMinor = dollarToMinor(v.price);
     const regularMinor = dollarToMinor(v.regular_price);
-    const hasCompare   = regularMinor > 0 && regularMinor !== priceMinor;
+    const hasCompare = regularMinor > 0 && regularMinor !== priceMinor;
 
-    const stockStatus: import("./types").StockStatus =
+    const stockStatus: StockStatus =
       v.stock_status === "instock"
-        ? (typeof v.stock_quantity === "number" && v.stock_quantity <= 3
-            ? "low_stock"
-            : "in_stock")
+        ? typeof v.stock_quantity === "number" && v.stock_quantity <= 3
+          ? "low_stock"
+          : "in_stock"
         : "out_of_stock";
 
     const attrs: Record<string, string> = {};
@@ -373,7 +419,9 @@ function mapRawV3Variations(
       stockStatus,
       ...(typeof v.stock_quantity === "number" ? { stockQuantity: v.stock_quantity } : {}),
       attributes: attrs,
-      ...(v.image ? { image: { id: String(v.image.id), url: v.image.src, alt: v.image.alt ?? "" } } : {}),
+      ...(v.image
+        ? { image: { id: String(v.image.id), url: v.image.src, alt: v.image.alt ?? "" } }
+        : {}),
     };
   });
 }
@@ -392,7 +440,7 @@ function mapRawV3Variations(
  */
 export async function getStoreVariations(
   productId: string,
-  parentAttrs: import("./mappers").RawStoreAttribute[] = [],
+  parentAttrs: RawStoreAttribute[] = [],
 ): Promise<ProductVariation[]> {
   const raw = await fetchRawV3Variations(productId);
   return mapRawV3Variations(raw, parentAttrs);
@@ -425,9 +473,7 @@ export async function getStoreCategoryBySlug(slug: string): Promise<ProductCateg
  * and filter in-memory. Order is preserved from the input `slugs` array;
  * unknown slugs are silently dropped.
  */
-export async function listStoreCategoriesBySlugs(
-  slugs: string[],
-): Promise<ProductCategory[]> {
+export async function listStoreCategoriesBySlugs(slugs: string[]): Promise<ProductCategory[]> {
   if (slugs.length === 0) return [];
   const all = await listStoreCategories();
   const bySlug = new Map(all.map((c) => [c.slug, c]));
@@ -446,9 +492,7 @@ export async function listStoreCategoriesBySlugs(
  * The Store API's `/products/tags?slug=` filter has the same reliability
  * issues as categories — we fetch once and filter locally.
  */
-export async function listStoreTagIdsBySlugs(
-  slugs: string[],
-): Promise<string[]> {
+export async function listStoreTagIdsBySlugs(slugs: string[]): Promise<string[]> {
   if (slugs.length === 0) return [];
   const { data } = await storeFetchWithHeaders<Array<{ id: number; slug: string }>>(
     "/products/tags",

@@ -220,7 +220,7 @@ export function SiteFooter() {
               </li>
               <li>
                 <a
-                  href="mailto:r1pfitness@gmail.com"
+                  href={`mailto:${SITE.emails.admin}`}
                   className="text-text/85 hover:text-gold cursor-pointer font-mono uppercase transition-colors"
                   style={{
                     fontSize: "var(--footer-link-size)",
@@ -229,6 +229,19 @@ export function SiteFooter() {
                   }}
                 >
                   Email Us
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`mailto:${SITE.emails.press}`}
+                  className="text-text/85 hover:text-gold cursor-pointer font-mono uppercase transition-colors"
+                  style={{
+                    fontSize: "var(--footer-link-size)",
+                    letterSpacing: "var(--footer-link-tracking)",
+                    fontWeight: 500,
+                  }}
+                >
+                  Press / Media
                 </a>
               </li>
             </ul>

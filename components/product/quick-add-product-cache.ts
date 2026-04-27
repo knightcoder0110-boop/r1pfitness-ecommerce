@@ -12,10 +12,9 @@ function cacheKey(slug: string, productId: string) {
 }
 
 async function fetchQuickAddProduct(slug: string, productId: string): Promise<Product | null> {
-  const res = await fetch(
-    `/api/product/${encodeURIComponent(slug)}?id=${encodeURIComponent(productId)}`,
-    { headers: { accept: "application/json" } },
-  );
+  const res = await fetch(`/api/quick-add/${encodeURIComponent(productId)}`, {
+    headers: { accept: "application/json" },
+  });
   const json = (await res.json()) as
     | { ok: true; data: Product }
     | { ok: false; error?: { message?: string } };

@@ -12,19 +12,14 @@ export const metadata: Metadata = {
 export default function ReturnsPage() {
   return (
     <Container className="py-16 sm:py-24">
-      <Breadcrumbs
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Returns & Refunds" },
-        ]}
-      />
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Returns & Refunds" }]} />
 
-      <div className="mx-auto mt-10 max-w-2xl space-y-10 font-sans text-sm leading-relaxed text-text/80">
+      <div className="text-text/80 mx-auto mt-10 max-w-2xl space-y-10 font-sans text-sm leading-relaxed">
         <header className="space-y-3">
-          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+          <p className="text-muted font-mono text-[10px] tracking-[0.3em] uppercase">
             Last updated: April 2026
           </p>
-          <h1 className="font-serif text-4xl text-text">Returns &amp; Refunds</h1>
+          <h1 className="text-text font-serif text-4xl">Returns &amp; Refunds</h1>
           <p>
             Because every {SITE.name} drop is strictly limited and never restocked, we operate a
             limited returns window. Please read this policy before purchasing.
@@ -33,8 +28,8 @@ export default function ReturnsPage() {
 
         <Section title="Return Window">
           <p>
-            We accept returns within <strong className="text-text">14 days</strong> of delivery
-            for items that are:
+            We accept returns within <strong className="text-text">14 days</strong> of delivery for
+            items that are:
           </p>
           <ul className="mt-3 list-disc space-y-1 pl-5">
             <li>Unworn, unwashed, and in original condition with all tags attached.</li>
@@ -56,10 +51,10 @@ export default function ReturnsPage() {
 
         <Section title="Exchanges">
           <p>
-            Due to our limited-edition model, we cannot guarantee stock for exchanges. If you need
-            a different size and stock remains available, we will do our best to accommodate you —
-            but we recommend placing a new order immediately and initiating a return for the
-            original item.
+            Due to our limited-edition model, we cannot guarantee stock for exchanges. If you need a
+            different size and stock remains available, we will do our best to accommodate you — but
+            we recommend placing a new order immediately and initiating a return for the original
+            item.
           </p>
         </Section>
 
@@ -67,12 +62,14 @@ export default function ReturnsPage() {
           <ol className="list-decimal space-y-2 pl-5">
             <li>
               Email{" "}
-              <a href="mailto:returns@r1pfitness.com" className="underline hover:text-gold">
-                returns@r1pfitness.com
+              <a href={`mailto:${SITE.emails.returns}`} className="hover:text-gold underline">
+                {SITE.emails.returns}
               </a>{" "}
               with your order number and the items you wish to return.
             </li>
-            <li>We will reply within 1–2 business days with a return authorisation number (RAN).</li>
+            <li>
+              We will reply within 1–2 business days with a return authorisation number (RAN).
+            </li>
             <li>
               Ship the item(s) back using a trackable carrier. Return shipping costs are the
               customer&apos;s responsibility unless the item was defective or incorrectly shipped.
@@ -86,12 +83,12 @@ export default function ReturnsPage() {
 
         <Section title="Refunds">
           <p>
-            Approved refunds are issued to your original payment method. Stripe typically
-            processes refunds within 5–10 business days, depending on your bank.
+            Approved refunds are issued to your original payment method. Stripe typically processes
+            refunds within 5–10 business days, depending on your bank.
           </p>
           <p className="mt-2">
-            Original shipping costs are non-refundable unless the return is due to our error
-            (wrong item shipped, manufacturing defect).
+            Original shipping costs are non-refundable unless the return is due to our error (wrong
+            item shipped, manufacturing defect).
           </p>
         </Section>
 
@@ -99,19 +96,19 @@ export default function ReturnsPage() {
           <p>
             If you received a defective item or the wrong product, email us within 7 days of
             delivery at{" "}
-            <a href="mailto:support@r1pfitness.com" className="underline hover:text-gold">
-              support@r1pfitness.com
+            <a href={`mailto:${SITE.emails.support}`} className="hover:text-gold underline">
+              {SITE.emails.support}
             </a>{" "}
-            with photos. We will cover return shipping and send a replacement or full refund at
-            your choice.
+            with photos. We will cover return shipping and send a replacement or full refund at your
+            choice.
           </p>
         </Section>
 
         <Section title="Questions?">
           <p>
             Contact us at{" "}
-            <a href="mailto:support@r1pfitness.com" className="underline hover:text-gold">
-              support@r1pfitness.com
+            <a href={`mailto:${SITE.emails.support}`} className="hover:text-gold underline">
+              {SITE.emails.support}
             </a>
             . We typically respond within 1 business day.
           </p>
@@ -124,7 +121,7 @@ export default function ReturnsPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-3">
-      <h2 className="font-serif text-xl text-text">{title}</h2>
+      <h2 className="text-text font-serif text-xl">{title}</h2>
       {children}
     </section>
   );

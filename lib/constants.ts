@@ -23,6 +23,14 @@ export const SITE = {
     postalCode: "96797",
     country: "US",
   },
+  emails: {
+    admin: "admin@r1pfitness.com",
+    support: "admin@r1pfitness.com",
+    legal: "admin@r1pfitness.com",
+    privacy: "admin@r1pfitness.com",
+    returns: "admin@r1pfitness.com",
+    press: "r1pfitnesspr@gmail.com",
+  },
   social: {
     instagram: "https://instagram.com/r1pfitness",
   },
@@ -63,6 +71,7 @@ export const ROUTES = {
   product: (slug: string) => `/product/${slug}`,
   category: (slug: string) => `/shop/${slug}`,
   cart: "/cart",
+  wishlist: "/wishlist",
   checkout: "/checkout",
   checkoutConfirmation: (orderId: string) => `/checkout/confirmation/${orderId}`,
   account: "/account",

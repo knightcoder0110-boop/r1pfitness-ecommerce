@@ -1,13 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  ArrowRight,
-  CheckCircle2,
-  Mail,
-  MapPin,
-  Package,
-  ShieldCheck,
-} from "lucide-react";
+import { ArrowRight, CheckCircle2, Mail, MapPin, Package, ShieldCheck } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { buttonVariants } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
@@ -42,11 +35,12 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
   const shippingName = order
     ? [order.shipping.firstName, order.shipping.lastName].filter(Boolean).join(" ")
     : "";
-  const contactEmail = order?.billing.email || "r1pfitness@gmail.com";
+  const customerEmail = order?.billing.email || "the email used at checkout";
+  const supportEmail = SITE.emails.support;
   const nextSteps = [
     {
       title: "Confirmation sent",
-      body: `A receipt is headed to ${contactEmail}. Keep it for your records.`,
+      body: `A receipt is headed to ${customerEmail}. Keep it for your records.`,
       icon: Mail,
     },
     {
@@ -75,15 +69,21 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
         />
       )}
       <div className="space-y-8 lg:space-y-10">
-        <section className="relative overflow-hidden border border-border bg-surface-1 px-6 py-7 sm:px-8 sm:py-9 lg:px-10 lg:py-10">
-          <div aria-hidden className="absolute top-0 right-0 h-40 w-40 rounded-full bg-gold/10 blur-3xl" />
-          <div aria-hidden className="absolute bottom-0 left-0 h-36 w-36 rounded-full bg-coral/10 blur-3xl" />
+        <section className="border-border bg-surface-1 relative overflow-hidden border px-6 py-7 sm:px-8 sm:py-9 lg:px-10 lg:py-10">
+          <div
+            aria-hidden
+            className="bg-gold/10 absolute top-0 right-0 h-40 w-40 rounded-full blur-3xl"
+          />
+          <div
+            aria-hidden
+            className="bg-coral/10 absolute bottom-0 left-0 h-36 w-36 rounded-full blur-3xl"
+          />
 
           <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1.3fr)_360px] lg:items-start">
             <div>
-              <div className="inline-flex items-center gap-2 border border-gold/25 bg-bg/45 px-3 py-1.5">
-                <CheckCircle2 aria-hidden className="size-4 text-gold" />
-                <span className="font-mono text-[10px] uppercase tracking-[0.35em] text-gold">
+              <div className="border-gold/25 bg-bg/45 inline-flex items-center gap-2 border px-3 py-1.5">
+                <CheckCircle2 aria-hidden className="text-gold size-4" />
+                <span className="text-gold font-mono text-[10px] tracking-[0.35em] uppercase">
                   Payment Confirmed
                 </span>
               </div>
@@ -92,17 +92,14 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
                 Order locked in.
               </Heading>
 
-              <p className="mt-4 max-w-2xl font-serif text-lg italic leading-relaxed text-muted sm:text-xl">
+              <p className="text-muted mt-4 max-w-2xl font-serif text-lg leading-relaxed italic sm:text-xl">
                 {order
                   ? `Mahalo. Order #${order.number} is in the queue and the team will start moving on it shortly.`
                   : "Your payment went through. Your confirmation email should land shortly with the final order details."}
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                <Link
-                  href={ROUTES.shop}
-                  className={buttonVariants({ size: "lg" })}
-                >
+                <Link href={ROUTES.shop} className={buttonVariants({ size: "lg" })}>
                   Continue Shopping
                 </Link>
                 <Link
@@ -114,44 +111,44 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
               </div>
             </div>
 
-            <div className="border border-border bg-bg/55 p-5 sm:p-6">
-              <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+            <div className="border-border bg-bg/55 border p-5 sm:p-6">
+              <p className="text-muted font-mono text-[10px] tracking-[0.3em] uppercase">
                 Order Snapshot
               </p>
 
               <dl className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-                <div className="border border-border/80 bg-surface-1/70 p-4">
-                  <dt className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted">
+                <div className="border-border/80 bg-surface-1/70 border p-4">
+                  <dt className="text-muted font-mono text-[10px] tracking-[0.25em] uppercase">
                     Order
                   </dt>
-                  <dd className="mt-2 font-display text-3xl tracking-[0.08em] text-text">
+                  <dd className="font-display text-text mt-2 text-3xl tracking-[0.08em]">
                     #{order?.number ?? orderId}
                   </dd>
                 </div>
 
-                <div className="border border-border/80 bg-surface-1/70 p-4">
-                  <dt className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted">
+                <div className="border-border/80 bg-surface-1/70 border p-4">
+                  <dt className="text-muted font-mono text-[10px] tracking-[0.25em] uppercase">
                     Total
                   </dt>
-                  <dd className="mt-2 text-text">
+                  <dd className="text-text mt-2">
                     {order ? <Price price={order.total} size="lg" /> : "Paid"}
                   </dd>
                 </div>
 
-                <div className="border border-border/80 bg-surface-1/70 p-4">
-                  <dt className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted">
+                <div className="border-border/80 bg-surface-1/70 border p-4">
+                  <dt className="text-muted font-mono text-[10px] tracking-[0.25em] uppercase">
                     Status
                   </dt>
-                  <dd className="mt-2 font-mono text-xs uppercase tracking-[0.22em] text-text">
+                  <dd className="text-text mt-2 font-mono text-xs tracking-[0.22em] uppercase">
                     {order?.status ?? "Confirmed"}
                   </dd>
                 </div>
 
-                <div className="border border-border/80 bg-surface-1/70 p-4">
-                  <dt className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted">
+                <div className="border-border/80 bg-surface-1/70 border p-4">
+                  <dt className="text-muted font-mono text-[10px] tracking-[0.25em] uppercase">
                     Items
                   </dt>
-                  <dd className="mt-2 font-mono text-xs uppercase tracking-[0.22em] text-text">
+                  <dd className="text-text mt-2 font-mono text-xs tracking-[0.22em] uppercase">
                     {order ? `${itemCount} piece${itemCount === 1 ? "" : "s"}` : "Ready to process"}
                   </dd>
                 </div>
@@ -163,34 +160,34 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_360px] lg:items-start">
           <div className="space-y-8">
             {order ? (
-              <section className="border border-border bg-surface-1 p-6 sm:p-8">
-                <div className="flex flex-col gap-3 border-b border-border pb-5 sm:flex-row sm:items-end sm:justify-between">
+              <section className="border-border bg-surface-1 border p-6 sm:p-8">
+                <div className="border-border flex flex-col gap-3 border-b pb-5 sm:flex-row sm:items-end sm:justify-between">
                   <div>
-                    <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+                    <p className="text-muted font-mono text-[10px] tracking-[0.3em] uppercase">
                       What You Ordered
                     </p>
-                    <h2 className="mt-2 font-display text-3xl tracking-[0.08em] text-text">
+                    <h2 className="font-display text-text mt-2 text-3xl tracking-[0.08em]">
                       Drop Receipt
                     </h2>
                   </div>
-                  <p className="font-serif text-sm italic text-muted sm:max-w-xs sm:text-right">
+                  <p className="text-muted font-serif text-sm italic sm:max-w-xs sm:text-right">
                     Everything below is confirmed and attached to this order.
                   </p>
                 </div>
 
-                <ul className="mt-2 divide-y divide-border">
+                <ul className="divide-border mt-2 divide-y">
                   {order.items.map((item) => (
                     <li key={item.key} className="flex items-start justify-between gap-4 py-5">
                       <div className="min-w-0 space-y-1.5">
-                        <p className="truncate font-display text-xl tracking-[0.06em] text-text">
+                        <p className="font-display text-text truncate text-xl tracking-[0.06em]">
                           {item.name}
                         </p>
                         {Object.values(item.attributes).length > 0 && (
-                          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">
+                          <p className="text-muted font-mono text-[10px] tracking-[0.22em] uppercase">
                             {Object.values(item.attributes).join(" / ")}
                           </p>
                         )}
-                        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-subtle">
+                        <p className="text-subtle font-mono text-[10px] tracking-[0.22em] uppercase">
                           Qty {item.quantity}
                           {item.sku ? ` / ${item.sku}` : ""}
                         </p>
@@ -200,13 +197,13 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
                   ))}
                 </ul>
 
-                <div className="mt-6 grid gap-4 border-t border-border pt-6 sm:grid-cols-2">
+                <div className="border-border mt-6 grid gap-4 border-t pt-6 sm:grid-cols-2">
                   <div>
-                    <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted">
+                    <p className="text-muted font-mono text-[10px] tracking-[0.25em] uppercase">
                       Shipping To
                     </p>
-                    <address className="mt-3 space-y-1 not-italic font-sans text-sm leading-relaxed text-muted">
-                      <p className="font-medium text-text">{shippingName || "Shipping address"}</p>
+                    <address className="text-muted mt-3 space-y-1 font-sans text-sm leading-relaxed not-italic">
+                      <p className="text-text font-medium">{shippingName || "Shipping address"}</p>
                       <p>{order.shipping.line1}</p>
                       {order.shipping.line2 && <p>{order.shipping.line2}</p>}
                       <p>
@@ -216,36 +213,38 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
                     </address>
                   </div>
 
-                  <div className="border border-border/80 bg-bg/45 p-4 sm:ml-auto sm:w-full sm:max-w-xs">
-                    <div className="flex items-center justify-between gap-4 font-mono text-xs uppercase tracking-[0.22em]">
+                  <div className="border-border/80 bg-bg/45 border p-4 sm:ml-auto sm:w-full sm:max-w-xs">
+                    <div className="flex items-center justify-between gap-4 font-mono text-xs tracking-[0.22em] uppercase">
                       <span className="text-muted">Total</span>
                       <Price price={order.total} size="sm" />
                     </div>
-                    <p className="mt-3 font-serif text-sm italic leading-relaxed text-muted">
-                      Paid securely through Stripe. You'll get shipment tracking as soon as the label is created.
+                    <p className="text-muted mt-3 font-serif text-sm leading-relaxed italic">
+                      Paid securely through Stripe. You&apos;ll get shipment tracking as soon as the
+                      label is created.
                     </p>
                   </div>
                 </div>
               </section>
             ) : (
-              <section className="border border-border bg-surface-1 p-6 sm:p-8">
-                <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+              <section className="border-border bg-surface-1 border p-6 sm:p-8">
+                <p className="text-muted font-mono text-[10px] tracking-[0.3em] uppercase">
                   Confirmation Sent
                 </p>
-                <h2 className="mt-3 font-display text-3xl tracking-[0.08em] text-text">
+                <h2 className="font-display text-text mt-3 text-3xl tracking-[0.08em]">
                   Your payment is complete.
                 </h2>
-                <p className="mt-3 max-w-xl font-serif text-base italic leading-relaxed text-muted">
-                  We couldn't load the full order snapshot right now, but the payment succeeded and the team has it.
-                  Check your inbox for the receipt and reply there if anything needs attention.
+                <p className="text-muted mt-3 max-w-xl font-serif text-base leading-relaxed italic">
+                  We couldn&apos;t load the full order snapshot right now, but the payment succeeded
+                  and the team has it. Check your inbox for the receipt and reply there if anything
+                  needs attention.
                 </p>
               </section>
             )}
 
-            <section className="border border-border bg-surface-1 p-6 sm:p-8">
+            <section className="border-border bg-surface-1 border p-6 sm:p-8">
               <div className="flex items-center gap-3">
-                <ShieldCheck aria-hidden className="size-5 text-gold" />
-                <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+                <ShieldCheck aria-hidden className="text-gold size-5" />
+                <p className="text-muted font-mono text-[10px] tracking-[0.3em] uppercase">
                   What Happens Next
                 </p>
               </div>
@@ -255,15 +254,20 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
                   const Icon = step.icon;
 
                   return (
-                    <div key={step.title} className="flex gap-4 border border-border/80 bg-bg/40 p-4">
-                      <div className="flex size-11 shrink-0 items-center justify-center border border-gold/25 bg-gold/10">
-                        <Icon aria-hidden className="size-5 text-gold" />
+                    <div
+                      key={step.title}
+                      className="border-border/80 bg-bg/40 flex gap-4 border p-4"
+                    >
+                      <div className="border-gold/25 bg-gold/10 flex size-11 shrink-0 items-center justify-center border">
+                        <Icon aria-hidden className="text-gold size-5" />
                       </div>
                       <div>
-                        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-text">
+                        <p className="text-text font-mono text-[10px] tracking-[0.25em] uppercase">
                           {step.title}
                         </p>
-                        <p className="mt-2 font-sans text-sm leading-relaxed text-muted">{step.body}</p>
+                        <p className="text-muted mt-2 font-sans text-sm leading-relaxed">
+                          {step.body}
+                        </p>
                       </div>
                     </div>
                   );
@@ -273,26 +277,27 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
           </div>
 
           <aside className="space-y-6">
-            <section className="border border-border bg-surface-1 p-6">
+            <section className="border-border bg-surface-1 border p-6">
               <div className="flex items-center gap-3">
-                <MapPin aria-hidden className="size-5 text-gold" />
-                <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+                <MapPin aria-hidden className="text-gold size-5" />
+                <p className="text-muted font-mono text-[10px] tracking-[0.3em] uppercase">
                   Support Desk
                 </p>
               </div>
 
-              <p className="mt-4 font-serif text-base italic leading-relaxed text-muted">
-                Questions, size changes, or shipping issues? Reach out before the order leaves the queue.
+              <p className="text-muted mt-4 font-serif text-base leading-relaxed italic">
+                Questions, size changes, or shipping issues? Reach out before the order leaves the
+                queue.
               </p>
 
               <div className="mt-5 space-y-3">
                 <a
-                  href={`mailto:${contactEmail}`}
-                  className="flex items-center gap-3 border border-border bg-bg/45 px-4 py-3 text-sm text-text transition-colors hover:border-gold/40"
+                  href={`mailto:${supportEmail}`}
+                  className="border-border bg-bg/45 text-text hover:border-gold/40 flex items-center gap-3 border px-4 py-3 text-sm transition-colors"
                 >
-                  <Mail aria-hidden className="size-4 text-gold" />
-                  <span className="truncate font-mono text-[11px] uppercase tracking-[0.2em]">
-                    {contactEmail}
+                  <Mail aria-hidden className="text-gold size-4" />
+                  <span className="truncate font-mono text-[11px] tracking-[0.2em] uppercase">
+                    {supportEmail}
                   </span>
                 </a>
 
@@ -300,34 +305,35 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
                   href={SITE.social.instagram}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-3 border border-border bg-bg/45 px-4 py-3 text-sm text-text transition-colors hover:border-gold/40"
+                  className="border-border bg-bg/45 text-text hover:border-gold/40 flex items-center gap-3 border px-4 py-3 text-sm transition-colors"
                 >
                   <span
                     aria-hidden
-                    className="flex size-4 items-center justify-center font-mono text-[10px] uppercase text-gold"
+                    className="text-gold flex size-4 items-center justify-center font-mono text-[10px] uppercase"
                   >
                     IG
                   </span>
-                  <span className="font-mono text-[11px] uppercase tracking-[0.2em]">
+                  <span className="font-mono text-[11px] tracking-[0.2em] uppercase">
                     DM @r1pfitness
                   </span>
                 </a>
               </div>
             </section>
 
-            <section className="border border-border bg-surface-1 p-6">
-              <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+            <section className="border-border bg-surface-1 border p-6">
+              <p className="text-muted font-mono text-[10px] tracking-[0.3em] uppercase">
                 Keep The Momentum
               </p>
-              <h2 className="mt-2 font-display text-2xl tracking-[0.08em] text-text">
+              <h2 className="font-display text-text mt-2 text-2xl tracking-[0.08em]">
                 Ready for the next drop?
               </h2>
-              <p className="mt-3 font-sans text-sm leading-relaxed text-muted">
-                The fastest way to miss limited gear is closing this tab and forgetting us for two weeks.
+              <p className="text-muted mt-3 font-sans text-sm leading-relaxed">
+                The fastest way to miss limited gear is closing this tab and forgetting us for two
+                weeks.
               </p>
               <Link
                 href={ROUTES.shop}
-                className="mt-5 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.25em] text-gold transition-colors hover:text-text"
+                className="text-gold hover:text-text mt-5 inline-flex items-center gap-2 font-mono text-[11px] tracking-[0.25em] uppercase transition-colors"
               >
                 Browse the shop
                 <ArrowRight aria-hidden className="size-4" />

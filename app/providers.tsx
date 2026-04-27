@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { SessionProvider } from "next-auth/react";
 import { CartSyncProvider } from "@/lib/cart/sync";
+import { WishlistSyncProvider } from "@/lib/wishlist/sync";
 import { useToastStore } from "@/lib/toast";
 import Toast from "@/components/toast";
 import { initGtmAdapter } from "@/lib/analytics/gtm";
@@ -28,7 +29,9 @@ function AnalyticsInit() {
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <SessionProvider>
-      <CartSyncProvider>{children}</CartSyncProvider>
+      <WishlistSyncProvider>
+        <CartSyncProvider>{children}</CartSyncProvider>
+      </WishlistSyncProvider>
       <AnalyticsInit />
       <ToastRoot />
     </SessionProvider>

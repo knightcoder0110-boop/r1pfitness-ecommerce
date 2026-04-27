@@ -12,22 +12,17 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <Container className="py-16 sm:py-24">
-      <Breadcrumbs
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Privacy Policy" },
-        ]}
-      />
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Privacy Policy" }]} />
 
-      <div className="mx-auto mt-10 max-w-2xl space-y-10 font-sans text-sm leading-relaxed text-text/80">
+      <div className="text-text/80 mx-auto mt-10 max-w-2xl space-y-10 font-sans text-sm leading-relaxed">
         <header className="space-y-3">
-          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+          <p className="text-muted font-mono text-[10px] tracking-[0.3em] uppercase">
             Last updated: April 2026
           </p>
-          <h1 className="font-serif text-4xl text-text">Privacy Policy</h1>
+          <h1 className="text-text font-serif text-4xl">Privacy Policy</h1>
           <p>
-            R1P FITNESS (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) operates
-            this website. This policy explains what information we collect, how we use it, and your
+            R1P FITNESS (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) operates this
+            website. This policy explains what information we collect, how we use it, and your
             rights.
           </p>
         </header>
@@ -63,8 +58,8 @@ export default function PrivacyPage() {
             <li>Fulfil and ship your order.</li>
             <li>Send order confirmation and shipping notification emails.</li>
             <li>
-              Send marketing emails if you opted in (you can unsubscribe at any time via the link
-              in each email).
+              Send marketing emails if you opted in (you can unsubscribe at any time via the link in
+              each email).
             </li>
             <li>Improve the site using aggregate analytics.</li>
             <li>Detect and prevent fraud.</li>
@@ -73,8 +68,8 @@ export default function PrivacyPage() {
 
         <Section title="3. Sharing Your Information">
           <p>
-            We do not sell your personal data. We share it only with the service providers who
-            help us run the business:
+            We do not sell your personal data. We share it only with the service providers who help
+            us run the business:
           </p>
           <ul className="mt-3 list-disc space-y-1 pl-5">
             <li>
@@ -83,7 +78,7 @@ export default function PrivacyPage() {
                 href="https://stripe.com/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline hover:text-gold"
+                className="hover:text-gold underline"
               >
                 Stripe Privacy Policy
               </a>
@@ -95,7 +90,7 @@ export default function PrivacyPage() {
                 href="https://www.klaviyo.com/legal/privacy-notice"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline hover:text-gold"
+                className="hover:text-gold underline"
               >
                 Klaviyo Privacy Policy
               </a>
@@ -106,8 +101,7 @@ export default function PrivacyPage() {
               (self-hosted on Cloudways).
             </li>
             <li>
-              <strong className="text-text">Google Analytics 4</strong> — anonymised site
-              analytics.
+              <strong className="text-text">Google Analytics 4</strong> — anonymised site analytics.
             </li>
           </ul>
         </Section>
@@ -122,10 +116,10 @@ export default function PrivacyPage() {
 
         <Section title="5. Your Rights">
           <p>
-            Depending on your location, you may have rights to access, correct, delete, or port
-            your personal data, and to object to processing. Email us at{" "}
-            <a href="mailto:privacy@r1pfitness.com" className="underline hover:text-gold">
-              privacy@r1pfitness.com
+            Depending on your location, you may have rights to access, correct, delete, or port your
+            personal data, and to object to processing. Email us at{" "}
+            <a href={`mailto:${SITE.emails.privacy}`} className="hover:text-gold underline">
+              {SITE.emails.privacy}
             </a>{" "}
             to exercise any of these rights.
           </p>
@@ -150,8 +144,8 @@ export default function PrivacyPage() {
         <Section title="8. Contact">
           <p>
             Questions? Email{" "}
-            <a href="mailto:privacy@r1pfitness.com" className="underline hover:text-gold">
-              privacy@r1pfitness.com
+            <a href={`mailto:${SITE.emails.privacy}`} className="hover:text-gold underline">
+              {SITE.emails.privacy}
             </a>{" "}
             or write to {SITE.address.street}, {SITE.address.city}, {SITE.address.region}{" "}
             {SITE.address.postalCode}.
@@ -165,7 +159,7 @@ export default function PrivacyPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-3">
-      <h2 className="font-serif text-xl text-text">{title}</h2>
+      <h2 className="text-text font-serif text-xl">{title}</h2>
       {children}
     </section>
   );

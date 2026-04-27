@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { withApi } from "@/lib/api";
 import { ApiError } from "@/lib/api/errors";
+import { SITE } from "@/lib/constants";
 
 const ContactSchema = z.object({
   name: z.string().min(1, "Name required").max(100),
@@ -26,7 +27,7 @@ export const POST = withApi({
   schema: ContactSchema,
   rateLimit: { max: 5, windowMs: 10 * 60_000 },
   handler: async ({ input }) => {
-    const supportEmail = process.env.SUPPORT_EMAIL;
+    const supportEmail = process.env.SUPPORT_EMAIL ?? SITE.emails.support;
 
     if (!supportEmail) {
       // Log to server console so messages aren't lost if email isn't

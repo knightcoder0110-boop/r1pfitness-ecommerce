@@ -26,23 +26,18 @@ const INTERNATIONAL = [
 export default function ShippingPage() {
   return (
     <Container className="py-16 sm:py-24">
-      <Breadcrumbs
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Shipping Policy" },
-        ]}
-      />
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Shipping Policy" }]} />
 
-      <div className="mx-auto mt-10 max-w-2xl space-y-10 font-sans text-sm leading-relaxed text-text/80">
+      <div className="text-text/80 mx-auto mt-10 max-w-2xl space-y-10 font-sans text-sm leading-relaxed">
         <header className="space-y-3">
-          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+          <p className="text-muted font-mono text-[10px] tracking-[0.3em] uppercase">
             Last updated: April 2026
           </p>
-          <h1 className="font-serif text-4xl text-text">Shipping Policy</h1>
+          <h1 className="text-text font-serif text-4xl">Shipping Policy</h1>
           <p>
             We ship from Waipahu, Hawaii. Orders are processed Monday–Friday, excluding US federal
-            holidays. Allow 1–2 business days for order processing before your shipment leaves
-            our facility.
+            holidays. Allow 1–2 business days for order processing before your shipment leaves our
+            facility.
           </p>
         </header>
 
@@ -50,16 +45,16 @@ export default function ShippingPage() {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="border-b border-border font-mono text-[10px] uppercase tracking-[0.25em] text-muted">
-                  <th className="pb-3 pr-6">Method</th>
-                  <th className="pb-3 pr-6">Transit time</th>
+                <tr className="border-border text-muted border-b font-mono text-[10px] tracking-[0.25em] uppercase">
+                  <th className="pr-6 pb-3">Method</th>
+                  <th className="pr-6 pb-3">Transit time</th>
                   <th className="pb-3">Cost</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-border divide-y">
                 {DOMESTIC.map((row) => (
                   <tr key={row.method + row.cost} className="py-3">
-                    <td className="py-3 pr-6 text-text">{row.method}</td>
+                    <td className="text-text py-3 pr-6">{row.method}</td>
                     <td className="py-3 pr-6">{row.time}</td>
                     <td className="py-3">{row.cost}</td>
                   </tr>
@@ -76,22 +71,22 @@ export default function ShippingPage() {
         <Section title="International">
           <p>
             We ship to most countries worldwide. International orders may be subject to customs
-            duties and import taxes charged by the destination country — these are the
-            buyer&apos;s responsibility.
+            duties and import taxes charged by the destination country — these are the buyer&apos;s
+            responsibility.
           </p>
           <div className="mt-4 overflow-x-auto">
             <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="border-b border-border font-mono text-[10px] uppercase tracking-[0.25em] text-muted">
-                  <th className="pb-3 pr-6">Region</th>
-                  <th className="pb-3 pr-6">Transit time</th>
+                <tr className="border-border text-muted border-b font-mono text-[10px] tracking-[0.25em] uppercase">
+                  <th className="pr-6 pb-3">Region</th>
+                  <th className="pr-6 pb-3">Transit time</th>
                   <th className="pb-3">Starting from</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-border divide-y">
                 {INTERNATIONAL.map((row) => (
                   <tr key={row.region}>
-                    <td className="py-3 pr-6 text-text">{row.region}</td>
+                    <td className="text-text py-3 pr-6">{row.region}</td>
                     <td className="py-3 pr-6">{row.time}</td>
                     <td className="py-3">{row.cost}</td>
                   </tr>
@@ -109,7 +104,7 @@ export default function ShippingPage() {
               href="https://tools.usps.com/go/TrackConfirmAction"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline hover:text-gold"
+              className="hover:text-gold underline"
             >
               usps.com
             </a>
@@ -119,10 +114,10 @@ export default function ShippingPage() {
 
         <Section title="Lost or Damaged Packages">
           <p>
-            If your package arrives damaged or is lost in transit, contact us within 14 days of
-            the expected delivery date at{" "}
-            <a href="mailto:support@r1pfitness.com" className="underline hover:text-gold">
-              support@r1pfitness.com
+            If your package arrives damaged or is lost in transit, contact us within 14 days of the
+            expected delivery date at{" "}
+            <a href={`mailto:${SITE.emails.support}`} className="hover:text-gold underline">
+              {SITE.emails.support}
             </a>{" "}
             and we will work with the carrier to resolve the issue.
           </p>
@@ -130,16 +125,16 @@ export default function ShippingPage() {
 
         <Section title="P.O. Boxes & APO/FPO">
           <p>
-            We ship to P.O. Boxes and APO/FPO addresses via USPS Standard only. Express and
-            Priority options are unavailable for these addresses.
+            We ship to P.O. Boxes and APO/FPO addresses via USPS Standard only. Express and Priority
+            options are unavailable for these addresses.
           </p>
         </Section>
 
         <Section title="Questions?">
           <p>
             Email{" "}
-            <a href="mailto:support@r1pfitness.com" className="underline hover:text-gold">
-              support@r1pfitness.com
+            <a href={`mailto:${SITE.emails.support}`} className="hover:text-gold underline">
+              {SITE.emails.support}
             </a>{" "}
             — we typically respond within 1 business day.
           </p>
@@ -152,7 +147,7 @@ export default function ShippingPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-3">
-      <h2 className="font-serif text-xl text-text">{title}</h2>
+      <h2 className="text-text font-serif text-xl">{title}</h2>
       {children}
     </section>
   );
