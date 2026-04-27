@@ -1,8 +1,15 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { __resetCatalogForTests, getCatalog } from "./source";
 
 beforeEach(() => {
+  vi.stubEnv("WOO_BASE_URL", "");
+  vi.stubEnv("WOO_CONSUMER_KEY", "");
+  vi.stubEnv("WOO_CONSUMER_SECRET", "");
   __resetCatalogForTests();
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe("catalog (fixture adapter)", () => {

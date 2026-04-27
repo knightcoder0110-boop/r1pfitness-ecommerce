@@ -80,6 +80,7 @@ export interface RawStoreVariation {
 export interface RawStoreCartItem {
   key: string;
   id: number;
+  type?: "simple" | "variation" | string;
   quantity: number;
   name: string;
   sku?: string;
@@ -382,6 +383,7 @@ export function mapCartItem(raw: RawStoreCartItem): CartLineItem {
   return {
     key: raw.key,
     productId: String(raw.id),
+    ...(raw.type === "variation" ? { variationId: String(raw.id) } : {}),
     name: raw.name,
     sku: raw.sku ?? "",
     quantity: raw.quantity,

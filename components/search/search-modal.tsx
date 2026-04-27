@@ -32,7 +32,9 @@ function loadRecent(): string[] {
     const raw = window.localStorage.getItem(RECENT_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === "string").slice(0, RECENT_MAX) : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((v): v is string => typeof v === "string").slice(0, RECENT_MAX)
+      : [];
   } catch {
     return [];
   }
@@ -90,13 +92,15 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
   // Reset on open/close
   useEffect(() => {
     if (open) {
-      setQuery("");
-      setResults(null);
-      setError(false);
-      setActiveIndex(-1);
-      setRecent(loadRecent());
-      // Focus input after paint
-      requestAnimationFrame(() => inputRef.current?.focus());
+      const frame = requestAnimationFrame(() => {
+        setQuery("");
+        setResults(null);
+        setError(false);
+        setActiveIndex(-1);
+        setRecent(loadRecent());
+        inputRef.current?.focus();
+      });
+      return () => cancelAnimationFrame(frame);
     }
   }, [open]);
 
@@ -105,15 +109,21 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
     if (!open) return;
     const q = debouncedQuery.trim();
     if (q.length < 2) {
-      setResults(null);
-      setError(false);
-      setLoading(false);
-      return;
+      const frame = requestAnimationFrame(() => {
+        setResults(null);
+        setError(false);
+        setLoading(false);
+      });
+      return () => cancelAnimationFrame(frame);
     }
 
     let cancelled = false;
-    setLoading(true);
-    setError(false);
+    const loadingFrame = requestAnimationFrame(() => {
+      if (!cancelled) {
+        setLoading(true);
+        setError(false);
+      }
+    });
 
     fetch(`/api/search?q=${encodeURIComponent(q)}&limit=8`)
       .then((r) => r.json())
@@ -131,7 +141,10 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
         if (!cancelled) setLoading(false);
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(loadingFrame);
+    };
   }, [debouncedQuery, open]);
 
   // Close on Escape; trap focus within dialog
@@ -211,12 +224,13 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
 
   const items = results?.items ?? [];
   const hasResults = items.length > 0;
-  const showEmpty = !loading && !error && debouncedQuery.trim().length >= 2 && results !== null && !hasResults;
+  const showEmpty =
+    !loading && !error && debouncedQuery.trim().length >= 2 && results !== null && !hasResults;
 
   return (
     /* backdrop */
     <div
-      className="fixed inset-0 z-60 flex items-start justify-center pt-[8vh] px-4 bg-bg/92 backdrop-blur-md"
+      className="bg-bg/92 fixed inset-0 z-60 flex items-start justify-center px-4 pt-[8vh] backdrop-blur-md"
       onClick={handleBackdropClick}
       aria-hidden={!open}
     >
@@ -225,15 +239,15 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelId}
-        className="relative w-full max-w-2xl bg-[#141414] border border-[rgba(242,237,228,0.15)] rounded-md shadow-[0_32px_64px_rgba(0,0,0,0.75)] flex flex-col overflow-hidden"
+        className="relative flex w-full max-w-2xl flex-col overflow-hidden rounded-md border border-[rgba(242,237,228,0.15)] bg-[#141414] shadow-[0_32px_64px_rgba(0,0,0,0.75)]"
         onKeyDown={handleKeyDown}
       >
         {/* ── Search input ──────────────────────────────────────────── */}
-        <div className="flex items-center gap-4 px-7 h-20 border-b border-border-strong">
+        <div className="border-border-strong flex h-20 items-center gap-4 border-b px-7">
           {/* Magnifier — bold, gold */}
           <svg
             aria-hidden
-            className="size-6 shrink-0 text-gold"
+            className="text-gold size-6 shrink-0"
             viewBox="0 0 20 20"
             fill="none"
             stroke="currentColor"
@@ -257,24 +271,31 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search products, collections, drops…"
             /* Override global input primitive: wrapper owns the visible chrome here. */
-            className="flex-1 min-w-0 h-full !bg-transparent !border-0 !ring-0 !shadow-none !rounded-none !px-0 font-serif !text-xl text-text placeholder:text-muted focus:outline-none"
+            className="text-text placeholder:text-muted h-full min-w-0 flex-1 rounded-none! border-0! bg-transparent! px-0! font-serif text-xl! shadow-none! ring-0! focus:outline-none"
           />
 
           {/* Loading spinner */}
           {loading && (
             <svg
               aria-label="Searching…"
-              className="size-5 shrink-0 animate-spin text-gold"
+              className="text-gold size-5 shrink-0 animate-spin"
               viewBox="0 0 24 24"
               fill="none"
             >
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="3"
+              />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
             </svg>
           )}
 
           {/* Dismiss shortcut hint */}
-          <kbd className="hidden sm:inline-flex h-6 items-center gap-1 rounded-sm border border-border-strong px-2 font-mono text-[10px] uppercase tracking-[0.2em] text-subtle">
+          <kbd className="border-border-strong text-subtle hidden h-6 items-center gap-1 rounded-sm border px-2 font-mono text-[10px] tracking-[0.2em] uppercase sm:inline-flex">
             ESC
           </kbd>
 
@@ -282,33 +303,36 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
             type="button"
             onClick={onClose}
             aria-label="Close search"
-            className="inline-flex size-8 items-center justify-center rounded-full text-text hover:text-gold hover:bg-surface-2 cursor-pointer transition-colors"
+            className="text-text hover:text-gold hover:bg-surface-2 inline-flex size-8 cursor-pointer items-center justify-center rounded-full transition-colors"
           >
-            <svg aria-hidden viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={2} className="size-4">
+            <svg
+              aria-hidden
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              className="size-4"
+            >
               <path d="m4 4 12 12M16 4 4 16" strokeLinecap="round" />
             </svg>
           </button>
         </div>
 
         {/* ── Results ───────────────────────────────────────────────── */}
-        <div
-          role="listbox"
-          aria-label="Search results"
-          className="overflow-y-auto max-h-[65vh]"
-        >
+        <div role="listbox" aria-label="Search results" className="max-h-[65vh] overflow-y-auto">
           {/* Empty query hint — recent + trending */}
           {!query && (
-            <div className="px-6 py-8 flex flex-col gap-7">
+            <div className="flex flex-col gap-7 px-6 py-8">
               {recent.length > 0 ? (
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center justify-between">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-gold">
+                    <p className="text-gold font-mono text-[10px] tracking-[0.35em] uppercase">
                       Recent searches
                     </p>
                     <button
                       type="button"
                       onClick={handleClearRecent}
-                      className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted hover:text-gold cursor-pointer transition-colors"
+                      className="text-muted hover:text-gold cursor-pointer font-mono text-[10px] tracking-[0.25em] uppercase transition-colors"
                     >
                       Clear
                     </button>
@@ -319,7 +343,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                         <button
                           type="button"
                           onClick={() => handleSuggestion(term)}
-                          className="flex w-full items-center gap-3 py-1.5 text-left font-serif text-base text-text hover:text-gold cursor-pointer transition-colors"
+                          className="text-text hover:text-gold flex w-full cursor-pointer items-center gap-3 py-1.5 text-left font-serif text-base transition-colors"
                         >
                           <svg
                             aria-hidden
@@ -327,7 +351,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                             fill="none"
                             stroke="currentColor"
                             strokeWidth={1.5}
-                            className="size-4 shrink-0 text-subtle"
+                            className="text-subtle size-4 shrink-0"
                           >
                             <circle cx="12" cy="12" r="9" />
                             <path d="M12 7v5l3 2" strokeLinecap="round" />
@@ -341,7 +365,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
               ) : null}
 
               <div className="flex flex-col gap-3">
-                <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-gold">
+                <p className="text-gold font-mono text-[10px] tracking-[0.35em] uppercase">
                   Trending
                 </p>
                 <ul role="list" className="flex flex-wrap gap-2">
@@ -350,7 +374,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                       <button
                         type="button"
                         onClick={() => handleSuggestion(term)}
-                        className="inline-flex items-center rounded-sm border border-border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.25em] text-text hover:border-gold hover:text-gold cursor-pointer transition-colors"
+                        className="border-border text-text hover:border-gold hover:text-gold inline-flex cursor-pointer items-center rounded-sm border px-3 py-1.5 font-mono text-[10px] tracking-[0.25em] uppercase transition-colors"
                       >
                         {term}
                       </button>
@@ -364,10 +388,10 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
           {/* Empty results */}
           {showEmpty && (
             <div className="px-6 py-12 text-center">
-              <p className="font-mono text-[11px] uppercase tracking-[0.35em] text-gold mb-2">
+              <p className="text-gold mb-2 font-mono text-[11px] tracking-[0.35em] uppercase">
                 No matches
               </p>
-              <p className="font-serif text-base text-muted">
+              <p className="text-muted font-serif text-base">
                 Nothing found for &ldquo;<span className="text-text">{debouncedQuery}</span>&rdquo;
               </p>
             </div>
@@ -375,7 +399,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
 
           {/* Error */}
           {error && (
-            <p className="px-6 py-10 font-mono text-[11px] uppercase tracking-[0.3em] text-coral text-center">
+            <p className="text-coral px-6 py-10 text-center font-mono text-[11px] tracking-[0.3em] uppercase">
               Search unavailable — try again
             </p>
           )}
@@ -384,7 +408,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
           {hasResults && (
             <>
               {/* Count row */}
-              <div className="flex items-center justify-between border-b border-border px-6 py-2.5 font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+              <div className="border-border text-muted flex items-center justify-between border-b px-6 py-2.5 font-mono text-[10px] tracking-[0.3em] uppercase">
                 <span>
                   Showing <span className="text-text">{items.length}</span>
                   {results && results.total > items.length ? (
@@ -395,90 +419,98 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                   ) : null}{" "}
                   result{items.length === 1 ? "" : "s"}
                 </span>
-                <span className="hidden sm:inline text-subtle">↑↓ navigate · ↵ select</span>
+                <span className="text-subtle hidden sm:inline">↑↓ navigate · ↵ select</span>
               </div>
 
               <ul role="none" className="py-2">
-              {items.map((product, idx) => {
-                const price = (product.price.amount / 100).toFixed(2);
-                return (
-                  <li key={product.id} role="none">
-                    <Link
-                      href={ROUTES.product(product.slug)}
-                      role="option"
-                      aria-selected={activeIndex === idx}
-                      ref={(el) => { resultRefs.current[idx] = el; }}
-                      onClick={() => handleResultClick(product.name)}
-                      className={cn(
-                        "flex items-center gap-5 px-6 py-4",
-                        "transition-colors cursor-pointer focus:outline-none",
-                        "hover:bg-surface-2 focus:bg-surface-2",
-                        activeIndex === idx && "bg-surface-2",
-                      )}
-                    >
-                      {/* Thumbnail — 64px xs, 80px sm+ */}
-                      <div className="relative size-16 sm:size-20 shrink-0 bg-surface-2 overflow-hidden rounded-sm border border-border">
-                        {product.image ? (
-                          <Image
-                            src={product.image.url}
-                            alt={product.image.alt || product.name}
-                            fill
-                            sizes="80px"
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center font-mono text-[9px] text-subtle">
-                            R1P
-                          </div>
+                {items.map((product, idx) => {
+                  const price = (product.price.amount / 100).toFixed(2);
+                  return (
+                    <li key={product.id} role="none">
+                      <Link
+                        href={ROUTES.product(product.slug)}
+                        role="option"
+                        aria-selected={activeIndex === idx}
+                        ref={(el) => {
+                          resultRefs.current[idx] = el;
+                        }}
+                        onClick={() => handleResultClick(product.name)}
+                        className={cn(
+                          "flex items-center gap-5 px-6 py-4",
+                          "cursor-pointer transition-colors focus:outline-none",
+                          "hover:bg-surface-2 focus:bg-surface-2",
+                          activeIndex === idx && "bg-surface-2",
                         )}
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex flex-col min-w-0 flex-1 gap-1">
-                        <span className="font-display tracking-[0.08em] text-[1.0625rem] text-text truncate leading-tight">
-                          {product.name}
-                        </span>
-                        <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
-                          {product.price.currency} {price}
-                        </span>
-                      </div>
-
-                      {/* Limited badge */}
-                      {product.isLimited && (
-                        <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.25em] text-gold border border-gold/50 px-2 py-1">
-                          Limited
-                        </span>
-                      )}
-
-                      {/* Arrow */}
-                      <svg
-                        aria-hidden
-                        className="size-4 shrink-0 text-subtle"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={2}
                       >
-                        <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+                        {/* Thumbnail — 64px xs, 80px sm+ */}
+                        <div className="bg-surface-2 border-border relative size-16 shrink-0 overflow-hidden rounded-sm border sm:size-20">
+                          {product.image ? (
+                            <Image
+                              src={product.image.url}
+                              alt={product.image.alt || product.name}
+                              fill
+                              sizes="80px"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="text-subtle flex h-full w-full items-center justify-center font-mono text-[9px]">
+                              R1P
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex min-w-0 flex-1 flex-col gap-1">
+                          <span className="font-display text-text truncate text-[1.0625rem] leading-tight tracking-[0.08em]">
+                            {product.name}
+                          </span>
+                          <span className="text-muted font-mono text-[11px] tracking-[0.2em] uppercase">
+                            {product.price.currency} {price}
+                          </span>
+                        </div>
+
+                        {/* Limited badge */}
+                        {product.isLimited && (
+                          <span className="text-gold border-gold/50 shrink-0 border px-2 py-1 font-mono text-[10px] tracking-[0.25em] uppercase">
+                            Limited
+                          </span>
+                        )}
+
+                        {/* Arrow */}
+                        <svg
+                          aria-hidden
+                          className="text-subtle size-4 shrink-0"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            d="M5 12h14M12 5l7 7-7 7"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
             </>
           )}
 
           {/* "See all results" footer */}
           {hasResults && results && results.total > items.length && (
-            <div className="border-t border-border-strong px-6 py-4 bg-surface-1">
+            <div className="border-border-strong bg-surface-1 border-t px-6 py-4">
               <Link
                 href={`${ROUTES.search}?q=${encodeURIComponent(debouncedQuery)}`}
                 onClick={onClose}
-                className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.3em] text-text hover:text-gold cursor-pointer transition-colors"
+                className="text-text hover:text-gold inline-flex cursor-pointer items-center gap-2 font-mono text-[11px] tracking-[0.3em] uppercase transition-colors"
               >
                 See all {results.total} results for &ldquo;{debouncedQuery}&rdquo;
-                <span aria-hidden className="text-gold">→</span>
+                <span aria-hidden className="text-gold">
+                  →
+                </span>
               </Link>
             </div>
           )}

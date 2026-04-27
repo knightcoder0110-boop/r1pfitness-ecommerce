@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/api/ratelimit";
-
-const COOKIE_NAME = "r1p_site_unlocked";
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
+import {
+  createSiteUnlockCookieValue,
+  SITE_UNLOCK_COOKIE,
+  SITE_UNLOCK_COOKIE_MAX_AGE,
+} from "@/lib/site-lock-cookie";
 
 export async function POST(request: Request) {
   // Rate limit before touching the body. 3 attempts / 15 min / IP is
@@ -53,10 +55,7 @@ export async function POST(request: Request) {
   const correctPassword = process.env.SITE_UNLOCK_PASSWORD;
 
   if (!correctPassword) {
-    return NextResponse.json(
-      { ok: false, error: "Site lock is not configured." },
-      { status: 503 },
-    );
+    return NextResponse.json({ ok: false, error: "Site lock is not configured." }, { status: 503 });
   }
 
   if (password !== correctPassword) {
@@ -65,11 +64,13 @@ export async function POST(request: Request) {
 
   const response = NextResponse.json({ ok: true });
 
-  response.cookies.set(COOKIE_NAME, "1", {
+  const cookieValue = await createSiteUnlockCookieValue();
+
+  response.cookies.set(SITE_UNLOCK_COOKIE, cookieValue, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: COOKIE_MAX_AGE,
+    maxAge: SITE_UNLOCK_COOKIE_MAX_AGE,
     path: "/",
   });
 

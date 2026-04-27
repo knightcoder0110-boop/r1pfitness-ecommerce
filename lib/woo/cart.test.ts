@@ -146,6 +146,7 @@ describe("getCart", () => {
 
 describe("addCartItem", () => {
   it("POSTs to /cart/add-item with id, quantity, and variation", async () => {
+    cookieStore.set("r1p_cart_token", "tok-existing");
     const { addCartItem } = await import("./cart");
     const { calls } = captureFetch([cartResponse(RAW_CART)]);
 
@@ -158,11 +159,24 @@ describe("addCartItem", () => {
     const call = calls[0]!;
     expect(call.url).toBe("https://wp.example.com/wp-json/wc/store/v1/cart/add-item");
     expect(call.init!.method).toBe("POST");
+    expect(call.init!.headers).toMatchObject({ "Cart-Token": "tok-existing" });
     expect(JSON.parse(call.init!.body as string)).toEqual({
       id: 42,
       quantity: 2,
       variation: [{ attribute: "pa_size", value: "M" }],
     });
+  });
+
+  it("bootstraps a Cart-Token before the first mutation", async () => {
+    const { addCartItem } = await import("./cart");
+    const { calls } = captureFetch([cartResponse({ ...RAW_CART, items: [], items_count: 0 }), cartResponse(RAW_CART, "tok-new")]);
+
+    await addCartItem({ productId: 42, quantity: 1 });
+
+    expect(calls[0]!.url).toBe("https://wp.example.com/wp-json/wc/store/v1/cart");
+    expect(calls[1]!.url).toBe("https://wp.example.com/wp-json/wc/store/v1/cart/add-item");
+    expect(calls[1]!.init!.headers).toMatchObject({ "Cart-Token": "tok-fresh" });
+    expect(setCalls[0]!.value).toBe("tok-fresh");
   });
 
   it("rejects invalid productId without hitting the network", async () => {
@@ -185,6 +199,7 @@ describe("addCartItem", () => {
   });
 
   it("maps Woo out_of_stock error to OUT_OF_STOCK code", async () => {
+    cookieStore.set("r1p_cart_token", "tok-existing");
     const { addCartItem } = await import("./cart");
     captureFetch([
       errorResponse(400, {
@@ -217,6 +232,7 @@ describe("addCartItem", () => {
 
 describe("updateCartItem / removeCartItem / coupons", () => {
   it("update POSTs to /cart/update-item with key+quantity", async () => {
+    cookieStore.set("r1p_cart_token", "tok-existing");
     const { updateCartItem } = await import("./cart");
     const { calls } = captureFetch([cartResponse(RAW_CART)]);
 
@@ -227,6 +243,7 @@ describe("updateCartItem / removeCartItem / coupons", () => {
   });
 
   it("remove POSTs to /cart/remove-item with key", async () => {
+    cookieStore.set("r1p_cart_token", "tok-existing");
     const { removeCartItem } = await import("./cart");
     const { calls } = captureFetch([cartResponse(RAW_CART)]);
 
@@ -235,7 +252,85 @@ describe("updateCartItem / removeCartItem / coupons", () => {
     expect(JSON.parse(calls[0]!.init!.body as string)).toEqual({ key: "abc" });
   });
 
+  it("clearCart removes every line from the current cart", async () => {
+    const { clearCart } = await import("./cart");
+    const twoItemCart = {
+      ...RAW_CART,
+      items: [
+        RAW_CART.items[0],
+        {
+          ...RAW_CART.items[0],
+          key: "def",
+          id: 43,
+          sku: "PT-WHT-L",
+        },
+      ],
+    };
+    const emptyCart = {
+      ...RAW_CART,
+      items: [],
+      items_count: 0,
+      totals: {
+        ...RAW_CART.totals,
+        total_items: "0",
+        total_price: "0",
+      },
+    };
+    const { calls } = captureFetch([
+      cartResponse(twoItemCart),
+      cartResponse({ ...twoItemCart, items: [twoItemCart.items[1]], items_count: 1 }),
+      cartResponse(emptyCart),
+    ]);
+
+    const cart = await clearCart();
+
+    expect(cart.items).toHaveLength(0);
+    expect(calls[0]!.url).toContain("/cart");
+    expect(calls[1]!.url).toContain("/cart/remove-item");
+    expect(JSON.parse(calls[1]!.init!.body as string)).toEqual({ key: "abc" });
+    expect(calls[2]!.url).toContain("/cart/remove-item");
+    expect(JSON.parse(calls[2]!.init!.body as string)).toEqual({ key: "def" });
+  });
+
+  it("clearCart tolerates an already-removed line during concurrent clears", async () => {
+    const { clearCart } = await import("./cart");
+    const oneItemCart = {
+      ...RAW_CART,
+      items: [RAW_CART.items[0]],
+      items_count: 1,
+      totals: {
+        ...RAW_CART.totals,
+        total_items: "4200",
+        total_price: "4200",
+      },
+    };
+    const emptyCart = {
+      ...RAW_CART,
+      items: [],
+      items_count: 0,
+      totals: {
+        ...RAW_CART.totals,
+        total_items: "0",
+        total_price: "0",
+      },
+    };
+
+    captureFetch([
+      cartResponse(oneItemCart),
+      errorResponse(409, {
+        code: "woocommerce_rest_cart_invalid_key",
+        message: "Cart item no longer exists",
+      }),
+      cartResponse(emptyCart),
+    ]);
+
+    const cart = await clearCart();
+
+    expect(cart.items).toHaveLength(0);
+  });
+
   it("applyCoupon POSTs to /cart/apply-coupon; removeCoupon to /cart/remove-coupon", async () => {
+    cookieStore.set("r1p_cart_token", "tok-existing");
     const { applyCoupon, removeCoupon } = await import("./cart");
     const { calls } = captureFetch([cartResponse(RAW_CART), cartResponse(RAW_CART)]);
 

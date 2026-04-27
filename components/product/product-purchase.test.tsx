@@ -47,6 +47,10 @@ const PRODUCT_WITH_VARIATIONS: Product = {
   ],
 };
 
+function getPrimaryPurchaseButton(name: RegExp): HTMLButtonElement {
+  return screen.getAllByRole("button", { name })[0] as HTMLButtonElement;
+}
+
 describe("<ProductPurchase />", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -58,9 +62,9 @@ describe("<ProductPurchase />", () => {
 
   it("adds a simple product to the cart on click", () => {
     render(<ProductPurchase product={PRODUCT_SIMPLE} />);
-    const btn = screen.getByRole("button", { name: /add to cart/i });
-    expect(btn).not.toBeDisabled();
-    fireEvent.click(btn);
+    const button = getPrimaryPurchaseButton(/add to cart/i);
+    expect(button).not.toBeDisabled();
+    fireEvent.click(button);
     const items = useCartStore.getState().items;
     expect(items).toHaveLength(1);
     expect(items[0]!.productId).toBe("p1");
@@ -69,9 +73,9 @@ describe("<ProductPurchase />", () => {
 
   it("requires variation selection before enabling add to cart", () => {
     render(<ProductPurchase product={PRODUCT_WITH_VARIATIONS} />);
-    const btn = screen.getByRole("button", { name: /select options/i });
-    expect(btn).toBeDisabled();
-    fireEvent.click(btn);
+    const button = getPrimaryPurchaseButton(/select options/i);
+    expect(button).toBeDisabled();
+    fireEvent.click(button);
     expect(useCartStore.getState().items).toHaveLength(0);
   });
 
@@ -79,9 +83,9 @@ describe("<ProductPurchase />", () => {
     render(<ProductPurchase product={PRODUCT_WITH_VARIATIONS} />);
     // Choose size M
     fireEvent.click(screen.getByRole("radio", { name: "M" }));
-    const btn = screen.getByRole("button", { name: /add to cart/i });
-    expect(btn).not.toBeDisabled();
-    fireEvent.click(btn);
+    const button = getPrimaryPurchaseButton(/add to cart/i);
+    expect(button).not.toBeDisabled();
+    fireEvent.click(button);
 
     const items = useCartStore.getState().items;
     expect(items).toHaveLength(1);
@@ -90,11 +94,7 @@ describe("<ProductPurchase />", () => {
   });
 
   it("disables button when product is out of stock", () => {
-    render(
-      <ProductPurchase
-        product={{ ...PRODUCT_SIMPLE, stockStatus: "out_of_stock" }}
-      />,
-    );
-    expect(screen.getByRole("button", { name: /sold out/i })).toBeDisabled();
+    render(<ProductPurchase product={{ ...PRODUCT_SIMPLE, stockStatus: "out_of_stock" }} />);
+    expect(getPrimaryPurchaseButton(/sold out/i)).toBeDisabled();
   });
 });

@@ -29,7 +29,7 @@ import type { Cart } from "./types";
 
 const COOKIE_NAME = "r1p_cart_token";
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30; // 30 days
-const DEFAULT_TIMEOUT_MS = 5_000;
+const DEFAULT_TIMEOUT_MS = 15_000;
 
 interface CartFetchOptions {
   path: string;
@@ -73,13 +73,31 @@ async function cartFetch<T>(opts: CartFetchOptions): Promise<{ data: T; token: s
     });
   }
 
-  const storedToken = await getStoredToken();
   const url = `${base}/wp-json/wc/store/v1${opts.path}`;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
 
   try {
+    let storedToken = await getStoredToken();
+
+    if (!storedToken && opts.method === "POST") {
+      const bootstrap = await fetch(`${base}/wp-json/wc/store/v1/cart`, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
+        cache: "no-store",
+      });
+      const bootstrapToken = bootstrap.headers.get("cart-token") ?? "";
+      if (bootstrapToken) {
+        storedToken = bootstrapToken;
+        await persistToken(bootstrapToken);
+      }
+    }
+
     const res = await fetch(url, {
       method: opts.method ?? "GET",
       headers: {
@@ -247,6 +265,31 @@ export async function removeCartItem(key: string): Promise<Cart> {
     body: { key },
   });
   return mapCart(data, token);
+}
+
+export async function clearCart(): Promise<Cart> {
+  let cart = await getCart();
+
+  while (cart.items.length > 0) {
+    const item = cart.items[0]!;
+
+    try {
+      cart = await removeCartItem(item.wooKey ?? item.key);
+    } catch (err) {
+      if (!isIdempotentClearError(err)) throw err;
+      cart = await getCart();
+    }
+  }
+
+  return cart;
+}
+
+function isIdempotentClearError(err: unknown): boolean {
+  return err instanceof WooError && (
+    err.code === "CART_ITEM_NOT_FOUND" ||
+    err.status === 404 ||
+    err.status === 409
+  );
 }
 
 export async function applyCoupon(code: string): Promise<Cart> {

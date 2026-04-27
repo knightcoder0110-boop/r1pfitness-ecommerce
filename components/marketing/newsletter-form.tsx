@@ -69,9 +69,9 @@ export function NewsletterForm({
     return (
       <p
         role="status"
-        className={`${SIZE_CLASS[size]} mx-auto font-mono text-xs uppercase tracking-[0.25em] text-[#C9A84C] ${className ?? ""}`}
+        className={`${SIZE_CLASS[size]} mx-auto font-mono text-xs tracking-[0.25em] text-[#C9A84C] uppercase ${className ?? ""}`}
       >
-        ✓ You're in. Drop alerts incoming.
+        ✓ You&apos;re in. Drop alerts incoming.
       </p>
     );
   }
@@ -79,9 +79,7 @@ export function NewsletterForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className={`group relative flex items-stretch gap-0 ${SIZE_CLASS[size]} ${size === "full" ? "" : "mx-auto"} ${className ?? ""}
-        rounded-md overflow-hidden ring-1 ring-border-strong transition-[box-shadow,ring]
-        focus-within:ring-gold focus-within:shadow-focus`}
+      className={`group relative flex items-stretch gap-0 ${SIZE_CLASS[size]} ${size === "full" ? "" : "mx-auto"} ${className ?? ""} ring-border-strong focus-within:ring-gold focus-within:shadow-focus overflow-hidden rounded-md ring-1 transition-[box-shadow,ring]`}
       noValidate
     >
       <label htmlFor="newsletter-email" className="sr-only">
@@ -96,9 +94,14 @@ export function NewsletterForm({
         placeholder={placeholder}
         disabled={state === "loading"}
         /* Override the global input styling — form wrapper owns the border now. */
-        className="flex-1 min-w-0 h-14 bg-transparent !border-0 !ring-0 !shadow-none px-5 font-mono text-sm text-text placeholder:text-faint/90 focus:outline-none disabled:opacity-50 transition-opacity !rounded-none"
+        className="text-text placeholder:text-faint/90 h-14 min-w-0 flex-1 !rounded-none !border-0 bg-transparent px-5 font-mono text-sm !shadow-none !ring-0 transition-opacity focus:outline-none disabled:opacity-50"
       />
-      <Button type="submit" size="lg" loading={state === "loading"} className="shrink-0 !rounded-none !px-5 sm:!px-9">
+      <Button
+        type="submit"
+        size="lg"
+        loading={state === "loading"}
+        className="shrink-0 !rounded-none !px-5 sm:!px-9"
+      >
         {buttonLabel}
       </Button>
 

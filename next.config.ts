@@ -12,9 +12,7 @@ function hostnameFromUrl(url: string): string | null {
   }
 }
 
-const wooHostname = process.env.WOO_BASE_URL
-  ? hostnameFromUrl(process.env.WOO_BASE_URL)
-  : null;
+const wooHostname = process.env.WOO_BASE_URL ? hostnameFromUrl(process.env.WOO_BASE_URL) : null;
 
 const nextConfig: NextConfig = {
   // Allow the local network IP so phones/tablets on the same WiFi can
@@ -29,15 +27,10 @@ const nextConfig: NextConfig = {
     // defined. Omitting `search` from a pattern means "match any query
     // string" (including none). `/**` covers all public/ assets, and the
     // explicit proxy entry ensures /api/image-proxy?url=... is accepted.
-    localPatterns: [
-      { pathname: "/api/image-proxy" },
-      { pathname: "/**" },
-    ],
+    localPatterns: [{ pathname: "/api/image-proxy" }, { pathname: "/**" }],
     remotePatterns: [
       // Active WooCommerce install (read from WOO_BASE_URL at build time).
-      ...(wooHostname
-        ? [{ protocol: "https" as const, hostname: wooHostname }]
-        : []),
+      ...(wooHostname ? [{ protocol: "https" as const, hostname: wooHostname }] : []),
       // Cloudways WooCommerce instance (fallback in case WOO_BASE_URL isn't set at build time).
       { protocol: "https" as const, hostname: "woocommerce-1616698-6370177.cloudwaysapps.com" },
       // Previous Hostinger WooCommerce instance (products seeded from here may still reference it).
@@ -63,8 +56,8 @@ const nextConfig: NextConfig = {
       // Next.js inline scripts + Stripe payment element + Klaviyo embed
       [
         "script-src 'self'",
-        isDev ? "'unsafe-eval'" : "",          // webpack HMR in dev
-        "'unsafe-inline'",                      // Next.js inline init scripts
+        isDev ? "'unsafe-eval'" : "", // webpack HMR in dev
+        "'unsafe-inline'", // Next.js inline init scripts
         "js.stripe.com",
         "static.klaviyo.com",
         "www.googletagmanager.com",
@@ -92,10 +85,12 @@ const nextConfig: NextConfig = {
         "api.stripe.com",
         "*.klaviyo.com",
         // Allow the woo origin for direct API calls made from the browser (if any)
-        process.env.NEXT_PUBLIC_WOO_BASE_URL ?? "",
+        wooHostname ? `https://${wooHostname}` : "",
       ]
         .filter(Boolean)
         .join(" "),
+      // Disable plugins entirely.
+      "object-src 'none'",
       // Stripe payment element renders in an iframe
       "frame-src js.stripe.com",
       // Prevent this site from being embedded in foreign iframes (clickjacking)
@@ -116,6 +111,8 @@ const nextConfig: NextConfig = {
           { key: "Content-Security-Policy", value: csp },
           // Prevent browsers from MIME-sniffing scripts.
           { key: "X-Content-Type-Options", value: "nosniff" },
+          // Legacy clickjacking protection for browsers that do not fully honor CSP frame-ancestors.
+          { key: "X-Frame-Options", value: "DENY" },
           // Only send the origin (no full URL) as Referer to third-parties.
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           // Allow camera/mic only on checkout where Stripe might need them.
@@ -142,24 +139,24 @@ const nextConfig: NextConfig = {
     const permanent = true;
     return [
       // ── Shopify product & collection pages ─────────────
-      { source: "/products/:slug*",    destination: "/product/:slug*", permanent },
+      { source: "/products/:slug*", destination: "/product/:slug*", permanent },
       { source: "/collections/:slug*", destination: "/shop/:slug*", permanent },
-      { source: "/collections",        destination: "/shop", permanent },
+      { source: "/collections", destination: "/shop", permanent },
 
       // ── Legacy Shopify paths we don't use ──────────────
       // NOTE: /account/*, /login, /pages/*, /blogs/*, /contact are REAL routes
       // in this app. They must NOT be redirected away. Shopify `/blogs/*` is
       // rewritten to our `/blog/*` so old URLs still work.
-      { source: "/services/:path*",    destination: "/", permanent },
-      { source: "/blogs/:path*",       destination: "/blog/:path*", permanent },
-      { source: "/blogs",              destination: "/blog", permanent },
+      { source: "/services/:path*", destination: "/", permanent },
+      { source: "/blogs/:path*", destination: "/blog/:path*", permanent },
+      { source: "/blogs", destination: "/blog", permanent },
 
       // ── Discounts ───────────────────────────────────────
-      { source: "/discount/:code*",    destination: "/", permanent },
+      { source: "/discount/:code*", destination: "/", permanent },
 
       // ── Shopify internal/tracking paths ─────────────────
-      { source: "/o/:path*",           destination: "/", permanent },
-      { source: "/_t/:path*",          destination: "/", permanent },
+      { source: "/o/:path*", destination: "/", permanent },
+      { source: "/_t/:path*", destination: "/", permanent },
       { source: "/:shopId/checkouts/:path*", destination: "/", permanent },
     ];
   },

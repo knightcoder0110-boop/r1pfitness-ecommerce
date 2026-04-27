@@ -19,14 +19,10 @@ interface ProductPageProps {
 }
 
 export async function generateStaticParams() {
-  try {
-    const { items } = await getCatalog().listProducts({ pageSize: 100 });
-    return items.map((p) => ({ slug: p.slug }));
-  } catch {
-    // If Woo is unreachable at build time, skip pre-generation.
-    // Pages are still rendered on-demand via dynamicParams = true (the default).
-    return [];
-  }
+  // Build-time prerendering against the live Woo catalog is too slow for this
+  // route in the current environment. Let product pages render on first visit
+  // instead of blocking the entire production build.
+  return [];
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {

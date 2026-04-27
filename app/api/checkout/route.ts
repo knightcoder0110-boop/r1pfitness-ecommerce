@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import type { ZodError } from "zod";
 import {
   CheckoutRequestSchema,
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     req.headers.get("x-real-ip") ??
     "unknown";
-  const rl = checkRateLimit(ip, { max: 5, windowMs: 60_000 });
+  const rl = checkRateLimit(`checkout:${ip}`, { max: 5, windowMs: 60_000 });
   if (!rl.ok) {
     return NextResponse.json(
       { error: "Too many requests — please slow down" },
@@ -90,10 +90,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   if (!serverCart.items.length) {
-    return NextResponse.json(
-      { error: "Your cart is empty." },
-      { status: 409 },
-    );
+    return NextResponse.json({ error: "Your cart is empty." }, { status: 409 });
   }
 
   // ── 4. Cross-check client items against server cart ──────────────────
@@ -109,10 +106,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   // ── 5. Build a server-authoritative checkout request ─────────────────
   // Prices, quantities, SKUs, and attributes come from `serverCart`. The
-  // client's `items` array is discarded from this point on.
+  // client's monetary fields are discarded from this point on. For variable
+  // products, Woo Store API cart lines expose the variation id as `id`, so we
+  // keep the matched client parent product id for Woo order creation.
   const trustedItems: CheckoutRequest["items"] = serverCart.items.map((li) => ({
-    productId: li.productId,
-    variationId: li.variationId,
+    productId: findClientMatchForServerLine(li, data.items)?.productId ?? li.productId,
+    variationId: findClientMatchForServerLine(li, data.items)?.variationId ?? li.variationId,
     quantity: li.quantity,
     unitPrice: li.unitPrice,
     name: li.name,
@@ -199,20 +198,19 @@ function detectCartDrift(
   clientItems: CheckoutRequest["items"],
   serverItems: CartLineItem[],
 ): string | null {
-  const key = (p: string, v: string | undefined) => `${p}::${v ?? "0"}`;
-
-  const serverMap = new Map<string, CartLineItem>();
-  for (const li of serverItems) {
-    serverMap.set(key(li.productId, li.variationId), li);
-  }
-
   if (clientItems.length !== serverItems.length) {
     return "item_count_mismatch";
   }
 
+  const matchedServerIndexes = new Set<number>();
   for (const ci of clientItems) {
-    const match = serverMap.get(key(ci.productId, ci.variationId));
+    const matchIndex = serverItems.findIndex(
+      (serverItem, index) =>
+        !matchedServerIndexes.has(index) && isSameCheckoutLine(ci, serverItem),
+    );
+    const match = matchIndex >= 0 ? serverItems[matchIndex] : undefined;
     if (!match) return "item_missing_on_server";
+    matchedServerIndexes.add(matchIndex);
     if (match.quantity !== ci.quantity) return "quantity_mismatch";
     if (
       match.unitPrice.amount !== ci.unitPrice.amount ||
@@ -223,4 +221,30 @@ function detectCartDrift(
   }
 
   return null;
+}
+
+function findClientMatchForServerLine(
+  serverItem: CartLineItem,
+  clientItems: CheckoutRequest["items"],
+): CheckoutRequest["items"][number] | undefined {
+  return clientItems.find((clientItem) => isSameCheckoutLine(clientItem, serverItem));
+}
+
+function isSameCheckoutLine(
+  clientItem: CheckoutRequest["items"][number],
+  serverItem: CartLineItem,
+): boolean {
+  if (
+    serverItem.productId === clientItem.productId &&
+    (serverItem.variationId ?? undefined) === clientItem.variationId
+  ) {
+    return true;
+  }
+
+  if (!clientItem.variationId) return false;
+
+  return (
+    serverItem.variationId === clientItem.variationId ||
+    serverItem.productId === clientItem.variationId
+  );
 }

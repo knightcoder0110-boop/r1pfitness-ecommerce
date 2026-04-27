@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ShoppingBag } from "lucide-react";
 import { QuickAddModal } from "@/components/product/quick-add-modal";
 import { getCachedQuickAddProduct, loadQuickAddProduct } from "@/components/product/quick-add-product-cache";
@@ -35,6 +35,7 @@ interface QuickAddTriggerProps {
 export function QuickAddTrigger({ product, className }: QuickAddTriggerProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [pending, setPending] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
   // Prefetched full Product — populated on hover/touchstart so the modal
   // can display instantly when the user actually clicks.
   const [prefetched, setPrefetched] = useState<Product | null>(
@@ -56,16 +57,35 @@ export function QuickAddTrigger({ product, className }: QuickAddTriggerProps) {
 
   /**
    * Start a prefetch to the BFF. Called on hover (desktop) and touchstart
-   * (mobile) so the data is already in flight — or fully cached — by the
-   * time the user clicks. Shared cache + promise dedupe means repeat opens
-   * and concurrent trigger/modal requests collapse into a single fetch.
+   * (mobile), and also once the trigger enters the viewport for variable
+   * products. Shared cache + promise dedupe means repeat opens and concurrent
+   * trigger/modal requests collapse into a single fetch.
    */
-  function startPrefetch() {
+  const startPrefetch = useCallback(() => {
     if (prefetched) return;
     void loadQuickAddProduct(product.slug, product.id).then((full) => {
       if (full) setPrefetched(full);
     });
-  }
+  }, [prefetched, product.id, product.slug]);
+
+  useEffect(() => {
+    if (!isVariable || prefetched) return;
+    const node = buttonRef.current;
+    if (!node || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          startPrefetch();
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "160px 0px" },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [isVariable, prefetched, startPrefetch]);
 
   function handleClick(event: React.MouseEvent<HTMLButtonElement>) {
     // The card's image and title are both anchors to the PDP; this button
@@ -117,6 +137,7 @@ export function QuickAddTrigger({ product, className }: QuickAddTriggerProps) {
   return (
     <>
       <button
+        ref={buttonRef}
         type="button"
         onClick={handleClick}
         onMouseEnter={startPrefetch}

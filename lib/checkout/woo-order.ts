@@ -200,9 +200,15 @@ export async function getWooOrder(orderId: string): Promise<Order | null> {
 
 /** Transition a pending Woo order to "processing" after payment succeeds. */
 export async function markOrderProcessing(orderId: string): Promise<void> {
+  const order = await getWooOrder(orderId);
+  if (order?.status === "processing" || order?.status === "completed") {
+    return;
+  }
+
   await adminFetch({
     path: `/orders/${orderId}`,
     method: "PUT",
     body: { status: "processing" },
+    timeoutMs: 15_000,
   });
 }

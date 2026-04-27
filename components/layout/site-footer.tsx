@@ -6,26 +6,33 @@ import { NewsletterForm } from "@/components/marketing/newsletter-form";
 /* ─── Nav columns ───────────────────────────────────────────────────────── */
 const SHOP_LINKS = [
   { label: "All Products", href: ROUTES.shop },
-  { label: "Tees", href: "/shop?category=tees" },
-  { label: "Hoodies", href: "/shop?category=hoodies" },
-  { label: "Bottoms", href: "/shop?category=bottoms" },
-  { label: "Caps", href: "/shop?category=caps" },
-  { label: "Activewear", href: "/shop?category=activewear" },
-  { label: "Accessories", href: "/shop?category=accessories" },
+  { label: "Tees", href: ROUTES.category("tees") },
+  { label: "Hoodies", href: ROUTES.category("hoodies") },
+  { label: "Bottoms", href: ROUTES.category("bottoms") },
+  { label: "Caps", href: ROUTES.category("headwear") },
+  { label: "Activewear", href: ROUTES.category("activewear") },
+  { label: "Accessories", href: ROUTES.category("accessories") },
 ];
 
 const INFO_LINKS = [
   { label: "About R1P", href: ROUTES.about },
   { label: "Our Story", href: ROUTES.about },
   { label: "All Collections", href: ROUTES.collections },
-  { label: "FAQ", href: `${ROUTES.about}#faq` },
-  { label: "Contact", href: "mailto:aloha@r1pfitness.com" },
+  { label: "FAQ", href: ROUTES.faq },
+  { label: "Contact", href: ROUTES.contact },
 ];
 
 /* ─── Instagram icon ─────────────────────────────────────────────────────── */
 function InstagramIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} aria-hidden="true" className={className}>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      aria-hidden="true"
+      className={className}
+    >
       <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
       <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
       <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
@@ -36,31 +43,27 @@ function InstagramIcon({ className }: { className?: string }) {
 /* ─── Newsletter row — uses the live Klaviyo client form ─────────────────── */
 function NewsletterRow() {
   return (
-    <div className="border-t border-border-strong pt-14 mt-14">
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_minmax(0,28rem)] gap-10 md:gap-14 items-center">
+    <div className="border-border-strong mt-14 border-t pt-14">
+      <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-[1fr_minmax(0,28rem)] md:gap-14">
         <div>
           <p
-            className="font-mono uppercase text-gold mb-3"
+            className="text-gold mb-3 font-mono uppercase"
             style={{
-              fontSize:      "var(--footer-heading-size)",
+              fontSize: "var(--footer-heading-size)",
               letterSpacing: "0.45em",
-              fontWeight:    600,
+              fontWeight: 600,
             }}
           >
             Stay in the loop
           </p>
-          <h3 className="font-display text-3xl sm:text-4xl leading-none tracking-[0.18em] text-text">
+          <h3 className="font-display text-text text-3xl leading-none tracking-[0.18em] sm:text-4xl">
             JOIN THE OHANA
           </h3>
-          <p className="font-serif text-[1.0625rem] text-muted mt-4 max-w-md leading-relaxed">
+          <p className="text-muted mt-4 max-w-md font-serif text-[1.0625rem] leading-relaxed">
             Limited drops, exclusive early access, and Waipahu culture — direct to your inbox.
           </p>
         </div>
-        <NewsletterForm
-          buttonLabel="Subscribe"
-          placeholder="your@email.com"
-          size="full"
-        />
+        <NewsletterForm buttonLabel="Subscribe" placeholder="your@email.com" size="full" />
       </div>
     </div>
   );
@@ -82,30 +85,30 @@ export function SiteFooter() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-border-strong bg-surface-1 pt-20 pb-10">
+    <footer className="border-border-strong bg-surface-1 border-t pt-20 pb-10">
       <Container>
         {/* ── Column grid ─────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 gap-x-8 gap-y-14 sm:grid-cols-4 lg:grid-cols-4 mb-2">
+        <div className="mb-2 grid grid-cols-2 gap-x-8 gap-y-14 sm:grid-cols-4 lg:grid-cols-4">
           {/* Brand */}
-          <div className="col-span-2 sm:col-span-4 lg:col-span-1 flex flex-col gap-5">
+          <div className="col-span-2 flex flex-col gap-5 sm:col-span-4 lg:col-span-1">
             <Link
               href="/"
-              className="font-display text-4xl tracking-[0.15em] text-text hover:text-gold cursor-pointer transition-colors leading-none"
+              className="font-display text-text hover:text-gold cursor-pointer text-4xl leading-none tracking-[0.15em] transition-colors"
               aria-label={SITE.name}
             >
               {SITE.name}
             </Link>
             <p
-              className="font-mono uppercase text-gold"
+              className="text-gold font-mono uppercase"
               style={{
-                fontSize:      "0.75rem",
+                fontSize: "0.75rem",
                 letterSpacing: "0.45em",
-                fontWeight:    600,
+                fontWeight: 600,
               }}
             >
               {SITE.tagline}
             </p>
-            <p className="font-serif text-base text-muted leading-relaxed max-w-xs">
+            <p className="text-muted max-w-xs font-serif text-base leading-relaxed">
               Hawaiian streetwear & fitness apparel. Designed and dropped from Waipahu, HI.
             </p>
             <a
@@ -113,11 +116,11 @@ export function SiteFooter() {
               target="_blank"
               rel="noreferrer"
               aria-label="Follow R1P FITNESS on Instagram"
-              className="inline-flex items-center gap-2.5 text-text hover:text-gold cursor-pointer transition-colors font-mono uppercase mt-auto"
+              className="text-text hover:text-gold mt-auto inline-flex cursor-pointer items-center gap-2.5 font-mono uppercase transition-colors"
               style={{
-                fontSize:      "var(--footer-link-size)",
+                fontSize: "var(--footer-link-size)",
                 letterSpacing: "0.2em",
-                fontWeight:    500,
+                fontWeight: 500,
               }}
             >
               <InstagramIcon className="size-5" />
@@ -128,11 +131,11 @@ export function SiteFooter() {
           {/* Shop */}
           <div className="flex flex-col gap-5">
             <p
-              className="font-mono uppercase text-gold"
+              className="text-gold font-mono uppercase"
               style={{
-                fontSize:      "var(--footer-heading-size)",
+                fontSize: "var(--footer-heading-size)",
                 letterSpacing: "var(--footer-heading-tracking)",
-                fontWeight:    600,
+                fontWeight: 600,
               }}
             >
               Shop
@@ -142,11 +145,11 @@ export function SiteFooter() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="font-mono uppercase text-text/85 hover:text-gold cursor-pointer transition-colors"
+                    className="text-text/85 hover:text-gold cursor-pointer font-mono uppercase transition-colors"
                     style={{
-                      fontSize:      "var(--footer-link-size)",
+                      fontSize: "var(--footer-link-size)",
                       letterSpacing: "var(--footer-link-tracking)",
-                      fontWeight:    500,
+                      fontWeight: 500,
                     }}
                   >
                     {link.label}
@@ -159,11 +162,11 @@ export function SiteFooter() {
           {/* Info */}
           <div className="flex flex-col gap-5">
             <p
-              className="font-mono uppercase text-gold"
+              className="text-gold font-mono uppercase"
               style={{
-                fontSize:      "var(--footer-heading-size)",
+                fontSize: "var(--footer-heading-size)",
                 letterSpacing: "var(--footer-heading-tracking)",
-                fontWeight:    600,
+                fontWeight: 600,
               }}
             >
               Info
@@ -173,11 +176,11 @@ export function SiteFooter() {
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className="font-mono uppercase text-text/85 hover:text-gold cursor-pointer transition-colors"
+                    className="text-text/85 hover:text-gold cursor-pointer font-mono uppercase transition-colors"
                     style={{
-                      fontSize:      "var(--footer-link-size)",
+                      fontSize: "var(--footer-link-size)",
                       letterSpacing: "var(--footer-link-tracking)",
-                      fontWeight:    500,
+                      fontWeight: 500,
                     }}
                   >
                     {link.label}
@@ -190,11 +193,11 @@ export function SiteFooter() {
           {/* Connect */}
           <div className="flex flex-col gap-5">
             <p
-              className="font-mono uppercase text-gold"
+              className="text-gold font-mono uppercase"
               style={{
-                fontSize:      "var(--footer-heading-size)",
+                fontSize: "var(--footer-heading-size)",
                 letterSpacing: "var(--footer-heading-tracking)",
-                fontWeight:    600,
+                fontWeight: 600,
               }}
             >
               Connect
@@ -205,11 +208,11 @@ export function SiteFooter() {
                   href={SITE.social.instagram}
                   target="_blank"
                   rel="noreferrer"
-                  className="font-mono uppercase text-text/85 hover:text-gold cursor-pointer transition-colors"
+                  className="text-text/85 hover:text-gold cursor-pointer font-mono uppercase transition-colors"
                   style={{
-                    fontSize:      "var(--footer-link-size)",
+                    fontSize: "var(--footer-link-size)",
                     letterSpacing: "var(--footer-link-tracking)",
-                    fontWeight:    500,
+                    fontWeight: 500,
                   }}
                 >
                   Instagram
@@ -218,11 +221,11 @@ export function SiteFooter() {
               <li>
                 <a
                   href="mailto:r1pfitness@gmail.com"
-                  className="font-mono uppercase text-text/85 hover:text-gold cursor-pointer transition-colors"
+                  className="text-text/85 hover:text-gold cursor-pointer font-mono uppercase transition-colors"
                   style={{
-                    fontSize:      "var(--footer-link-size)",
+                    fontSize: "var(--footer-link-size)",
                     letterSpacing: "var(--footer-link-tracking)",
-                    fontWeight:    500,
+                    fontWeight: 500,
                   }}
                 >
                   Email Us
@@ -231,17 +234,18 @@ export function SiteFooter() {
             </ul>
             <div className="mt-5 flex flex-col gap-2">
               <p
-                className="font-mono uppercase text-gold"
+                className="text-gold font-mono uppercase"
                 style={{
-                  fontSize:      "0.6875rem",
+                  fontSize: "0.6875rem",
                   letterSpacing: "0.3em",
-                  fontWeight:    600,
+                  fontWeight: 600,
                 }}
               >
                 Location
               </p>
-              <address className="not-italic font-serif text-sm text-muted leading-relaxed">
-                {SITE.address.street}<br />
+              <address className="text-muted font-serif text-sm leading-relaxed not-italic">
+                {SITE.address.street}
+                <br />
                 {SITE.address.city}, {SITE.address.region} {SITE.address.postalCode}
               </address>
             </div>
@@ -252,11 +256,11 @@ export function SiteFooter() {
         <NewsletterRow />
 
         {/* ── Legal bar ───────────────────────────────────────────────── */}
-        <div className="mt-12 pt-8 border-t border-border-strong flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="border-border-strong mt-12 flex flex-col items-center justify-between gap-4 border-t pt-8 sm:flex-row">
           <p
-            className="font-mono uppercase text-subtle"
+            className="text-subtle font-mono uppercase"
             style={{
-              fontSize:      "0.6875rem",
+              fontSize: "0.6875rem",
               letterSpacing: "0.25em",
             }}
           >
@@ -266,23 +270,32 @@ export function SiteFooter() {
             <ul
               className="flex flex-wrap gap-x-6 gap-y-1 font-mono uppercase"
               style={{
-                fontSize:      "0.6875rem",
+                fontSize: "0.6875rem",
                 letterSpacing: "0.25em",
               }}
               role="list"
             >
               <li>
-                <Link href="/privacy" className="text-subtle hover:text-gold cursor-pointer transition-colors">
+                <Link
+                  href={ROUTES.privacy}
+                  className="text-subtle hover:text-gold cursor-pointer transition-colors"
+                >
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="text-subtle hover:text-gold cursor-pointer transition-colors">
+                <Link
+                  href={ROUTES.terms}
+                  className="text-subtle hover:text-gold cursor-pointer transition-colors"
+                >
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="/returns" className="text-subtle hover:text-gold cursor-pointer transition-colors">
+                <Link
+                  href={ROUTES.returns}
+                  className="text-subtle hover:text-gold cursor-pointer transition-colors"
+                >
                   Refund Policy
                 </Link>
               </li>

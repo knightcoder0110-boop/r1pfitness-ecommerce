@@ -50,34 +50,33 @@ export default function AboutPage() {
       <Breadcrumbs items={[{ label: "About" }]} className="mb-8 sm:mb-12" />
 
       {/* ── Hero ──────────────────────────────────────────────────────── */}
-      <section className="max-w-3xl mb-20 sm:mb-28">
-        <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-muted mb-4">
+      <section className="mb-20 max-w-3xl sm:mb-28">
+        <p className="text-muted mb-4 font-mono text-[10px] tracking-[0.5em] uppercase">
           Our Story
         </p>
-        <Heading level={1} size="xl" className="text-4xl sm:text-6xl lg:text-7xl leading-none mb-8">
+        <Heading level={1} size="xl" className="mb-8 text-4xl leading-none sm:text-6xl lg:text-7xl">
           Reborn 1n Paradise
         </Heading>
-        <p className="font-serif italic text-xl sm:text-2xl text-subtle leading-relaxed">
-          R1P FITNESS started as a garage gym and a dream. Every piece we drop carries
-          the spirit of our &lsquo;ohana — the early mornings, the heavy sets, and the fire
-          that keeps us going.
+        <p className="text-subtle font-serif text-xl leading-relaxed italic sm:text-2xl">
+          R1P FITNESS started as a garage gym and a dream. Every piece we drop carries the spirit of
+          our &lsquo;ohana — the early mornings, the heavy sets, and the fire that keeps us going.
         </p>
       </section>
 
       {/* ── Stats ─────────────────────────────────────────────────────── */}
       <section
         aria-label="Brand stats"
-        className="grid grid-cols-2 sm:grid-cols-4 gap-px border border-border mb-20 sm:mb-28"
+        className="border-border mb-20 grid grid-cols-2 gap-px border sm:mb-28 sm:grid-cols-4"
       >
         {STATS.map((stat) => (
           <div
             key={stat.label}
-            className="flex flex-col items-center justify-center gap-1 p-8 text-center border-border"
+            className="border-border flex flex-col items-center justify-center gap-1 p-8 text-center"
           >
-            <span className="font-display text-4xl sm:text-5xl tracking-wider text-text">
+            <span className="font-display text-text text-4xl tracking-wider sm:text-5xl">
               {stat.number}
             </span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+            <span className="text-muted font-mono text-[10px] tracking-[0.3em] uppercase">
               {stat.label}
             </span>
           </div>
@@ -85,53 +84,47 @@ export default function AboutPage() {
       </section>
 
       {/* ── Story body ────────────────────────────────────────────────── */}
-      <section className="grid gap-12 lg:grid-cols-2 lg:gap-20 mb-20 sm:mb-28">
+      <section className="mb-20 grid gap-12 sm:mb-28 lg:grid-cols-2 lg:gap-20">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-muted mb-4">
+          <p className="text-muted mb-4 font-mono text-[10px] tracking-[0.4em] uppercase">
             How It Started
           </p>
-          <h2 className="font-display text-3xl sm:text-4xl tracking-wider text-text mb-6">
+          <h2 className="font-display text-text mb-6 text-3xl tracking-wider sm:text-4xl">
             A Garage. A Bar. A Dream.
           </h2>
-          <div className="space-y-4 font-serif text-base sm:text-lg text-subtle leading-relaxed">
+          <div className="text-subtle space-y-4 font-serif text-base leading-relaxed sm:text-lg">
             <p>
-              It started with a beat-up barbell, a pull-up bar bolted into a
-              doorframe, and a group of friends who trained together every
-              morning before work. Nobody was getting paid to be there. Nobody
-              had a sponsor. We just showed up.
+              It started with a beat-up barbell, a pull-up bar bolted into a doorframe, and a group
+              of friends who trained together every morning before work. Nobody was getting paid to
+              be there. Nobody had a sponsor. We just showed up.
             </p>
             <p>
-              The name R1P FITNESS — Reborn 1n Paradise — came from that
-              feeling after a hard session. The soreness. The clarity. The
-              knowing that you left everything on the floor and came out the
-              other side different. Reborn.
+              The name R1P FITNESS — Reborn 1n Paradise — came from that feeling after a hard
+              session. The soreness. The clarity. The knowing that you left everything on the floor
+              and came out the other side different. Reborn.
             </p>
             <p>
-              Paradise isn&apos;t the postcard version of Hawaii. It&apos;s
-              the 5am air before sunrise. The trade winds coming through the
-              open garage door. The way every rep feels both brutal and
-              beautiful when you&apos;re doing it with people you love.
+              Paradise isn&apos;t the postcard version of Hawaii. It&apos;s the 5am air before
+              sunrise. The trade winds coming through the open garage door. The way every rep feels
+              both brutal and beautiful when you&apos;re doing it with people you love.
             </p>
             <p>
-              We started printing gear for ourselves. Our 'ohana wanted it.
-              Then strangers wanted it. Now we drop it — 24 hours, limited
-              run, gone forever. We kept the soul of that garage and we
-              aren&apos;t changing it.
+              We started printing gear for ourselves. Our &apos;ohana wanted it. Then strangers
+              wanted it. Now we drop it — 24 hours, limited run, gone forever. We kept the soul of
+              that garage and we aren&apos;t changing it.
             </p>
           </div>
         </div>
 
         {/* Brand pillars grid */}
         <div className="flex flex-col gap-6">
-          <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-muted">
+          <p className="text-muted font-mono text-[10px] tracking-[0.4em] uppercase">
             What We Stand For
           </p>
           {VALUES.map((v) => (
-            <div key={v.heading} className="border-l-2 border-gold/40 pl-5">
-              <h3 className="font-display text-lg tracking-wider text-text mb-1">
-                {v.heading}
-              </h3>
-              <p className="font-serif text-sm sm:text-base text-subtle leading-relaxed">
+            <div key={v.heading} className="border-gold/40 border-l-2 pl-5">
+              <h3 className="font-display text-text mb-1 text-lg tracking-wider">{v.heading}</h3>
+              <p className="text-subtle font-serif text-sm leading-relaxed sm:text-base">
                 {v.body}
               </p>
             </div>
@@ -140,12 +133,12 @@ export default function AboutPage() {
       </section>
 
       {/* ── CTA ───────────────────────────────────────────────────────── */}
-      <section className="border-t border-border pt-16 sm:pt-20 flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between">
+      <section className="border-border flex flex-col items-start justify-between gap-6 border-t pt-16 sm:flex-row sm:items-center sm:pt-20">
         <div>
-          <h2 className="font-display text-2xl sm:text-3xl tracking-wider text-text mb-2">
+          <h2 className="font-display text-text mb-2 text-2xl tracking-wider sm:text-3xl">
             Ready to rep the island?
           </h2>
-          <p className="font-serif italic text-subtle">
+          <p className="text-subtle font-serif italic">
             Limited drops, 24 hours only. No DM requests. No restocks.
           </p>
         </div>
@@ -153,7 +146,10 @@ export default function AboutPage() {
           <Link href={ROUTES.shop} className={buttonVariants({ size: "lg" })}>
             Shop Now
           </Link>
-          <Link href={ROUTES.collections} className={buttonVariants({ variant: "outline", size: "lg" })}>
+          <Link
+            href={ROUTES.collections}
+            className={buttonVariants({ variant: "outline", size: "lg" })}
+          >
             All Collections
           </Link>
         </div>

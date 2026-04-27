@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { getCatalog } from "@/lib/catalog";
 import { ProductRail } from "@/components/product/product-rail";
@@ -157,6 +158,8 @@ export const metadata: Metadata = {
 export const revalidate = 3600;
 
 export default async function HomePage() {
+  await connection();
+
   const catalog = getCatalog();
 
   const [{ items: gridProducts }, { items: bestSellers }, liveSpotlight, liveDarkRomance] =

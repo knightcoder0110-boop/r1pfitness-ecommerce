@@ -9,7 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Price } from "@/components/ui/price";
 import { Badge } from "@/components/ui/badge";
 import { VariantPicker } from "@/components/product/variant-picker";
-import { getCachedQuickAddProduct, loadQuickAddProduct } from "@/components/product/quick-add-product-cache";
+import {
+  getCachedQuickAddProduct,
+  loadQuickAddProduct,
+} from "@/components/product/quick-add-product-cache";
 import { useServerCart } from "@/lib/cart";
 import { useToastStore } from "@/lib/toast";
 import { trackAddToCart } from "@/lib/analytics";
@@ -69,12 +72,16 @@ function buildInitialSelection(product?: Product | null) {
  *    context on parents (consistent with mobile-nav).
  */
 export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: QuickAddModalProps) {
-  const isClient = useSyncExternalStore(subscribe, () => true, () => false);
+  const isClient = useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false,
+  );
   const cachedProduct = getCachedQuickAddProduct(summary.slug, summary.id);
   // If the trigger already prefetched the product (hover), initialise
   // directly to "ready" so the modal shows the picker with zero latency.
   const [fetchState, setFetchState] = useState<FetchState>(() =>
-    prefetchedProduct ?? cachedProduct
+    (prefetchedProduct ?? cachedProduct)
       ? { status: "ready", product: prefetchedProduct ?? cachedProduct ?? undefined }
       : { status: "idle" },
   );
@@ -85,9 +92,8 @@ export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: Qui
   const showToast = useToastStore((s) => s.show);
 
   const product = prefetchedProduct ?? cachedProduct ?? fetchState.product;
-  const resolvedSelection = Object.keys(selected).length > 0
-    ? selected
-    : buildInitialSelection(product);
+  const resolvedSelection =
+    Object.keys(selected).length > 0 ? selected : buildInitialSelection(product);
 
   // Body scroll lock + Esc key — only while open.
   useEffect(() => {
@@ -182,18 +188,14 @@ export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: Qui
             : "Add to Cart";
 
   // Image: prefer the resolved variation image, fall back to the product hero.
-  const displayImage =
-    matchingVariation?.image ?? product?.images[0] ?? summary.image ?? undefined;
+  const displayImage = matchingVariation?.image ?? product?.images[0] ?? summary.image ?? undefined;
 
   // Price: prefer the resolved variation, fall back to product, then summary.
   const displayPrice = matchingVariation?.price ?? product?.price ?? summary.price;
   const displayCompareAt =
-    matchingVariation?.compareAtPrice ??
-    product?.compareAtPrice ??
-    summary.compareAtPrice;
+    matchingVariation?.compareAtPrice ?? product?.compareAtPrice ?? summary.compareAtPrice;
 
-  const onSale =
-    displayCompareAt && displayCompareAt.amount > displayPrice.amount;
+  const onSale = displayCompareAt && displayCompareAt.amount > displayPrice.amount;
 
   function handleAdd() {
     if (disabled || !product) return;
@@ -231,7 +233,7 @@ export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: Qui
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="fixed inset-0 z-60 bg-[#0D0D0D]/80 backdrop-blur-sm cursor-pointer"
+            className="fixed inset-0 z-60 cursor-pointer bg-[#0D0D0D]/80 backdrop-blur-sm"
           />
 
           {/* Panel */}
@@ -245,25 +247,25 @@ export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: Qui
             exit={{ opacity: 0, y: 12, scale: 0.97 }}
             transition={{ duration: 0.24, ease: "easeOut" }}
             className={cn(
-              "fixed left-1/2 top-1/2 z-61 w-[calc(100%-2rem)] max-w-md max-h-[calc(100dvh-2rem)]",
-              "-translate-x-1/2 -translate-y-1/2 bg-[#141414] rounded-lg border border-border shadow-overlay",
-              "overflow-hidden flex flex-col",
+              "fixed top-1/2 left-1/2 z-61 max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md",
+              "border-border shadow-overlay -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-[#141414]",
+              "flex flex-col overflow-hidden",
             )}
           >
             {/* Header */}
-            <div className="flex items-start justify-between gap-4 px-5 pt-5 pb-3 border-b border-border shrink-0">
+            <div className="border-border flex shrink-0 items-start justify-between gap-4 border-b px-5 pt-5 pb-3">
               <div className="min-w-0">
-                <p className="font-mono text-[9px] uppercase tracking-[0.4em] text-gold">
+                <p className="text-gold font-mono text-[9px] tracking-[0.4em] uppercase">
                   Quick Add
                 </p>
-                <h2 className="font-display text-lg tracking-wider text-text mt-0.5 line-clamp-2">
+                <h2 className="font-display text-text mt-0.5 line-clamp-2 text-lg tracking-wider">
                   {summary.name}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="text-muted hover:text-text transition-colors text-2xl leading-none cursor-pointer shrink-0"
+                className="text-muted hover:text-text shrink-0 cursor-pointer text-2xl leading-none transition-colors"
                 aria-label="Close"
               >
                 ×
@@ -271,11 +273,11 @@ export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: Qui
             </div>
 
             {/* Scrollable body */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
-              <div className="px-5 py-5 flex flex-col gap-5">
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              <div className="flex flex-col gap-5 px-5 py-5">
                 {/* Image + price row */}
                 <div className="flex gap-4">
-                  <div className="relative shrink-0 size-24 sm:size-28 overflow-hidden rounded-sm bg-surface-2">
+                  <div className="bg-surface-2 relative size-24 shrink-0 overflow-hidden rounded-sm sm:size-28">
                     {displayImage ? (
                       <Image
                         src={displayImage.url}
@@ -284,14 +286,14 @@ export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: Qui
                         sizes="(min-width: 640px) 7rem, 6rem"
                         className={cn(
                           "object-cover",
-                          (productOutOfStock || variationOutOfStock) && "grayscale opacity-50",
+                          (productOutOfStock || variationOutOfStock) && "opacity-50 grayscale",
                         )}
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center">
                         <span
                           aria-hidden
-                          className="select-none font-display text-2xl tracking-widest text-surface-3"
+                          className="font-display text-surface-3 text-2xl tracking-widest select-none"
                         >
                           R1P
                         </span>
@@ -299,7 +301,7 @@ export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: Qui
                     )}
                   </div>
 
-                  <div className="flex flex-col justify-between min-w-0">
+                  <div className="flex min-w-0 flex-col justify-between">
                     <div className="flex flex-wrap gap-1.5">
                       {summary.isLimited ? <Badge tone="gold">Limited</Badge> : null}
                       {onSale ? <Badge tone="coral">Sale</Badge> : null}
@@ -318,24 +320,24 @@ export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: Qui
                 </div>
 
                 {/* Body content — varies with fetch state */}
-                {fetchState.status === "loading" || fetchState.status === "idle" ? (
+                {fetchState.status === "idle" ? (
                   <div className="flex flex-col gap-3" aria-busy="true" aria-live="polite">
-                    <div className="h-3 w-24 rounded-sm bg-surface-2 animate-pulse" />
+                    <div className="bg-surface-2 h-3 w-24 animate-pulse rounded-sm" />
                     <div className="flex gap-2">
-                      <div className="h-9 w-12 rounded-sm bg-surface-2 animate-pulse" />
-                      <div className="h-9 w-12 rounded-sm bg-surface-2 animate-pulse" />
-                      <div className="h-9 w-12 rounded-sm bg-surface-2 animate-pulse" />
-                      <div className="h-9 w-12 rounded-sm bg-surface-2 animate-pulse" />
+                      <div className="bg-surface-2 h-9 w-12 animate-pulse rounded-sm" />
+                      <div className="bg-surface-2 h-9 w-12 animate-pulse rounded-sm" />
+                      <div className="bg-surface-2 h-9 w-12 animate-pulse rounded-sm" />
+                      <div className="bg-surface-2 h-9 w-12 animate-pulse rounded-sm" />
                     </div>
                   </div>
                 ) : fetchState.status === "error" ? (
                   <div className="flex flex-col gap-3">
-                    <p className="font-mono text-xs text-coral">
+                    <p className="text-coral font-mono text-xs">
                       {fetchState.errorMessage ?? "Could not load product details."}
                     </p>
                     <Link
                       href={ROUTES.product(summary.slug)}
-                      className="font-mono text-[11px] uppercase tracking-[0.25em] text-gold underline underline-offset-4 hover:text-gold/80"
+                      className="text-gold hover:text-gold/80 font-mono text-[11px] tracking-[0.25em] uppercase underline underline-offset-4"
                       onClick={onClose}
                     >
                       View full details →
@@ -351,7 +353,7 @@ export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: Qui
                         onChange={setSelected}
                       />
                     ) : (
-                      <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-muted">
+                      <p className="text-muted font-mono text-[11px] tracking-[0.25em] uppercase">
                         No options to choose — ready to add.
                       </p>
                     )}
@@ -360,7 +362,7 @@ export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: Qui
                     <Link
                       href={ROUTES.product(summary.slug)}
                       onClick={onClose}
-                      className="self-start font-mono text-[10px] uppercase tracking-[0.3em] text-muted underline underline-offset-4 hover:text-gold transition-colors"
+                      className="text-muted hover:text-gold self-start font-mono text-[10px] tracking-[0.3em] uppercase underline underline-offset-4 transition-colors"
                     >
                       View full details
                     </Link>
@@ -370,7 +372,7 @@ export function QuickAddModal({ open, onClose, summary, prefetchedProduct }: Qui
             </div>
 
             {/* Footer CTA — sticky-ish at the bottom of the panel */}
-            <div className="border-t border-border px-5 py-4 shrink-0 bg-[#141414]">
+            <div className="border-border shrink-0 border-t bg-[#141414] px-5 py-4">
               <Button
                 type="button"
                 size="md"

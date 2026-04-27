@@ -56,7 +56,8 @@ export function withApi<TSchema extends ZodType | undefined, TData>(
           req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
           req.headers.get("x-real-ip") ??
           "unknown";
-        const rl = checkRateLimit(ip, config.rateLimit);
+        const pathname = new URL(req.url).pathname;
+        const rl = checkRateLimit(`${pathname}:${ip}`, config.rateLimit);
         if (!rl.ok) {
           return NextResponse.json(fail("RATE_LIMIT", "Too many requests — please slow down"), {
             status: 429,
@@ -109,10 +110,9 @@ async function safeJson(req: NextRequest): Promise<unknown> {
 
 function handleError<TData>(err: unknown): NextResponse<ApiResponse<TData>> {
   if (err instanceof ZodError) {
-    return NextResponse.json(
-      fail("VALIDATION_FAILED", "Input failed validation", err.issues),
-      { status: 422 },
-    );
+    return NextResponse.json(fail("VALIDATION_FAILED", "Input failed validation", err.issues), {
+      status: 422,
+    });
   }
 
   if (err instanceof ApiError) {

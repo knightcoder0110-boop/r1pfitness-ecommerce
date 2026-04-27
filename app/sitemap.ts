@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getCatalog, type CatalogDataSource } from "@/lib/catalog";
 import { ROUTES } from "@/lib/constants";
-import { siteConfig } from "@/lib/siteConfig";
 import { absoluteUrl } from "@/lib/utils/format";
 import { getSiteUrl } from "@/lib/seo/site-url";
 
@@ -36,13 +35,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.9,
     },
-    ...siteConfig.campaigns
-      .filter((campaign) => campaign.isActive)
-      .map((campaign) => ({
-        url: toUrl(ROUTES.drop(campaign.slug)),
-        changeFrequency: "daily" as const,
-        priority: 0.8,
-      })),
   ];
 
   try {

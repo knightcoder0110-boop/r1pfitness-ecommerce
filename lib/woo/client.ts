@@ -20,7 +20,7 @@ import { WooError, errorCodeForStatus } from "./errors";
  *  - Support Next.js fetch caching via `next.tags` / `next.revalidate`.
  */
 
-const DEFAULT_TIMEOUT_MS = 5_000;
+const DEFAULT_TIMEOUT_MS = 15_000;
 
 interface FetchOptions extends Omit<RequestInit, "body"> {
   /** Relative path, e.g. `/products` — base URL is prepended. */

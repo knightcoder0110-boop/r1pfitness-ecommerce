@@ -1,7 +1,6 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-
-const UNLOCK_COOKIE = "r1p_site_unlocked";
+import { isValidSiteUnlockCookieValue, SITE_UNLOCK_COOKIE } from "@/lib/site-lock-cookie";
 
 /**
  * Paths that always bypass the site-wide lock.
@@ -12,6 +11,7 @@ const LOCK_BYPASS_PREFIXES = [
   "/locked",
   "/api/site-unlock",
   "/api/auth",
+  "/api/webhooks",
   // Image proxy must bypass the lock — otherwise Next.js's image optimizer
   // follows the redirect to /locked, receives HTML, and logs
   // "The requested resource isn't a valid image ... received null".
@@ -19,9 +19,7 @@ const LOCK_BYPASS_PREFIXES = [
 ];
 
 function isBypassPath(pathname: string): boolean {
-  return LOCK_BYPASS_PREFIXES.some(
-    (p) => pathname === p || pathname.startsWith(p + "/"),
-  );
+  return LOCK_BYPASS_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
 
 /**
@@ -29,21 +27,20 @@ function isBypassPath(pathname: string): boolean {
  *  1. Site-wide lock: redirect to /locked unless the r1p_site_unlocked cookie is set.
  *  2. Account protection: redirect unauthenticated users away from /account/*.
  */
-export default auth((req) => {
+export default auth(async (req) => {
   const { pathname } = req.nextUrl;
 
   // ── 1. Site-wide lock ────────────────────────────────────────────
   if (!isBypassPath(pathname)) {
-    const cookie = req.cookies.get(UNLOCK_COOKIE);
-    if (!cookie || cookie.value !== "1") {
+    const cookie = req.cookies.get(SITE_UNLOCK_COOKIE);
+    if (!(await isValidSiteUnlockCookieValue(cookie?.value))) {
       return NextResponse.redirect(new URL("/locked", req.nextUrl.origin));
     }
   }
 
   // ── 2. Account route protection ──────────────────────────────────
   const isLoggedIn = !!req.auth;
-  const isPublicAccountRoute =
-    pathname === "/account/login" || pathname === "/account/register";
+  const isPublicAccountRoute = pathname === "/account/login" || pathname === "/account/register";
 
   if (!isLoggedIn && pathname.startsWith("/account") && !isPublicAccountRoute) {
     const loginUrl = new URL("/account/login", req.nextUrl.origin);

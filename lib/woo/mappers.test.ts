@@ -185,10 +185,18 @@ describe("mapCart / mapCartItem", () => {
     const li = mapCartItem(rawItem);
     expect(li.key).toBe("abc123");
     expect(li.productId).toBe("42");
+    expect(li.variationId).toBeUndefined();
     expect(li.quantity).toBe(2);
     expect(li.unitPrice).toEqual({ amount: 4200, currency: "USD" });
     expect(li.subtotal).toEqual({ amount: 8400, currency: "USD" });
     expect(li.attributes).toEqual({ pa_size: "M" });
+  });
+
+  it("marks Woo Store API variation cart lines with their variation id", () => {
+    const li = mapCartItem({ ...rawItem, id: 1111, type: "variation" });
+
+    expect(li.productId).toBe("1111");
+    expect(li.variationId).toBe("1111");
   });
 
   it("maps a whole cart and forwards the token", () => {

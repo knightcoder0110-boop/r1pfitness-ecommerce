@@ -136,13 +136,20 @@ export function useServerCart() {
       if (result?.ok) {
         // Find the WC item that matches the product we just added.
         const localKey = lineKey(params.product.id, params.variation?.id);
-        const wooItem = result.data.items.find(
-          (i) => i.productId === params.product.id,
-        );
+        const wooItem = result.data.items.find((i) => {
+          if (params.variation?.id) {
+            return i.variationId === params.variation.id || i.productId === params.variation.id;
+          }
+          return i.productId === params.product.id;
+        });
         if (wooItem) {
           patchWooKey(localKey, wooItem.key);
         }
+        return;
       }
+
+      localActions.removeItem(lineKey(params.product.id, params.variation?.id));
+      showToast("Couldn't add item — please try again", "error");
     },
 
     /**

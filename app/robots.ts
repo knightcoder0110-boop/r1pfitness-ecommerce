@@ -20,6 +20,7 @@ export default function robots(): MetadataRoute.Robots {
           ROUTES.account,
           ROUTES.search,
           "/api/",
+          "/drop",
           "/drop/",
           "/locked",
         ],

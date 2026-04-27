@@ -77,11 +77,42 @@ export function trackBeginCheckout(params: {
       quantity: i.quantity,
       variationId: i.variationId,
       category: i.category,
-    })
+    }),
   );
-  const valueCents = mapped.reduce(
-    (sum, item) => sum + item.priceCents * (item.quantity ?? 1),
-    0,
-  );
+  const valueCents = mapped.reduce((sum, item) => sum + item.priceCents * (item.quantity ?? 1), 0);
   track({ name: "begin_checkout", payload: { items: mapped, valueCents } });
+}
+
+export function trackPurchase(params: {
+  orderId: string;
+  valueCents: number;
+  items: Array<{
+    productId: string;
+    name: string;
+    price: Money;
+    quantity?: number;
+    variationId?: string | undefined;
+    category?: string | undefined;
+  }>;
+  coupon?: string | undefined;
+}): void {
+  const mapped = params.items.map((i) =>
+    toItemPayload({
+      productId: i.productId,
+      name: i.name,
+      price: i.price,
+      quantity: i.quantity,
+      variationId: i.variationId,
+      category: i.category,
+    }),
+  );
+  track({
+    name: "purchase",
+    payload: {
+      orderId: params.orderId,
+      items: mapped,
+      valueCents: params.valueCents,
+      ...(params.coupon ? { coupon: params.coupon } : {}),
+    },
+  });
 }

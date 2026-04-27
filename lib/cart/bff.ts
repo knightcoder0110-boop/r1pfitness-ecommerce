@@ -70,6 +70,11 @@ export async function bffRemoveItem(params: {
   return apiPost("/api/cart/remove", params);
 }
 
+/** Remove every item from the server cart. */
+export async function bffClearCart(): Promise<CartApiResult | null> {
+  return apiPost("/api/cart/clear", {});
+}
+
 /** Apply a coupon code to the server cart. */
 export async function bffApplyCoupon(code: string): Promise<CartApiResult | null> {
   return apiPost("/api/cart/coupon", { code, action: "apply" });
