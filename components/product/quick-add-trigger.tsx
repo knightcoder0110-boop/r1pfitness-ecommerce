@@ -18,6 +18,21 @@ interface QuickAddTriggerProps {
   className?: string;
 }
 
+function summaryNeedsVariantSelection(product: ProductSummary) {
+  return (
+    (product.variantCount ?? 0) > 0 ||
+    (product.colorOptions?.length ?? 0) > 0 ||
+    (product.sizeOptions?.length ?? 0) > 0
+  );
+}
+
+function fullProductNeedsVariantSelection(product: Product) {
+  return (
+    product.variations.length > 0 ||
+    product.attributes.some((attribute) => attribute.variation && attribute.options.length > 0)
+  );
+}
+
 /**
  * Quick Add trigger — replaces the old "Quick View" strip on the product card
  * with a real action.
@@ -50,10 +65,7 @@ export function QuickAddTrigger({ product, className }: QuickAddTriggerProps) {
   // Heuristic for "this product needs variant selection". `variantCount` is
   // populated from raw.variations.length in the mapper; the option arrays
   // catch products whose attributes are surfaced without explicit variations.
-  const isVariable =
-    (product.variantCount ?? 0) > 0 ||
-    (product.colorOptions?.length ?? 0) > 0 ||
-    (product.sizeOptions?.length ?? 0) > 0;
+  const isVariable = summaryNeedsVariantSelection(product);
 
   const label = isVariable ? "Quick Add" : "Add to Cart";
 
@@ -90,6 +102,15 @@ export function QuickAddTrigger({ product, className }: QuickAddTriggerProps) {
         const full = prefetched ?? (await loadQuickAddProduct(product.slug, product.id));
         if (!full) {
           showToast("Could not add to cart — try opening the product page", "error");
+          return;
+        }
+
+        // Wishlist items saved before variant metadata existed may look like
+        // simple products in the summary. Always trust the fetched product
+        // before doing a one-click add.
+        if (fullProductNeedsVariantSelection(full)) {
+          setPrefetched(full);
+          setModalOpen(true);
           return;
         }
 

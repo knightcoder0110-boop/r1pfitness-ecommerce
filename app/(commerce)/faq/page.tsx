@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowRight, Clock3, Mail } from "lucide-react";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Container } from "@/components/ui/container";
 import { SITE } from "@/lib/constants";
@@ -104,31 +106,71 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
 
 export default function FaqPage() {
   return (
-    <Container className="py-16 sm:py-24">
+    <Container className="py-14 sm:py-20">
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "FAQ" }]} />
 
-      <div className="mx-auto mt-10 max-w-2xl">
-        <header className="mb-12 space-y-3">
-          <h1 className="text-text font-serif text-4xl">Frequently Asked Questions</h1>
-          <p className="text-text/70 text-sm">
-            Can&apos;t find your answer?{" "}
-            <a href="/contact" className="hover:text-gold underline">
-              Contact us
-            </a>
-            .
-          </p>
+      <div className="mx-auto mt-8 max-w-5xl space-y-8 sm:space-y-10">
+        <header className="grid gap-6 border border-border bg-[radial-gradient(circle_at_top_left,rgba(201,168,76,0.14),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))] p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end lg:p-10">
+          <div className="space-y-4">
+            <p className="text-gold font-mono text-[10px] tracking-[0.42em] uppercase">
+              Support Library
+            </p>
+            <h1 className="font-display text-4xl leading-none tracking-[0.04em] text-text sm:text-5xl lg:text-6xl">
+              Clear answers, in readable type.
+            </h1>
+            <p className="max-w-2xl text-base leading-7 text-muted sm:text-lg">
+              Everything customers ask most often about drops, shipping, sizing, payments, and
+              returns. If your answer is not here, reach out directly and we&apos;ll handle it.
+            </p>
+          </div>
+
+          <div className="grid gap-4">
+            <div className="border border-border bg-bg/55 p-5">
+              <div className="flex items-start gap-3">
+                <Clock3 className="text-gold mt-0.5 size-5 shrink-0" aria-hidden />
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+                    Typical reply
+                  </p>
+                  <p className="mt-2 text-lg text-text">Within 1 business day</p>
+                </div>
+              </div>
+            </div>
+            <Link
+              href="/contact"
+              className="group border border-border bg-bg/55 p-5 transition-[border-color,transform,background-color] duration-200 hover:-translate-y-0.5 hover:border-gold/40 hover:bg-bg/80"
+            >
+              <div className="flex items-start gap-3">
+                <Mail className="text-gold mt-0.5 size-5 shrink-0" aria-hidden />
+                <div className="min-w-0 flex-1">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+                    Still need help?
+                  </p>
+                  <p className="mt-2 break-all text-base text-text">{SITE.emails.support}</p>
+                </div>
+                <ArrowRight className="text-subtle size-4 shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden />
+              </div>
+            </Link>
+          </div>
         </header>
 
-        <div className="divide-border divide-y">
+        <div className="space-y-3 sm:space-y-4">
           {FAQS.map(({ q, a }) => (
-            <details key={q} className="group py-5">
-              <summary className="text-text flex cursor-pointer list-none items-start justify-between gap-6 font-serif text-base">
-                <span>{q}</span>
-                <span className="text-muted mt-0.5 shrink-0 font-mono text-lg transition-transform group-open:rotate-45">
+            <details
+              key={q}
+              className="group border border-border bg-bg/45 px-5 py-5 transition-colors duration-200 open:bg-bg/70 sm:px-7 sm:py-6"
+            >
+              <summary className="text-text flex cursor-pointer list-none items-start justify-between gap-6 font-display text-xl leading-8 tracking-[0.03em] sm:text-2xl">
+                <span className="max-w-3xl">{q}</span>
+                <span className="text-muted mt-0.5 shrink-0 font-mono text-2xl transition-transform group-open:rotate-45">
                   +
                 </span>
               </summary>
-              <p className="text-text/70 mt-4 text-sm leading-relaxed">{a}</p>
+              <div className="mt-4 border-t border-border pt-4 sm:mt-5 sm:pt-5">
+                <div className="max-w-3xl text-base leading-8 text-muted sm:text-lg [&_a]:underline [&_a]:underline-offset-4 [&_a]:transition-colors [&_a]:hover:text-gold">
+                  {a}
+                </div>
+              </div>
             </details>
           ))}
         </div>

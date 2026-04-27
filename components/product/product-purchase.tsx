@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { VariantPicker } from "@/components/product/variant-picker";
 import { SizeGuideModal } from "@/components/product/size-guide-modal";
 import { BackInStockForm } from "@/components/product/back-in-stock-form";
+import { ProductWishlistCta } from "@/components/product/product-wishlist-cta";
 import { StickyAddToCart } from "@/components/product/sticky-add-to-cart";
 import { StockScarcity } from "@/components/product/stock-scarcity";
 import { TrustStrip } from "@/components/product/trust-strip";
@@ -167,6 +168,8 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
       >
         {label}
       </Button>
+
+      <ProductWishlistCta product={product} />
 
       {/* Trust signals — shipping / returns / secure / made with aloha */}
       <TrustStrip />

@@ -46,6 +46,10 @@ export default function CheckoutPage() {
       </header>
 
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start lg:gap-16">
+        <aside className="lg:hidden">
+          <CheckoutSidebar />
+        </aside>
+
         {/* Main form */}
         <div>
           <CheckoutForm />

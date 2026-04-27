@@ -98,13 +98,20 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
                   : "Your payment went through. Your confirmation email should land shortly with the final order details."}
               </p>
 
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link href={ROUTES.shop} className={buttonVariants({ size: "lg" })}>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Link
+                  href={ROUTES.shop}
+                  className={buttonVariants({ size: "lg", className: "w-full justify-center sm:w-auto" })}
+                >
                   Continue Shopping
                 </Link>
                 <Link
                   href={ROUTES.contact}
-                  className={buttonVariants({ variant: "outline", size: "lg" })}
+                  className={buttonVariants({
+                    variant: "outline",
+                    size: "lg",
+                    className: "w-full justify-center sm:w-auto",
+                  })}
                 >
                   Need Help?
                 </Link>
@@ -177,7 +184,7 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
 
                 <ul className="divide-border mt-2 divide-y">
                   {order.items.map((item) => (
-                    <li key={item.key} className="flex items-start justify-between gap-4 py-5">
+                    <li key={item.key} className="flex flex-col gap-3 py-5 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                       <div className="min-w-0 space-y-1.5">
                         <p className="font-display text-text truncate text-xl tracking-[0.06em]">
                           {item.name}
@@ -192,7 +199,7 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
                           {item.sku ? ` / ${item.sku}` : ""}
                         </p>
                       </div>
-                      <Price price={item.subtotal} size="sm" className="shrink-0" />
+                      <Price price={item.subtotal} size="sm" className="shrink-0 self-start sm:self-auto" />
                     </li>
                   ))}
                 </ul>
@@ -296,7 +303,7 @@ export default async function ConfirmationPage({ params }: ConfirmationPageProps
                   className="border-border bg-bg/45 text-text hover:border-gold/40 flex items-center gap-3 border px-4 py-3 text-sm transition-colors"
                 >
                   <Mail aria-hidden className="text-gold size-4" />
-                  <span className="truncate font-mono text-[11px] tracking-[0.2em] uppercase">
+                  <span className="min-w-0 break-all font-mono text-[11px] tracking-[0.2em] uppercase">
                     {supportEmail}
                   </span>
                 </a>

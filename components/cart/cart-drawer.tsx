@@ -61,7 +61,7 @@ export function CartDrawer() {
       aria-modal="true"
       aria-label="Cart"
       aria-hidden={!isOpen}
-      className="fixed inset-0 z-[60] pointer-events-none"
+      className="fixed inset-0 z-60 pointer-events-none"
     >
       {/* Backdrop */}
       <button
@@ -70,17 +70,16 @@ export function CartDrawer() {
         onClick={close}
         tabIndex={isOpen ? 0 : -1}
         className={cn(
-          "absolute inset-0 bg-bg/70 backdrop-blur-sm transition-opacity duration-[var(--dur-slow)] ease-out",
+          "absolute inset-0 bg-bg/70 backdrop-blur-sm transition-opacity duration-(--dur-slow) ease-out",
           isOpen ? "pointer-events-auto opacity-100" : "opacity-0",
         )}
       />
 
-      {/* Panel — full-width on mobile, 28rem (--size-drawer) on ≥sm */}
+      {/* Panel — partial-width on mobile so the page behind remains visible. */}
       <aside
         className={cn(
-          "absolute right-0 top-0 flex h-full w-full max-w-full flex-col bg-bg border-l border-border shadow-overlay",
-          "sm:max-w-[var(--size-drawer)]",
-          "transition-transform duration-[var(--dur-slow)] ease-out",
+          "absolute right-0 top-0 flex h-full w-[82vw] max-w-(--size-drawer) flex-col border-l border-border bg-bg shadow-overlay",
+          "transition-transform duration-(--dur-slow) ease-out",
           isOpen ? "pointer-events-auto translate-x-0" : "translate-x-full",
         )}
       >

@@ -266,14 +266,14 @@ export function CheckoutForm() {
         </p>
       )}
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <span className="font-mono text-xs uppercase tracking-[0.2em] text-muted">
           Subtotal:{" "}
           <span className="text-text">
             <Price price={subtotal} />
           </span>
         </span>
-        <Button type="submit" size="lg" disabled={isSubmitting}>
+        <Button type="submit" size="lg" full disabled={isSubmitting} className="sm:w-auto">
           {isSubmitting ? "Processing…" : "Continue to Payment"}
         </Button>
       </div>
