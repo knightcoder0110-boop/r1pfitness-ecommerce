@@ -4,7 +4,12 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/checkout";
-import { markOrderProcessing, markOrderRefunded } from "@/lib/checkout/woo-order";
+import {
+  getWooOrder,
+  markOrderProcessing,
+  markOrderRefunded,
+} from "@/lib/checkout/woo-order";
+import { trackKlaviyoPlacedOrder } from "@/lib/klaviyo";
 import { env } from "@/lib/env";
 
 /**
@@ -53,6 +58,35 @@ export async function POST(req: Request): Promise<NextResponse> {
         if (orderId) {
           await markOrderProcessing(orderId, intent.id);
           console.log(`[stripe-webhook] Order ${orderId} marked processing, tx ${intent.id}`);
+
+          // Fire Klaviyo "Placed Order" event so the configured flow can
+          // send the branded order-confirmation email. Failures here must
+          // never bubble up — Stripe would retry the webhook and we'd
+          // double-process the Woo order. Best-effort, log on error.
+          try {
+            const order = await getWooOrder(orderId);
+            const customerEmail =
+              order?.billing.email ?? intent.metadata?.email ?? intent.receipt_email ?? null;
+            if (order && customerEmail) {
+              await trackKlaviyoPlacedOrder({
+                email: customerEmail,
+                orderId,
+                total: order.total.amount / 100,
+                currency: order.total.currency,
+                firstName: order.billing.firstName || undefined,
+                lastName: order.billing.lastName || undefined,
+                items: order.items.map((li) => ({
+                  productId: li.productId,
+                  sku: li.sku,
+                  name: li.name,
+                  quantity: li.quantity,
+                  unitPrice: li.unitPrice.amount / 100,
+                })),
+              });
+            }
+          } catch (klaviyoErr) {
+            console.error("[stripe-webhook] Klaviyo Placed Order failed:", klaviyoErr);
+          }
         }
         break;
       }

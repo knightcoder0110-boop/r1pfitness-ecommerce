@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { freeShippingAnnouncement } from "@/lib/constants/shipping";
 
 /**
  * AnnouncementBar — dismissible gold scrolling strip above the site header.
@@ -12,7 +13,7 @@ import { useEffect, useState } from "react";
 
 const MESSAGES = [
   "24H DROPS ONLY · ONCE IT'S GONE IT'S GONE",
-  "FREE SHIPPING ON ORDERS OVER $100",
+  freeShippingAnnouncement(),
   "WAIPAHU, HAWAII · EST. 2026",
   "LIMITED EDITION · NEVER RESTOCKED",
   "REBORN 1N PARADISE · R1P FITNESS",

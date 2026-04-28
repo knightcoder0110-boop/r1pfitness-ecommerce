@@ -24,14 +24,19 @@ export function getStripe(): Stripe {
 /**
  * Create a Stripe PaymentIntent for the given amount.
  *
- * @param amountCents - Total in minor units (e.g. 4999 = $49.99).
- * @param currency    - ISO 4217 code, lowercase (e.g. "usd").
- * @param metadata    - Freeform metadata attached to the PaymentIntent.
+ * @param amountCents  - Total in minor units (e.g. 4999 = $49.99).
+ * @param currency     - ISO 4217 code, lowercase (e.g. "usd").
+ * @param metadata     - Freeform metadata attached to the PaymentIntent.
+ * @param receiptEmail - When set, Stripe sends a hosted receipt to this
+ *                       address after the charge succeeds. This is our
+ *                       baseline order confirmation — independent of
+ *                       Klaviyo / Woo email pipelines.
  */
 export async function createPaymentIntent(
   amountCents: number,
   currency: string,
   metadata: Record<string, string> = {},
+  receiptEmail?: string,
 ): Promise<Stripe.PaymentIntent> {
   const stripe = getStripe();
   return stripe.paymentIntents.create({
@@ -39,5 +44,6 @@ export async function createPaymentIntent(
     currency: currency.toLowerCase(),
     automatic_payment_methods: { enabled: true },
     metadata: { ...metadata, site: "merch" },
+    ...(receiptEmail ? { receipt_email: receiptEmail } : {}),
   });
 }

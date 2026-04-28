@@ -2,6 +2,11 @@ import Link from "next/link";
 import type { CartLineItem as LineItem } from "@/lib/woo/types";
 import { Price } from "@/components/ui/price";
 import { ROUTES } from "@/lib/constants";
+import {
+  calculateShippingCents,
+  freeShippingThresholdLabel,
+} from "@/lib/constants/shipping";
+import { formatMoney } from "@/lib/utils/format";
 
 interface OrderSummaryProps {
   items: LineItem[];
@@ -10,6 +15,8 @@ interface OrderSummaryProps {
 }
 
 export function OrderSummary({ items, subtotal, className }: OrderSummaryProps) {
+  const shippingCents = calculateShippingCents(subtotal.amount);
+  const currency = subtotal.currency;
   return (
     <aside
       aria-label="Order summary"
@@ -57,13 +64,19 @@ export function OrderSummary({ items, subtotal, className }: OrderSummaryProps) 
         </div>
         <div className="flex justify-between">
           <dt className="text-muted">Shipping</dt>
-          <dd className="text-muted">Calculated</dd>
+          <dd className="text-text tabular-nums">
+            {shippingCents === 0 ? "Free" : formatMoney({ amount: shippingCents, currency })}
+          </dd>
         </div>
         <div className="flex justify-between">
           <dt className="text-muted">Taxes</dt>
-          <dd className="text-muted">Calculated</dd>
+          <dd className="text-muted">Calculated next step</dd>
         </div>
       </dl>
+
+      <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-subtle">
+        Free shipping over {freeShippingThresholdLabel()}
+      </p>
 
       <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-subtle">
         <Link href={ROUTES.cart} className="underline underline-offset-2 hover:text-text">

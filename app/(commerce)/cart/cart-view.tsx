@@ -15,6 +15,11 @@ import {
 } from "@/lib/cart";
 import { formatMoney } from "@/lib/utils/format";
 import { ROUTES } from "@/lib/constants";
+import {
+  FREE_SHIPPING_THRESHOLD_CENTS,
+  calculateShippingCents,
+  freeShippingThresholdLabel,
+} from "@/lib/constants/shipping";
 
 /**
  * Client view for `/cart`. Split from the server page so `<CartPage />` can
@@ -30,6 +35,19 @@ export function CartView() {
   const subtotal = useCartSubtotal();
   const count = useCartItemCount();
   const coupon = useCartCoupon();
+
+  // Apply coupon discount before computing shipping (matches checkout server logic).
+  const discountedSubtotalCents = Math.max(
+    0,
+    subtotal.amount - (coupon?.discount.amount ?? 0),
+  );
+  const shippingCents = calculateShippingCents(discountedSubtotalCents);
+  const totalCents = discountedSubtotalCents + shippingCents;
+  const remainingForFreeCents = Math.max(
+    0,
+    FREE_SHIPPING_THRESHOLD_CENTS - discountedSubtotalCents,
+  );
+  const currency = subtotal.currency;
 
   if (!hydrated) {
     return (
@@ -96,7 +114,20 @@ export function CartView() {
           )}
           <div className="flex justify-between">
             <dt className="text-muted">Shipping</dt>
-            <dd className="text-muted">Calculated at checkout</dd>
+            <dd className="text-text tabular-nums">
+              {shippingCents === 0 ? "Free" : formatMoney({ amount: shippingCents, currency })}
+            </dd>
+          </div>
+          {remainingForFreeCents > 0 && (
+            <div className="text-[10px] tracking-[0.2em] text-subtle">
+              {formatMoney({ amount: remainingForFreeCents, currency })} away from free shipping
+            </div>
+          )}
+          <div className="flex justify-between border-t border-border pt-3 text-text">
+            <dt>Total</dt>
+            <dd className="tabular-nums">
+              <Price price={{ amount: totalCents, currency }} size="md" />
+            </dd>
           </div>
         </dl>
 
@@ -107,7 +138,7 @@ export function CartView() {
         </Link>
 
         <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-subtle">
-          Taxes calculated at checkout &middot; Secure payment
+          Free shipping over {freeShippingThresholdLabel()} &middot; Taxes calculated at checkout
         </p>
       </aside>
     </div>

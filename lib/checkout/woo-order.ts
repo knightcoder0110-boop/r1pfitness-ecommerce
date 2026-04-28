@@ -3,6 +3,10 @@ import "server-only";
 import { adminFetch } from "@/lib/woo/client";
 import type { Order } from "@/lib/woo/types";
 import type { CheckoutRequest } from "./types";
+import {
+  STANDARD_SHIPPING_METHOD_ID,
+  STANDARD_SHIPPING_METHOD_TITLE,
+} from "@/lib/constants/shipping";
 
 /**
  * Woo order line-item shape expected by the REST API.
@@ -48,6 +52,11 @@ interface CreateOrderPayload {
   billing: Record<string, string>;
   shipping: Record<string, string>;
   line_items: WooLineItem[];
+  shipping_lines?: Array<{
+    method_id: string;
+    method_title: string;
+    total: string;
+  }>;
   coupon_lines?: Array<{ code: string }>;
   meta_data?: Array<{ key: string; value: string }>;
 }
@@ -84,16 +93,26 @@ function toWooShipping(addr: CheckoutRequest["billing"]): Record<string, string>
 /**
  * Create a WooCommerce order in "pending" status (not yet paid).
  *
- * The order stores all line items from the local cart at the current unit
- * price. Stripe handles payment — once `payment_intent.succeeded` fires, the
+ * The order stores all line items at their cart unit price plus a flat
+ * shipping line. WooCommerce computes any applicable tax server-side
+ * based on the billing/shipping address and the configured tax rates;
+ * the final `total` returned reflects subtotal + shipping + tax and is
+ * the authoritative amount to charge via Stripe.
+ *
+ * Stripe handles payment — once `payment_intent.succeeded` fires, the
  * webhook (app/api/webhooks/stripe/route.ts) transitions the order to
  * "processing".
  *
- * Returns the created order's numeric ID (as a string) and the total.
+ * @param req           Validated checkout request (server-trusted items)
+ * @param shippingCents Shipping charge in minor units (already computed
+ *                      from `calculateShippingCents(subtotal)`)
+ * @returns             Order ID, currency, and the Woo-computed total
+ *                      in cents (subtotal + shipping + tax)
  */
 export async function createWooOrder(
   req: CheckoutRequest,
-): Promise<{ orderId: string; currency: string }> {
+  shippingCents: number,
+): Promise<{ orderId: string; currency: string; totalCents: number }> {
   const shipping = req.shipping ?? req.billing;
   const currency = req.items[0]?.unitPrice.currency ?? "USD";
 
@@ -110,6 +129,8 @@ export async function createWooOrder(
     } as WooLineItem;
   });
 
+  const shippingTotalDollars = (shippingCents / 100).toFixed(2);
+
   const payload: CreateOrderPayload = {
     status: "pending",
     currency,
@@ -120,6 +141,14 @@ export async function createWooOrder(
     billing: toWooBilling(req.email, req.billing),
     shipping: toWooShipping(shipping),
     line_items: lineItems,
+    shipping_lines: [
+      {
+        method_id: STANDARD_SHIPPING_METHOD_ID,
+        method_title:
+          shippingCents === 0 ? "Free Shipping" : STANDARD_SHIPPING_METHOD_TITLE,
+        total: shippingTotalDollars,
+      },
+    ],
     ...(req.coupons?.length
       ? { coupon_lines: req.coupons.map((code) => ({ code })) }
       : {}),
@@ -136,7 +165,10 @@ export async function createWooOrder(
     body: payload,
   });
 
-  return { orderId: String(raw.id), currency };
+  // Woo's `total` is a decimal string in major units; convert to cents.
+  const totalCents = Math.round(parseFloat(raw.total) * 100);
+
+  return { orderId: String(raw.id), currency, totalCents };
 }
 
 /**

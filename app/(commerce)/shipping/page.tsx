@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Container } from "@/components/ui/container";
 import { SITE } from "@/lib/constants";
+import {
+  flatShippingRateLabel,
+  freeShippingThresholdLabel,
+} from "@/lib/constants/shipping";
 
 export const metadata: Metadata = {
   title: "Shipping",
@@ -10,10 +14,16 @@ export const metadata: Metadata = {
 };
 
 const DOMESTIC = [
-  { method: "Standard (USPS Ground)", time: "5–8 business days", cost: "Free on orders $75+" },
-  { method: "Standard (USPS Ground)", time: "5–8 business days", cost: "$6.99 under $75" },
-  { method: "Priority (USPS Priority Mail)", time: "2–3 business days", cost: "$12.99" },
-  { method: "Express (USPS Priority Express)", time: "1–2 business days", cost: "$24.99" },
+  {
+    method: "Standard (USPS Ground)",
+    time: "5–8 business days",
+    cost: `Free on orders ${freeShippingThresholdLabel()}+`,
+  },
+  {
+    method: "Standard (USPS Ground)",
+    time: "5–8 business days",
+    cost: `${flatShippingRateLabel()} flat on orders under ${freeShippingThresholdLabel()}`,
+  },
 ] as const;
 
 const INTERNATIONAL = [
@@ -63,8 +73,9 @@ export default function ShippingPage() {
             </table>
           </div>
           <p className="mt-4">
-            Free standard shipping is automatically applied to orders totalling $75 or more before
-            tax.
+            Free standard shipping is automatically applied to orders totalling{" "}
+            {freeShippingThresholdLabel()} or more before tax. Orders under that threshold ship for
+            a flat {flatShippingRateLabel()}.
           </p>
         </Section>
 

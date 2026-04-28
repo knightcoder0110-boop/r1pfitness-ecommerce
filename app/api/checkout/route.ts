@@ -8,6 +8,7 @@ import {
   createPaymentIntent,
   createWooOrder,
 } from "@/lib/checkout";
+import { calculateShippingCents } from "@/lib/constants/shipping";
 import { assertSameOrigin } from "@/lib/api/request-security";
 import { checkRateLimit } from "@/lib/api/ratelimit";
 import { getCart } from "@/lib/woo/cart";
@@ -34,10 +35,16 @@ import type { CartLineItem } from "@/lib/woo/types";
  *  2. Validate request body with Zod (address + informational items).
  *  3. Load server cart via `getCart()`. Reject if empty.
  *  4. Cross-check client item IDs + quantities against server cart.
- *  5. Compute total from SERVER cart line items.
- *  6. Create Woo order with SERVER items → orderId.
- *  7. Create Stripe PaymentIntent using server total + metadata.orderId.
- *  8. Return { clientSecret, orderId, totalAmount, currency }.
+ *  5. Compute subtotal from SERVER cart line items.
+ *  6. Derive shipping from `calculateShippingCents(subtotal)` (flat rate
+ *     vs. free-over-threshold — single source of truth).
+ *  7. Create Woo order with SERVER items + shipping line. Woo calculates
+ *     tax based on the billing address + configured tax rates and returns
+ *     the final order total (subtotal + shipping + tax).
+ *  8. Sanity-check Woo total ≥ subtotal + shipping; else 502.
+ *  9. Create Stripe PaymentIntent for the Woo total with
+ *     `receipt_email` set so Stripe auto-sends an order confirmation.
+ * 10. Return { clientSecret, orderId, totalAmount, currency }.
  *
  * The Stripe webhook (app/api/webhooks/stripe/route.ts) listens for
  * `payment_intent.succeeded` and transitions the Woo order to "processing".
@@ -130,19 +137,26 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     coupons: data.coupons,
   };
 
-  // Compute total from server cart items (minor units).
-  const totalAmount = computeOrderTotal(trustedItems);
-  if (totalAmount <= 0) {
+  // Compute subtotal from server cart items (minor units), derive flat-rate
+  // shipping from a single source of truth, and let WooCommerce calculate
+  // tax server-side based on the billing address. The Woo-returned `total`
+  // (subtotal + shipping + tax) is what we charge via Stripe.
+  const subtotalCents = computeOrderTotal(trustedItems);
+  if (subtotalCents <= 0) {
     return NextResponse.json({ error: "Order total must be > 0" }, { status: 422 });
   }
 
+  const shippingCents = calculateShippingCents(subtotalCents);
   const currency = serverCart.currency;
 
-  // Create Woo order (pending, not yet paid).
+  // Create Woo order (pending, not yet paid). Woo computes tax based on
+  // billing/shipping address + shipping line and returns the final total.
   let orderId: string;
+  let totalAmount: number;
   try {
-    const result = await createWooOrder(trustedRequest);
+    const result = await createWooOrder(trustedRequest, shippingCents);
     orderId = result.orderId;
+    totalAmount = result.totalCents;
   } catch (err) {
     console.error("[checkout] Woo order creation failed:", err);
     return NextResponse.json(
@@ -151,13 +165,30 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // Create Stripe PaymentIntent.
+  // Sanity check: Woo's total must be at least subtotal + shipping. If a
+  // misconfigured tax rate or unexpected discount drops the total below
+  // that floor, abort instead of charging the wrong amount.
+  const expectedFloor = subtotalCents + shippingCents;
+  if (totalAmount < expectedFloor) {
+    console.error(
+      `[checkout] Woo total ${totalAmount} below expected floor ${expectedFloor} for order ${orderId}`,
+    );
+    return NextResponse.json(
+      { error: "Order total mismatch. Please refresh and try again." },
+      { status: 502 },
+    );
+  }
+
+  // Create Stripe PaymentIntent. `receipt_email` ensures Stripe sends a
+  // hosted receipt automatically — our baseline order confirmation.
   let clientSecret: string;
   try {
-    const intent = await createPaymentIntent(totalAmount, currency, {
-      orderId,
-      email: data.email,
-    });
+    const intent = await createPaymentIntent(
+      totalAmount,
+      currency,
+      { orderId, email: data.email },
+      data.email,
+    );
     clientSecret = intent.client_secret!;
   } catch (err) {
     console.error("[checkout] Stripe PaymentIntent creation failed:", err);

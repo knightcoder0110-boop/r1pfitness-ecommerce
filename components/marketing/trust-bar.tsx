@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils/cn";
 import { Section } from "@/components/ui/section";
+import { freeShippingThresholdLabel } from "@/lib/constants/shipping";
 
 /* ─── Trust Item Definition ─────────────────────────────────────────────── */
 export interface TrustItem {
@@ -16,7 +17,7 @@ const DEFAULT_ITEMS: TrustItem[] = [
       </svg>
     ),
     stat: "FREE",
-    label: "Shipping over $100",
+    label: `Shipping over ${freeShippingThresholdLabel()}`,
   },
   {
     icon: (
