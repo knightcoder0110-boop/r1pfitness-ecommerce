@@ -42,6 +42,9 @@ interface CreateOrderPayload {
   currency: string;
   customer_note?: string;
   set_paid: false;
+  created_via?: string;
+  payment_method?: string;
+  payment_method_title?: string;
   billing: Record<string, string>;
   shipping: Record<string, string>;
   line_items: WooLineItem[];
@@ -110,6 +113,9 @@ export async function createWooOrder(
   const payload: CreateOrderPayload = {
     status: "pending",
     currency,
+    created_via: "checkout",
+    payment_method: "stripe",
+    payment_method_title: "Credit Card (Stripe)",
     set_paid: false,
     billing: toWooBilling(req.email, req.billing),
     shipping: toWooShipping(shipping),
@@ -117,7 +123,11 @@ export async function createWooOrder(
     ...(req.coupons?.length
       ? { coupon_lines: req.coupons.map((code) => ({ code })) }
       : {}),
-    meta_data: [{ key: "_checkout_source", value: "r1p-storefront" }],
+    meta_data: [
+      { key: "_checkout_source", value: "r1p-storefront" },
+      { key: "_wc_order_attribution_source_type", value: "utm" },
+      { key: "_wc_order_attribution_utm_source", value: "(direct)" },
+    ],
   };
 
   const raw = await adminFetch<RawWooOrder>({
@@ -199,7 +209,10 @@ export async function getWooOrder(orderId: string): Promise<Order | null> {
 }
 
 /** Transition a pending Woo order to "processing" after payment succeeds. */
-export async function markOrderProcessing(orderId: string): Promise<void> {
+export async function markOrderProcessing(
+  orderId: string,
+  intentId?: string,
+): Promise<void> {
   const order = await getWooOrder(orderId);
   if (order?.status === "processing" || order?.status === "completed") {
     return;
@@ -208,7 +221,25 @@ export async function markOrderProcessing(orderId: string): Promise<void> {
   await adminFetch({
     path: `/orders/${orderId}`,
     method: "PUT",
-    body: { status: "processing" },
+    body: {
+      status: "processing",
+      ...(intentId ? { transaction_id: intentId } : {}),
+    },
+    timeoutMs: 15_000,
+  });
+}
+
+/** Transition a Woo order to "refunded" after a charge.refunded event. */
+export async function markOrderRefunded(orderId: string): Promise<void> {
+  const order = await getWooOrder(orderId);
+  if (order?.status === "refunded") {
+    return;
+  }
+
+  await adminFetch({
+    path: `/orders/${orderId}`,
+    method: "PUT",
+    body: { status: "refunded" },
     timeoutMs: 15_000,
   });
 }

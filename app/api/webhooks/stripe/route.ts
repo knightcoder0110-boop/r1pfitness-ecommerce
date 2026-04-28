@@ -2,8 +2,9 @@ import "server-only";
 
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import type Stripe from "stripe";
 import { getStripe } from "@/lib/checkout";
-import { markOrderProcessing } from "@/lib/checkout/woo-order";
+import { markOrderProcessing, markOrderRefunded } from "@/lib/checkout/woo-order";
 import { env } from "@/lib/env";
 
 /**
@@ -50,8 +51,8 @@ export async function POST(req: Request): Promise<NextResponse> {
         const intent = event.data.object;
         const orderId = intent.metadata?.orderId;
         if (orderId) {
-          await markOrderProcessing(orderId);
-          console.log(`[stripe-webhook] Order ${orderId} marked processing`);
+          await markOrderProcessing(orderId, intent.id);
+          console.log(`[stripe-webhook] Order ${orderId} marked processing, tx ${intent.id}`);
         }
         break;
       }
@@ -59,6 +60,16 @@ export async function POST(req: Request): Promise<NextResponse> {
         const intent = event.data.object;
         const orderId = intent.metadata?.orderId;
         console.warn(`[stripe-webhook] Payment failed for order ${orderId ?? "unknown"}`);
+        break;
+      }
+      case "charge.refunded": {
+        const charge = event.data.object;
+        const orderId = (charge.metadata as Record<string, string> | undefined)?.orderId
+          ?? (charge.payment_intent as Stripe.PaymentIntent | null)?.metadata?.orderId;
+        if (orderId) {
+          await markOrderRefunded(orderId);
+          console.log(`[stripe-webhook] Order ${orderId} marked refunded`);
+        }
         break;
       }
       default:

@@ -38,6 +38,6 @@ export async function createPaymentIntent(
     amount: amountCents,
     currency: currency.toLowerCase(),
     automatic_payment_methods: { enabled: true },
-    metadata,
+    metadata: { ...metadata, site: "merch" },
   });
 }
