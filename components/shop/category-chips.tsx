@@ -4,6 +4,27 @@ import { getCatalog } from "@/lib/catalog";
 import { DEFAULT_SORT } from "@/lib/shop";
 import { cn } from "@/lib/utils/cn";
 
+/**
+ * Maps a WooCommerce category slug to a user-facing display override.
+ * Woo slugs listed here are hidden from the chip row and replaced by the
+ * virtual entry so users see the brand-level label + URL.
+ */
+const CATEGORY_DISPLAY_OVERRIDES: Record<
+  string,
+  { label: string; href: string; activeWhen: string[] }
+> = {
+  /**
+   * The WooCommerce category "bundles" (id=449) is the backing store for the
+   * mystery-box drop. Customers should see "Mystery Boxes" at /shop/mystery-boxes,
+   * not the internal "Bundles" slug.
+   */
+  bundles: {
+    label: "Mystery Boxes",
+    href: ROUTES.category("mystery-boxes"),
+    activeWhen: ["mystery-boxes", "bundles"],
+  },
+};
+
 interface CategoryChipsProps {
   /** Currently active category slug, or null when on /shop (All). */
   activeSlug: string | null;
@@ -37,12 +58,17 @@ export async function CategoryChips({ activeSlug, currentSort, className }: Cate
       href: `${ROUTES.shop}${sortSuffix}`,
       active: activeSlug === null,
     },
-    ...categories.map((c) => ({
-      key: c.slug,
-      label: c.name,
-      href: `${ROUTES.category(c.slug)}${sortSuffix}`,
-      active: c.slug === activeSlug,
-    })),
+    ...categories.map((c) => {
+      const override = CATEGORY_DISPLAY_OVERRIDES[c.slug];
+      return {
+        key: c.slug,
+        label: override ? override.label : c.name,
+        href: override ? `${override.href}${sortSuffix}` : `${ROUTES.category(c.slug)}${sortSuffix}`,
+        active: override
+          ? override.activeWhen.includes(activeSlug ?? "")
+          : c.slug === activeSlug,
+      };
+    }),
   ];
 
   return (
