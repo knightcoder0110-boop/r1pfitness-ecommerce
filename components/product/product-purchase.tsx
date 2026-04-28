@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { VariantPicker } from "@/components/product/variant-picker";
 import { SizeGuideModal } from "@/components/product/size-guide-modal";
 import { BackInStockForm } from "@/components/product/back-in-stock-form";
-import { ProductWishlistCta } from "@/components/product/product-wishlist-cta";
+import { WishlistIconButton } from "@/components/product/wishlist-icon-button";
 import { StickyAddToCart } from "@/components/product/sticky-add-to-cart";
 import { StockScarcity } from "@/components/product/stock-scarcity";
 import { TrustStrip } from "@/components/product/trust-strip";
@@ -159,17 +159,19 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
           onChange={setSelected}
         />
       )}
-      <Button
-        ref={addBtnRef}
-        size="lg"
-        disabled={disabled}
-        onClick={handleAdd}
-        className="w-full"
-      >
-        {label}
-      </Button>
-
-      <ProductWishlistCta product={product} />
+      {/* ATC row: main button + wishlist icon side by side */}
+      <div className="flex gap-2">
+        <Button
+          ref={addBtnRef}
+          size="lg"
+          disabled={disabled}
+          onClick={handleAdd}
+          className="flex-1"
+        >
+          {label}
+        </Button>
+        <WishlistIconButton product={product} />
+      </div>
 
       {/* Trust signals — shipping / returns / secure / made with aloha */}
       <TrustStrip />

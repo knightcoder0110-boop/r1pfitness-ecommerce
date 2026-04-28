@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui/button";
 import { useServerCart } from "@/lib/cart";
 import { useToastStore } from "@/lib/toast";
 import { trackAddToCart } from "@/lib/analytics";
-import type { Product, ProductVariation } from "@/lib/woo/types";
+import { selectWishlistHydrated, useWishlistStore } from "@/lib/wishlist/store";
+import type { Product, ProductSummary, ProductVariation } from "@/lib/woo/types";
 
 interface StickyAddToCartProps {
   /** The ref whose intersection we watch — point this at the real Add button. */
@@ -18,12 +20,29 @@ interface StickyAddToCartProps {
   label: string; // mirrors the main button label
 }
 
+function toSummary(p: Product): ProductSummary {
+  const colors = p.attributes.find((a) => /color/i.test(a.name))?.options ?? [];
+  const sizes = p.attributes.find((a) => /size/i.test(a.name))?.options ?? [];
+  return {
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    price: p.price,
+    ...(p.compareAtPrice ? { compareAtPrice: p.compareAtPrice } : {}),
+    ...(p.images[0] ? { image: p.images[0] } : {}),
+    stockStatus: p.stockStatus,
+    isLimited: Boolean(p.meta.isLimited),
+    ...(colors.length ? { colorOptions: colors } : {}),
+    ...(sizes.length ? { sizeOptions: sizes } : {}),
+  };
+}
+
 /**
  * Full-width sticky bar that slides up from the bottom whenever the primary
  * Add-to-Cart button scrolls out of the viewport.
  *
- * Works on both mobile (always visible at bottom) and desktop (same bar).
- * Uses IntersectionObserver so there's no scroll listener overhead.
+ * Contains: product name + price, wishlist toggle, and Add to Cart button.
+ * Uses IntersectionObserver — no scroll listener overhead.
  */
 export function StickyAddToCart({
   watchRef,
@@ -37,6 +56,12 @@ export function StickyAddToCart({
   const [isPending, setIsPending] = useState(false);
   const { addItem, open: openCart } = useServerCart();
   const showToast = useToastStore((s) => s.show);
+
+  // Wishlist
+  const hydrated = useWishlistStore(selectWishlistHydrated);
+  const wished = useWishlistStore((s) => s.has(product.id));
+  const toggleWishlist = useWishlistStore((s) => s.toggle);
+  const isWished = hydrated && wished;
 
   // Watch the real Add button — show this bar only when it's off-screen.
   useEffect(() => {
@@ -69,6 +94,15 @@ export function StickyAddToCart({
     });
   }
 
+  function handleWishlist() {
+    const summary = toSummary(product);
+    const added = toggleWishlist(summary);
+    showToast(
+      added ? `${product.name} saved to your wishlist` : `${product.name} removed from wishlist`,
+      added ? "success" : "error",
+    );
+  }
+
   const price = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: (matchingVariation?.price ?? product.price).currency,
@@ -80,9 +114,9 @@ export function StickyAddToCart({
       aria-label="Quick add to cart"
       className={cn(
         // Base: fixed, full-width, bottom, above cart drawer z-index
-        "fixed bottom-0 inset-x-0 z-[35]",
+        "fixed bottom-0 inset-x-0 z-35",
         "border-t border-border bg-bg/95 backdrop-blur-md",
-        "px-4 py-3 flex items-center gap-3",
+        "px-4 py-3 flex items-center gap-2 sm:gap-3",
         // Slide transition
         "translate-y-full transition-transform duration-300 ease-out",
         visible && "translate-y-0",
@@ -103,12 +137,31 @@ export function StickyAddToCart({
         </div>
       </div>
 
-      {/* CTA */}
+      {/* Wishlist toggle */}
+      <button
+        type="button"
+        onClick={handleWishlist}
+        aria-label={isWished ? `Remove ${product.name} from wishlist` : `Save ${product.name} to wishlist`}
+        aria-pressed={isWished}
+        className={cn(
+          "shrink-0 size-10 flex items-center justify-center rounded-sm border",
+          "transition-[transform,color,border-color,background-color] duration-200 cursor-pointer",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-bg focus-visible:ring-offset-1",
+          "active:translate-y-px",
+          isWished
+            ? "border-gold/50 bg-gold/10 text-gold"
+            : "border-border text-muted hover:border-gold/40 hover:text-gold hover:bg-gold/8",
+        )}
+      >
+        <Heart aria-hidden className={cn("size-4", isWished && "fill-current")} />
+      </button>
+
+      {/* ATC */}
       <Button
         size="sm"
         disabled={disabled || isPending}
         onClick={handleAdd}
-        className="shrink-0 min-w-[120px]"
+        className="shrink-0 min-w-27.5 sm:min-w-32.5"
       >
         {isPending ? "Adding…" : label}
       </Button>

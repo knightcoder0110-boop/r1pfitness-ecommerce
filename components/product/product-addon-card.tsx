@@ -5,56 +5,66 @@ import Image from "next/image";
 import { cn } from "@/lib/utils/cn";
 import { useServerCart } from "@/lib/cart";
 import { useToastStore } from "@/lib/toast";
-import type { Product, ProductVariation } from "@/lib/woo/types";
+import { QuickAddModal } from "@/components/product/quick-add-modal";
+import type { Product, ProductSummary } from "@/lib/woo/types";
 
 interface ProductAddonCardProps {
   product: Product;
 }
 
+function productToSummary(p: Product): ProductSummary {
+  const colors = p.attributes.find((a) => /color/i.test(a.name))?.options ?? [];
+  const sizes = p.attributes.find((a) => /size/i.test(a.name))?.options ?? [];
+  return {
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    price: p.price,
+    ...(p.compareAtPrice ? { compareAtPrice: p.compareAtPrice } : {}),
+    ...(p.images[0] ? { image: p.images[0] } : {}),
+    ...(p.images[1] ? { hoverImage: p.images[1] } : {}),
+    stockStatus: p.stockStatus,
+    isLimited: Boolean(p.meta.isLimited),
+    ...(colors.length ? { colorOptions: colors } : {}),
+    ...(sizes.length ? { sizeOptions: sizes } : {}),
+    ...(p.variations.length ? { variantCount: p.variations.length } : {}),
+  };
+}
+
 /**
  * Compact add-on card for the "Complete the Look" rail.
  *
- * - Simple products (no variation attributes): Add button is enabled immediately.
- * - Variable products (e.g. tees with Size): shows compact size pills.
- *   The Add button is disabled until every required attribute is selected,
- *   then the resolved variation is passed to addItem.
+ * Simple products: the "+" button adds directly to cart.
+ * Variable products: the "+" button opens a QuickAddModal so the customer
+ * can pick their size/color without leaving the PDP.
+ *
+ * No inline variant pickers — keeps the rail lean and fast.
  */
 export function ProductAddonCard({ product }: ProductAddonCardProps) {
   const { addItem, open: openCart } = useServerCart();
   const showToast = useToastStore((s) => s.show);
   const [pending, setPending] = useState(false);
   const [added, setAdded] = useState(false);
-  const [selected, setSelected] = useState<Record<string, string>>({});
+  const [modalOpen, setModalOpen] = useState(false);
 
-  // Attributes that drive variation selection (e.g. Size, Color).
-  const variationAttrs = useMemo(
-    () => product.attributes.filter((a) => a.variation),
+  const isVariable = useMemo(
+    () => product.attributes.some((a) => a.variation),
     [product.attributes],
   );
 
-  const isVariable = variationAttrs.length > 0;
-  const allSelected = variationAttrs.every((a) => Boolean(selected[a.id]));
-
-  // Resolve the matching ProductVariation from the current selection.
-  const matchingVariation = useMemo<ProductVariation | undefined>(() => {
-    if (!isVariable || !allSelected) return undefined;
-    return product.variations.find((v) =>
-      Object.entries(selected).every(([k, val]) => v.attributes[k] === val),
-    );
-  }, [product.variations, isVariable, allSelected, selected]);
-
-  const outOfStock =
-    product.stockStatus === "out_of_stock" ||
-    matchingVariation?.stockStatus === "out_of_stock";
-
-  // For variable products the button is disabled until a complete selection is made.
-  const canAdd = !outOfStock && (!isVariable || (allSelected && Boolean(matchingVariation)));
+  const outOfStock = product.stockStatus === "out_of_stock";
+  const canAdd = !outOfStock;
 
   async function handleQuickAdd() {
     if (pending || added || !canAdd) return;
+    if (isVariable) {
+      setModalOpen(true);
+      return;
+    }
+    // Simple product: add directly
     setPending(true);
     try {
-      await addItem({ product, variation: matchingVariation, quantity: 1 });
+      await addItem({ product, variation: undefined, quantity: 1 });
       openCart();
       showToast(`${product.name} added to your cart 🤙`, "success");
       setAdded(true);
@@ -64,17 +74,16 @@ export function ProductAddonCard({ product }: ProductAddonCardProps) {
     }
   }
 
-  const displayImage = matchingVariation?.image ?? product.images[0];
+  const displayImage = product.images[0];
 
   const price = new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: (matchingVariation?.price ?? product.price).currency,
-  }).format((matchingVariation?.price ?? product.price).amount / 100);
+    currency: product.price.currency,
+  }).format(product.price.amount / 100);
 
   return (
-    <article className="flex flex-col gap-2 p-3 border border-border hover:border-border-strong transition-colors bg-surface-1 hover:bg-surface-2 rounded-sm">
-      {/* Top row: thumbnail + name/price + add button */}
-      <div className="flex items-center gap-3">
+    <>
+      <article className="flex items-center gap-3 p-3 border border-border hover:border-border-strong transition-colors bg-surface-1 hover:bg-surface-2 rounded-sm">
         {/* Thumbnail */}
         <div className="relative shrink-0 size-14 overflow-hidden rounded-sm bg-surface-2">
           {displayImage ? (
@@ -95,9 +104,14 @@ export function ProductAddonCard({ product }: ProductAddonCardProps) {
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-text truncate leading-tight">
             {product.name}
           </p>
-          <p className="mt-0.5 font-display text-sm tracking-wider text-gold">
-            {price}
-          </p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="font-display text-sm tracking-wider text-gold">{price}</span>
+            {isVariable && (
+              <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-faint">
+                Choose options
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Add button */}
@@ -105,17 +119,20 @@ export function ProductAddonCard({ product }: ProductAddonCardProps) {
           type="button"
           onClick={handleQuickAdd}
           disabled={!canAdd || pending}
-          aria-label={`Add ${product.name} to cart`}
-          title={isVariable && !allSelected ? "Select a size first" : undefined}
+          aria-label={
+            isVariable
+              ? `Choose options for ${product.name}`
+              : `Add ${product.name} to cart`
+          }
           className={cn(
             "shrink-0 size-8 flex items-center justify-center rounded-sm",
-            "border transition-all duration-200",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold",
+            "transition-[transform,filter,background-color,box-shadow,border-color,opacity] duration-200",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-1 focus-visible:ring-offset-bg",
             added
-              ? "border-gold bg-gold/15 text-gold cursor-default"
+              ? "border border-gold bg-gold/15 text-gold cursor-default"
               : !canAdd
-              ? "border-border text-faint cursor-not-allowed opacity-50"
-              : "border-border-strong bg-surface-2 text-muted hover:border-gold hover:text-gold hover:bg-gold/10 cursor-pointer",
+              ? "border border-border text-faint cursor-not-allowed opacity-50"
+              : "bg-[linear-gradient(170deg,#E6C56A_0%,#D4AF55_28%,#C9A84C_55%,#A88934_100%)] text-bg shadow-metallic hover:brightness-[1.07] hover:shadow-metallic-hover hover:-translate-y-px cursor-pointer",
           )}
         >
           {added ? (
@@ -127,50 +144,28 @@ export function ProductAddonCard({ product }: ProductAddonCardProps) {
               <circle cx="12" cy="12" r="10" strokeOpacity={0.25} />
               <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" />
             </svg>
+          ) : isVariable ? (
+            // Chevron → replaced with + so it reads as "add" not "navigate"
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={2.5} className="size-3.5" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 3v10M3 8h10" />
+            </svg>
           ) : (
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={2} className="size-3.5" aria-hidden>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 3v10M3 8h10" />
             </svg>
           )}
         </button>
-      </div>
+      </article>
 
-      {/* Mini variation picker — only shown for variable products */}
+      {/* Quick-add modal — only mounted for variable products */}
       {isVariable && (
-        <div className="flex flex-col gap-1.5 pl-[68px]">
-          {variationAttrs.map((attr) => (
-            <div key={attr.id} className="flex flex-wrap gap-1.5">
-              {attr.options.map((option) => {
-                const isSelected = selected[attr.id] === option;
-                return (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() =>
-                      setSelected((prev) => ({ ...prev, [attr.id]: option }))
-                    }
-                    aria-pressed={isSelected}
-                    className={cn(
-                      "min-w-[32px] rounded-sm border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.15em] transition-colors cursor-pointer",
-                      "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold",
-                      isSelected
-                        ? "border-gold bg-gold/10 text-gold"
-                        : "border-border text-muted hover:border-border-strong hover:text-text",
-                    )}
-                  >
-                    {option}
-                  </button>
-                );
-              })}
-            </div>
-          ))}
-          {isVariable && !allSelected && (
-            <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-faint">
-              Select {variationAttrs.map((a) => a.name.toLowerCase()).join(" & ")} to add
-            </p>
-          )}
-        </div>
+        <QuickAddModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          summary={productToSummary(product)}
+          prefetchedProduct={product}
+        />
       )}
-    </article>
+    </>
   );
 }

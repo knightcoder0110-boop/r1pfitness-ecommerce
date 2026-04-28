@@ -35,14 +35,18 @@ export function VariantPicker({ attributes, value, onChange }: VariantPickerProp
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col divide-y divide-border/40">
       {variationAttrs.map((attr) => {
         const selected = selection[attr.id];
         return (
-          <fieldset key={attr.id} className="flex flex-col gap-2">
-            <legend className="font-mono text-xs uppercase tracking-[0.25em] text-muted">
+          <fieldset key={attr.id} className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0">
+            <legend className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
               {attr.name}
-              {selected ? <span className="ml-2 text-text">· {selected}</span> : null}
+              {selected ? (
+                <span className="ml-2 font-normal normal-case tracking-[0.15em] text-text">
+                  — {selected}
+                </span>
+              ) : null}
             </legend>
             <div role="radiogroup" aria-label={attr.name} className="flex flex-wrap gap-2">
               {attr.options.map((option) => {
@@ -55,11 +59,11 @@ export function VariantPicker({ attributes, value, onChange }: VariantPickerProp
                     aria-checked={isSelected}
                     onClick={() => update(attr.id, option)}
                     className={cn(
-                      "min-w-[44px] rounded-sm border px-4 py-2 font-mono text-xs uppercase tracking-[0.2em] transition-colors cursor-pointer",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
+                      "min-w-11 rounded-sm border px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] transition-all duration-150 cursor-pointer",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-1 focus-visible:ring-offset-bg",
                       isSelected
                         ? "border-gold bg-gold/10 text-gold"
-                        : "border-border-strong text-text hover:border-muted",
+                        : "border-border bg-surface-1 text-muted hover:border-border-strong hover:bg-surface-2 hover:text-text",
                     )}
                   >
                     {option}

@@ -1,4 +1,4 @@
-import { Diamond, Flame, Package, Sparkles, Tag, type LucideIcon } from "lucide-react";
+import { Clock, Crown, Diamond, Flame, Layers, Package, Sparkles, Tag, Users, Zap, type LucideIcon } from "lucide-react";
 import {
   BADGE_DEFINITIONS,
   type BadgeIcon,
@@ -18,6 +18,11 @@ const ICON_MAP: Record<BadgeIcon, LucideIcon> = {
   flame: Flame,
   sparkles: Sparkles,
   tag: Tag,
+  zap: Zap,
+  crown: Crown,
+  users: Users,
+  clock: Clock,
+  layers: Layers,
 };
 
 /**

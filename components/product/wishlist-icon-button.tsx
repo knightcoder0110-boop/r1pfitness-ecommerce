@@ -95,7 +95,7 @@ export function WishlistIconButton({
         "shrink-0 inline-flex items-center justify-center rounded-sm border",
         "transition-[transform,color,border-color,background-color] duration-200",
         "focus-visible:ring-gold focus-visible:ring-offset-bg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
-        "active:translate-y-[1px] cursor-pointer",
+        "active:translate-y-px cursor-pointer",
         sizeClass,
         isWished
           ? "border-gold/55 bg-gold/12 text-gold"

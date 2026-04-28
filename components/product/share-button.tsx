@@ -54,9 +54,10 @@ export function ShareButton({ title, text, url, className }: ShareButtonProps) {
       aria-label={copied ? "Link copied" : "Share product"}
       className={cn(
         "inline-flex size-9 shrink-0 items-center justify-center rounded-sm",
-        "border border-border hover:border-gold hover:text-gold",
-        "text-muted transition-colors cursor-pointer",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold",
+        "bg-[linear-gradient(170deg,#E6C56A_0%,#D4AF55_28%,#C9A84C_55%,#A88934_100%)] text-bg shadow-metallic",
+        "hover:brightness-[1.07] hover:shadow-metallic-hover hover:-translate-y-px",
+        "transition-[transform,filter,box-shadow] duration-200 cursor-pointer",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-1 focus-visible:ring-offset-bg",
         className,
       )}
     >
@@ -68,7 +69,7 @@ export function ShareButton({ title, text, url, className }: ShareButtonProps) {
           strokeWidth={2}
           strokeLinecap="round"
           strokeLinejoin="round"
-          className="size-4 text-gold"
+          className="size-4"
           aria-hidden="true"
         >
           <path d="M20 6 9 17l-5-5" />

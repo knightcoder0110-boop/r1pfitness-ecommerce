@@ -354,6 +354,7 @@ export function mapProductSummary(raw: RawStoreProduct): ProductSummary {
     ...(colorOptions.length ? { colorOptions } : {}),
     ...(sizeOptions.length ? { sizeOptions } : {}),
     ...(raw.variations?.length ? { variantCount: raw.variations.length } : {}),
+    ...(raw.tags?.length ? { tags: raw.tags.map((t) => t.name) } : {}),
     ...(raw.date_modified ? { updatedAt: raw.date_modified } : {}),
   };
 }

@@ -12,13 +12,17 @@ export interface ProductGalleryProps {
 }
 
 /**
- * Product media gallery.
+ * Product media gallery — redesigned with side thumbnail filmstrip.
  *
- * Client component — state is local (selected thumbnail). Main image is
- * eager/priority so LCP is the hero. Thumbnails lazy-load.
+ * Layout:
+ *  • Mobile  → main image (3:4 aspect) stacked above a horizontal thumb strip.
+ *  • Desktop → vertical thumb filmstrip on the LEFT, main image fills the rest.
+ *              The whole gallery is height-capped at min(100vh − header − padding, 720px)
+ *              so the hero image is always fully visible without scrolling.
  *
- * When a product variation with an image is selected (via useActiveVariationStore),
- * it is prepended to the gallery and automatically shown as the active image.
+ * Thumbnails match the product 3:4 aspect ratio for visual consistency.
+ * The active thumbnail gets a gold border. Filmstrip scrolls when there are
+ * more images than fit on screen.
  */
 export function ProductGallery({ images, productName }: ProductGalleryProps) {
   const [manualIndex, setManualIndex] = useState<number | null>(null);
@@ -35,55 +39,93 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
 
   if (!active) {
     return (
-      <div className="aspect-product w-full rounded-sm bg-surface-1" aria-hidden />
+      <div className="aspect-3/4 w-full rounded-sm bg-surface-1" aria-hidden />
     );
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="relative aspect-product w-full overflow-hidden rounded-sm bg-surface-1">
-        <Image
-          key={active.id}
-          src={active.url}
-          alt={active.alt || productName}
-          fill
-          priority
-          sizes="(min-width: 1024px) 50vw, 100vw"
-          className="object-cover"
-        />
-      </div>
+    /*
+     * Outer wrapper: on desktop this provides an explicit height so flex-1
+     * on the main image stretches to fill it. On mobile there is no height
+     * set — the 3:4 aspect ratio drives the height naturally.
+     */
+    <div className="lg:h-[min(calc(100vh-8rem),720px)]">
+      <div className="flex h-full flex-col gap-3 lg:flex-row">
 
-      {allImages.length > 1 ? (
-        <ul className="grid grid-cols-5 gap-2" role="tablist" aria-label={`${productName} images`}>
-          {allImages.map((img, i) => {
-            const selected = i === activeIndex;
-            return (
-              <li key={img.id}>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={selected}
-                  aria-label={`Show image ${i + 1}`}
-                  onClick={() => setManualIndex(i)}
-                  className={cn(
-                    "relative aspect-square w-full overflow-hidden rounded-sm border transition-colors cursor-pointer",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold",
-                    selected ? "border-gold" : "border-border hover:border-muted",
-                  )}
-                >
-                  <Image
-                    src={img.url}
-                    alt=""
-                    fill
-                    sizes="20vw"
-                    className="object-cover"
-                  />
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      ) : null}
+        {/* ── Thumbnail filmstrip ─────────────────────────────────────
+            Mobile : horizontal strip BELOW the main image (order-last).
+            Desktop: vertical strip on the LEFT (lg:order-first), 72px wide.
+        ────────────────────────────────────────────────────────────── */}
+        {allImages.length > 1 ? (
+          <ul
+            role="tablist"
+            aria-label={`${productName} images`}
+            className={cn(
+              // Mobile: horizontal, no scrollbar visible, below main image
+              "order-last flex flex-row gap-2 overflow-x-auto [scrollbar-width:none]",
+              // Desktop: vertical left strip, scrollable if overflow
+              "lg:order-first lg:flex-col lg:overflow-x-hidden lg:overflow-y-auto",
+              "lg:w-18 lg:shrink-0",
+              "lg:[scrollbar-width:thin] lg:[scrollbar-color:var(--color-border)_transparent]",
+            )}
+          >
+            {allImages.map((img, i) => {
+              const selected = i === activeIndex;
+              return (
+                <li key={img.id} className="shrink-0">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={selected}
+                    aria-label={`Show image ${i + 1}`}
+                    onClick={() => setManualIndex(i)}
+                    className={cn(
+                      // Mobile: fixed 64px width  |  Desktop: full 72px strip width
+                      "relative block w-16 lg:w-full aspect-3/4 overflow-hidden rounded-sm border",
+                      "transition-colors duration-150 cursor-pointer",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-1 focus-visible:ring-offset-bg",
+                      selected
+                        ? "border-gold"
+                        : "border-border hover:border-border-strong",
+                    )}
+                  >
+                    <Image
+                      src={img.url}
+                      alt=""
+                      fill
+                      sizes="80px"
+                      className="object-cover"
+                    />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
+
+        {/* ── Main image ──────────────────────────────────────────────
+            Mobile : 3:4 aspect ratio drives height.
+            Desktop: aspect-auto + flex-1 fills the height-capped container.
+        ────────────────────────────────────────────────────────────── */}
+        <div
+          className={cn(
+            "relative overflow-hidden rounded-sm bg-surface-1",
+            "aspect-3/4",
+            "lg:aspect-auto lg:flex-1 lg:min-h-0",
+          )}
+        >
+          <Image
+            key={active.id}
+            src={active.url}
+            alt={active.alt || productName}
+            fill
+            priority
+            sizes="(min-width: 1024px) 50vw, 100vw"
+            className="object-cover"
+          />
+        </div>
+
+      </div>
     </div>
   );
 }

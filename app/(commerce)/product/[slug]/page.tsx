@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductGallery, ProductPurchase, RelatedProducts } from "@/components/product";
 import { ProductAddons } from "@/components/product/product-addons";
+import { ProductBadgeBar } from "@/components/product/product-badge-bar";
 import { DescriptionReadMore } from "@/components/product/description-read-more";
 import { ShareButton } from "@/components/product/share-button";
-import { Badge } from "@/components/ui/badge";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Container } from "@/components/ui/container";
 import { Heading } from "@/components/ui/heading";
@@ -49,11 +49,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
   const product = await getCatalog().getProductBySlug(slug);
   if (!product) notFound();
-
-  const outOfStock = product.stockStatus === "out_of_stock";
-  const lowStock = product.stockStatus === "low_stock";
-  const onSale =
-    product.compareAtPrice && product.compareAtPrice.amount > product.price.amount;
 
   const productUrl = `/product/${product.slug}`;
   const siteUrl = getSiteUrl();
@@ -102,19 +97,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
         {/* ── Right: product info ── */}
         <div className="flex flex-col gap-6 sm:gap-7">
-          {/* Badges */}
-          {(product.meta.isLimited || onSale || lowStock || outOfStock) && (
-            <div className="flex flex-wrap gap-1.5">
-              {product.meta.isLimited ? <Badge tone="gold">Limited</Badge> : null}
-              {onSale ? <Badge tone="coral">Sale</Badge> : null}
-              {lowStock ? <Badge tone="neutral">Low stock</Badge> : null}
-              {outOfStock ? <Badge tone="danger">Sold out</Badge> : null}
-            </div>
-          )}
+          {/* Tag-driven badge bar — shows highest-priority badge (new arrival, bestseller, few left, etc.) */}
+          <ProductBadgeBar product={product} />
 
           {/* Title row — title + share button */}
           <div className="flex items-start justify-between gap-4">
-            <Heading level={1} size="xl" className="text-3xl sm:text-4xl lg:text-5xl">
+            <Heading level={1} size="xl" className="text-2xl sm:text-3xl lg:text-4xl">
               {product.name}
             </Heading>
             <ShareButton

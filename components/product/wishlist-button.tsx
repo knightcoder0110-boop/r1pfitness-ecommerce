@@ -38,7 +38,7 @@ export function WishlistButton({ product, className }: WishlistButtonProps) {
       className={cn(
         "absolute top-3 right-3 z-20 flex size-9 items-center justify-center rounded-full",
         "bg-bg/78 text-text shadow-soft border border-white/10 backdrop-blur-sm",
-        "hover:border-gold/45 hover:text-gold transition-[transform,color,border-color,background-color] duration-200 hover:-translate-y-0.5",
+        "cursor-pointer hover:border-gold/45 hover:text-gold transition-[transform,color,border-color,background-color] duration-200 hover:-translate-y-0.5",
         "focus-visible:ring-gold focus-visible:ring-offset-bg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
         isWished && "border-gold/45 bg-gold/12 text-gold",
         className,

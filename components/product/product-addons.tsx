@@ -50,8 +50,8 @@ export async function ProductAddons({ currentProduct }: ProductAddonsProps) {
         </p>
       </div>
 
-      {/* Add-on cards — fixed height so the rail never pushes Add to Cart off-screen */}
-      <ul className="flex flex-col gap-2 max-h-[280px] overflow-y-auto [scrollbar-width:thin] [scrollbar-color:theme(colors.border)_transparent] pr-0.5">
+      {/* Add-on cards — 2 cards visible; scroll for more */}
+      <ul className="flex flex-col gap-2 max-h-44 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:var(--color-border)_transparent] pr-0.5">
         {fullProducts.map((product) => (
           <li key={product.id}>
             <ProductAddonCard product={product} />

@@ -143,6 +143,12 @@ export interface ProductSummary {
   sizeOptions?: string[];
   /** Total variation count — used when deciding whether to show a "+N more" hint. */
   variantCount?: number;
+  /**
+   * WooCommerce product tag names. Used to resolve badge kinds via
+   * `getProductBadges()` in `lib/badges`. Optional — omitted when the
+   * product has no tags so serialization stays lean.
+   */
+  tags?: string[];
   /** ISO 8601 date-time string from `date_modified` in the Store API. Used by the sitemap. */
   updatedAt?: string;
 }

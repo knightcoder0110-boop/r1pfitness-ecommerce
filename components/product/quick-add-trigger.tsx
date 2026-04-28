@@ -148,25 +148,24 @@ export function QuickAddTrigger({ product, className }: QuickAddTriggerProps) {
         disabled={pending}
         aria-label={`${label}: ${product.name}`}
         className={cn(
+          // Positioned as a solid bar at the bottom of the card image
           "absolute inset-x-0 bottom-0 z-10",
-          "flex items-center justify-between gap-2 px-4 py-3",
-          "bg-bg/88 border-t border-white/6 backdrop-blur-xs",
-          // Mobile: always visible; ≥ sm: slide up on group-hover.
+          "flex items-center justify-center gap-2 py-3",
+          // Solid metallic gold — matches the primary Button variant
+          "bg-[linear-gradient(170deg,#E6C56A_0%,#D4AF55_28%,#C9A84C_55%,#A88934_100%)]",
+          "text-bg shadow-metallic",
+          // Mobile: always visible; ≥ sm: slide up on group-hover
           "translate-y-0 sm:translate-y-full sm:group-hover:translate-y-0",
-          "transition-transform duration-300 ease-out",
-          "cursor-pointer disabled:cursor-not-allowed",
-          "focus-visible:ring-gold focus-visible:ring-offset-bg focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
+          "transition-[transform,filter,box-shadow] duration-300 ease-out",
+          "hover:brightness-[1.07] hover:shadow-metallic-hover",
+          "cursor-pointer disabled:cursor-not-allowed disabled:opacity-55",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-inset",
           className,
         )}
       >
-        <span className="flex items-center gap-2">
-          <ShoppingBag aria-hidden className="text-gold h-3 w-3" strokeWidth={2.5} />
-          <span className="text-gold font-mono text-[10px] font-medium tracking-[0.4em] uppercase">
-            {pending ? "Adding…" : label}
-          </span>
-        </span>
-        <span aria-hidden className="text-gold text-sm leading-none">
-          →
+        <ShoppingBag aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
+        <span className="font-mono text-[10px] font-semibold tracking-[0.35em] uppercase">
+          {pending ? "Adding…" : label}
         </span>
       </button>
 

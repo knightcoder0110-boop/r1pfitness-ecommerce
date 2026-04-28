@@ -1,10 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { Price } from "@/components/ui/price";
 import { ColorSwatches } from "@/components/product/color-swatches";
 import { QuickAddTrigger } from "@/components/product/quick-add-trigger";
 import { WishlistButton } from "@/components/product/wishlist-button";
+import { ProductBadgeRow } from "@/components/product/product-badge-row";
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils/cn";
 import type { ProductSummary } from "@/lib/woo/types";
@@ -31,9 +31,7 @@ export interface ProductCardProps {
  * area its own interactive affordance. Touch users tap the info link.
  */
 export function ProductCard({ product, priority, className }: ProductCardProps) {
-  const onSale = product.compareAtPrice && product.compareAtPrice.amount > product.price.amount;
   const outOfStock = product.stockStatus === "out_of_stock";
-  const lowStock = product.stockStatus === "low_stock";
 
   return (
     <article aria-label={product.name} className={cn("group relative flex flex-col", className)}>
@@ -89,12 +87,13 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
           </div>
         )}
 
-        {/* Badges — top-left */}
-        <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
-          {product.isLimited ? <Badge tone="gold">Limited</Badge> : null}
-          {onSale ? <Badge tone="coral">Sale</Badge> : null}
-          {outOfStock ? <Badge tone="danger">Sold Out</Badge> : null}
-          {lowStock ? <Badge tone="neutral">Low stock</Badge> : null}
+        {/* Badges — top-left, driven by the shared badge system */}
+        <div className="absolute top-3 left-3 z-10">
+          <ProductBadgeRow
+            product={product}
+            max={2}
+            className="flex-col items-start gap-1.5"
+          />
         </div>
 
         <WishlistButton product={product} />

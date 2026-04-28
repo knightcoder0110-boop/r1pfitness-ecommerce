@@ -59,10 +59,15 @@ import type { Product, ProductSummary } from "@/lib/woo/types";
 // ── 1. Types ────────────────────────────────────────────────────────────
 
 export type BadgeKind =
+  | "vip-exclusive"
+  | "collab"
   | "limited"
+  | "pre-order"
   | "back-in-stock"
+  | "few-left"
   | "bestseller"
   | "new-arrival"
+  | "bundle"
   | "sale";
 
 export type BadgeTone = "gold" | "coral" | "ocean" | "sand";
@@ -86,17 +91,38 @@ export interface BadgeDefinition {
  * icon themselves. This means SSR/server components can call `getProductBadges`
  * without dragging the lucide bundle in.
  */
-export type BadgeIcon = "diamond" | "package" | "flame" | "sparkles" | "tag";
+export type BadgeIcon = "diamond" | "package" | "flame" | "sparkles" | "tag" | "zap" | "crown" | "users" | "clock" | "layers";
 
 // ── 2. Definitions ──────────────────────────────────────────────────────
 
 export const BADGE_DEFINITIONS: Record<BadgeKind, BadgeDefinition> = {
+  "vip-exclusive": {
+    kind: "vip-exclusive",
+    label: "VIP Only",
+    tagline: "Reserved for VIP members — exclusive access.",
+    tone: "gold",
+    icon: "crown",
+  },
+  collab: {
+    kind: "collab",
+    label: "Collab Drop",
+    tagline: "A limited athlete collaboration.",
+    tone: "ocean",
+    icon: "users",
+  },
   limited: {
     kind: "limited",
     label: "Limited Drop",
     tagline: "Once it's gone — it's gone.",
     tone: "gold",
     icon: "diamond",
+  },
+  "pre-order": {
+    kind: "pre-order",
+    label: "Pre-Order",
+    tagline: "Secure yours now — ships when it drops.",
+    tone: "sand",
+    icon: "clock",
   },
   "back-in-stock": {
     kind: "back-in-stock",
@@ -119,6 +145,20 @@ export const BADGE_DEFINITIONS: Record<BadgeKind, BadgeDefinition> = {
     tone: "coral",
     icon: "sparkles",
   },
+  "few-left": {
+    kind: "few-left",
+    label: "Few Left",
+    tagline: "Low on stock — grab yours before it's gone.",
+    tone: "coral",
+    icon: "zap",
+  },
+  bundle: {
+    kind: "bundle",
+    label: "Bundle Deal",
+    tagline: "Better together — save when you bundle.",
+    tone: "ocean",
+    icon: "layers",
+  },
   sale: {
     kind: "sale",
     label: "On Sale",
@@ -134,11 +174,16 @@ export const BADGE_DEFINITIONS: Record<BadgeKind, BadgeDefinition> = {
  * Rationale: rarer / higher-perceived-value badges go first.
  */
 export const BADGE_PRIORITY: BadgeKind[] = [
-  "limited",
-  "back-in-stock",
-  "bestseller",
-  "new-arrival",
-  "sale",
+  "vip-exclusive",  // rarest — access-gated drop
+  "collab",         // high-perceived-value athlete collab
+  "limited",        // scarcity
+  "pre-order",      // upcoming, needs attention
+  "back-in-stock",  // urgency — won't last
+  "few-left",       // stock scarcity
+  "bestseller",     // social proof
+  "new-arrival",    // freshness
+  "bundle",         // deal
+  "sale",           // discount (last — least rare)
 ];
 
 /**
@@ -146,15 +191,38 @@ export const BADGE_PRIORITY: BadgeKind[] = [
  * Note: `sale` is auto-derived, not tag-driven.
  */
 const BADGE_TAG_SLUGS: Record<string, BadgeKind> = {
+  // VIP / exclusive
+  vip: "vip-exclusive",
+  "vip-exclusive": "vip-exclusive",
+  "vip-only": "vip-exclusive",
+  "members-only": "vip-exclusive",
+  members: "vip-exclusive",
+  exclusive: "vip-exclusive",
+  // Collab
+  collab: "collab",
+  collaboration: "collab",
+  "collab-drop": "collab",
+  // Limited
   limited: "limited",
   "limited-drop": "limited",
+  // Pre-order
+  "pre-order": "pre-order",
+  preorder: "pre-order",
+  "coming-soon": "pre-order",
+  // Back in stock
   "back-in-stock": "back-in-stock",
   restocked: "back-in-stock",
+  // Bestseller
   bestseller: "bestseller",
   "best-seller": "bestseller",
+  // New arrival
   "new-arrival": "new-arrival",
   "new-arrivals": "new-arrival",
   new: "new-arrival",
+  // Bundle
+  bundle: "bundle",
+  "bundle-deal": "bundle",
+  "bundle-save": "bundle",
 };
 
 // ── 3. Resolution ───────────────────────────────────────────────────────
@@ -178,6 +246,7 @@ export interface BadgeResolvable {
   price?: { amount: number };
   compareAtPrice?: { amount: number } | undefined;
   meta?: { isLimited?: boolean };
+  stockStatus?: string;
 }
 
 /**
@@ -201,6 +270,11 @@ export function getProductBadges(product: BadgeResolvable): BadgeKind[] {
   // Auto-derived: limited (legacy meta path, still respected).
   if (product.meta?.isLimited) {
     set.add("limited");
+  }
+
+  // Auto-derived: few-left from stock status.
+  if (product.stockStatus === "low_stock") {
+    set.add("few-left");
   }
 
   // Tag-driven: match against BADGE_TAG_SLUGS.
