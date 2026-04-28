@@ -50,7 +50,7 @@ const VIRTUAL_CATEGORIES: Record<
       description: "Curated surprise drops packed with R1P gear. Every box is a different tier — from Starter to Grail.",
       count: 0,
     },
-    sourceSlugs: ["bundles"],
+    sourceSlugs: ["mystery-boxes"],
   },
 };
 

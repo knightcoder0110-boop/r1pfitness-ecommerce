@@ -6,22 +6,20 @@ import { cn } from "@/lib/utils/cn";
 
 /**
  * Maps a WooCommerce category slug to a user-facing display override.
- * Woo slugs listed here are hidden from the chip row and replaced by the
- * virtual entry so users see the brand-level label + URL.
+ * Used to correct Woo category names without needing a WooCommerce admin edit.
  */
 const CATEGORY_DISPLAY_OVERRIDES: Record<
   string,
   { label: string; href: string; activeWhen: string[] }
 > = {
   /**
-   * The WooCommerce category "bundles" (id=449) is the backing store for the
-   * mystery-box drop. Customers should see "Mystery Boxes" at /shop/mystery-boxes,
-   * not the internal "Bundles" slug.
+   * The WooCommerce category slug is "mystery-boxes" but the admin-entered
+   * name is "Mystry-box" (typo). Override to the correct brand label.
    */
-  bundles: {
+  "mystery-boxes": {
     label: "Mystery Boxes",
     href: ROUTES.category("mystery-boxes"),
-    activeWhen: ["mystery-boxes", "bundles"],
+    activeWhen: ["mystery-boxes"],
   },
 };
 
