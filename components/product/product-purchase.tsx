@@ -46,8 +46,18 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
     [product.attributes],
   );
 
-  // Selected attribute values: { pa_size: "M", pa_color: "Coral" }.
-  const [selected, setSelected] = useState<Record<string, string>>({});
+  // Selected attribute values: { pa_tier: "Starter Pack", pa_size: "M", pa_style: "Male" }.
+  // Pre-select the first available option for every variation attribute so that
+  // allSelected is true on mount and the price updates the moment the user picks
+  // a different option (e.g. clicking a different Tier immediately shows that
+  // tier's price without also requiring Size + Style to be clicked first).
+  const [selected, setSelected] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    for (const a of product.attributes) {
+      if (a.variation && a.options[0]) initial[a.id] = a.options[0];
+    }
+    return initial;
+  });
 
   const allSelected = requiredAttrs.every((a) => Boolean(selected[a.id]));
 
