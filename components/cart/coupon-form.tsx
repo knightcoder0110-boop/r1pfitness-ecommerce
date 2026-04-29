@@ -27,7 +27,7 @@ function fmt(m: Money): string {
  */
 export function CouponForm() {
   const [code, setCode] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "error" | "removing">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const { applyCoupon, removeCoupon } = useServerCart();
   const coupon = useCartCoupon();
@@ -50,9 +50,14 @@ export function CouponForm() {
           </span>
           <button
             type="button"
-            onClick={() => void removeCoupon(coupon.code)}
+            disabled={status === "removing"}
+            onClick={async () => {
+              setStatus("removing");
+              await removeCoupon(coupon.code);
+              setStatus("idle");
+            }}
             aria-label={`Remove coupon ${coupon.code}`}
-            className="p-0.5 text-muted hover:text-text transition-colors"
+            className="cursor-pointer p-0.5 text-muted hover:text-text transition-colors disabled:opacity-40 disabled:cursor-wait"
           >
             <X className="h-3.5 w-3.5" />
           </button>
