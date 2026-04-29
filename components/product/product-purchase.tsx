@@ -9,6 +9,7 @@ import { StickyAddToCart } from "@/components/product/sticky-add-to-cart";
 import { StockScarcity } from "@/components/product/stock-scarcity";
 import { TrustStrip } from "@/components/product/trust-strip";
 import { Button } from "@/components/ui/button";
+import { Price } from "@/components/ui/price";
 import { useServerCart } from "@/lib/cart";
 import { useToastStore } from "@/lib/toast";
 import { useActiveVariationStore } from "@/lib/active-variation-store";
@@ -122,6 +123,17 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Reactive price — updates when a variant with a different price is selected */}
+      <Price
+        price={matchingVariation?.price ?? product.price}
+        {...(
+          (matchingVariation?.compareAtPrice ?? product.compareAtPrice)
+            ? { compareAtPrice: matchingVariation?.compareAtPrice ?? product.compareAtPrice }
+            : {}
+        )}
+        size="lg"
+      />
+
       {/* Stock scarcity — reacts to selected variation */}
       <StockScarcity product={product} variation={matchingVariation} />
 
