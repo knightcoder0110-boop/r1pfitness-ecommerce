@@ -1,6 +1,6 @@
 "use client";
 
-import { useCartItems, useCartSubtotal } from "@/lib/cart";
+import { useCartCoupon, useCartItems, useCartSubtotal } from "@/lib/cart";
 import { OrderSummary } from "./order-summary";
 
 /**
@@ -12,12 +12,13 @@ import { OrderSummary } from "./order-summary";
 export function CheckoutSidebar() {
   const items = useCartItems();
   const subtotal = useCartSubtotal();
+  const coupon = useCartCoupon();
 
   if (items.length === 0) return null;
 
   return (
     <div className="flex flex-col gap-4">
-      <OrderSummary items={items} subtotal={subtotal} />
+      <OrderSummary items={items} subtotal={subtotal} coupon={coupon} />
 
       {/* Trust signals */}
       <div className="border border-border p-6">

@@ -17,6 +17,7 @@ import { useCartActions, useCartCoupon, useCartItems, useCartSubtotal } from "@/
 import { trackBeginCheckout } from "@/lib/analytics";
 import type { CheckoutResult } from "@/lib/checkout/types";
 import { ROUTES } from "@/lib/constants";
+import { calculateShippingCents } from "@/lib/constants/shipping";
 
 // ── Stripe loader (singleton) ──────────────────────────────────────────────
 
@@ -279,9 +280,18 @@ export function CheckoutForm() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <span className="font-mono text-xs uppercase tracking-[0.2em] text-muted">
-          Subtotal:{" "}
+          {coupon ? "Total (excl. tax):" : "Subtotal:"}{" "}
           <span className="text-text">
-            <Price price={subtotal} />
+            <Price
+              price={{
+                amount:
+                  Math.max(0, subtotal.amount - (coupon?.discount.amount ?? 0)) +
+                  calculateShippingCents(
+                    Math.max(0, subtotal.amount - (coupon?.discount.amount ?? 0)),
+                  ),
+                currency: subtotal.currency,
+              }}
+            />
           </span>
         </span>
         <Button type="submit" size="lg" full disabled={isSubmitting} className="sm:w-auto">
