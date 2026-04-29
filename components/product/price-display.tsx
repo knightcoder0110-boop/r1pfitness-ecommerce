@@ -44,38 +44,43 @@ export function PriceDisplay({ price, compareAtPrice, className }: PriceDisplayP
   return (
     <div
       aria-label={ariaLabel}
-      className={cn("flex flex-wrap items-baseline gap-x-3 gap-y-1", className)}
+      className={cn("flex flex-wrap items-center gap-x-3 gap-y-2", className)}
     >
+      {/* Compare-at (original) price — struck through, on the LEFT */}
+      {onSale ? (
+        <span
+          aria-hidden
+          className="font-mono text-lg text-subtle line-through tabular-nums"
+        >
+          {formatMoney(compareAtPrice)}
+        </span>
+      ) : null}
+
+      {/* Sale / current price — on the RIGHT of compare-at, prominent */}
       <span
         className={cn(
-          "font-display tracking-[0.04em] leading-none",
-          "text-3xl sm:text-4xl",
+          "font-display font-bold leading-none tracking-[0.02em]",
+          "text-4xl sm:text-5xl",
           onSale ? "text-coral" : "text-text",
         )}
       >
         {formatMoney(price)}
       </span>
 
+      {/* Savings badge */}
       {onSale ? (
-        <>
-          <span
-            aria-hidden
-            className="font-mono text-base text-subtle line-through tabular-nums"
-          >
-            {formatMoney(compareAtPrice)}
-          </span>
-          <span
-            aria-hidden
-            className={cn(
-              "inline-flex items-center rounded-sm border border-coral/50 bg-coral/12 px-2 py-0.5",
-              "font-mono text-[11px] uppercase tracking-[0.2em] text-coral tabular-nums",
-            )}
-          >
-            −{savingsPercent}%
-          </span>
-        </>
+        <span
+          aria-hidden
+          className={cn(
+            "inline-flex items-center rounded border border-coral/50 bg-coral/12 px-2.5 py-1",
+            "font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-coral tabular-nums",
+          )}
+        >
+          −{savingsPercent}% OFF
+        </span>
       ) : null}
 
+      {/* You-save line */}
       {onSale && savingsAmount ? (
         <span className="basis-full font-serif italic text-sm text-muted">
           You save {formatMoney(savingsAmount)}
