@@ -9,6 +9,7 @@ import { StickyAddToCart } from "@/components/product/sticky-add-to-cart";
 import { StockScarcity } from "@/components/product/stock-scarcity";
 import { TrustStrip } from "@/components/product/trust-strip";
 import { Button } from "@/components/ui/button";
+import { Price } from "@/components/ui/price";
 import { useServerCart } from "@/lib/cart";
 import { useToastStore } from "@/lib/toast";
 import { useActiveVariationStore } from "@/lib/active-variation-store";
@@ -45,8 +46,17 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
     [product.attributes],
   );
 
-  // Selected attribute values: { pa_size: "M", pa_color: "Coral" }.
-  const [selected, setSelected] = useState<Record<string, string>>({});
+  // Selected attribute values: { pa_tier: "Starter Pack", pa_size: "S", pa_style: "Male" }.
+  // Pre-select the first available option for every variation attribute so that
+  // allSelected is true on mount — clicking a different Tier immediately
+  // updates the price without also requiring Size + Style to be clicked first.
+  const [selected, setSelected] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    for (const a of product.attributes) {
+      if (a.variation && a.options[0]) initial[a.id] = a.options[0];
+    }
+    return initial;
+  });
 
   const allSelected = requiredAttrs.every((a) => Boolean(selected[a.id]));
 
@@ -122,6 +132,17 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Reactive price — updates immediately when tier is clicked */}
+      <Price
+        price={matchingVariation?.price ?? product.price}
+        {...(
+          (matchingVariation?.compareAtPrice ?? product.compareAtPrice)
+            ? { compareAtPrice: matchingVariation?.compareAtPrice ?? product.compareAtPrice }
+            : {}
+        )}
+        size="lg"
+      />
+
       {/* Stock scarcity — reacts to selected variation */}
       <StockScarcity product={product} variation={matchingVariation} />
 

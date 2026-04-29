@@ -8,7 +8,6 @@ import { ShareButton } from "@/components/product/share-button";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Container } from "@/components/ui/container";
 import { Heading } from "@/components/ui/heading";
-import { Price } from "@/components/ui/price";
 import { getCatalog } from "@/lib/catalog";
 import { ROUTES, SITE } from "@/lib/constants";
 import { productSchema, breadcrumbSchema } from "@/lib/seo";
@@ -110,13 +109,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
               text={product.shortDescription || undefined}
             />
           </div>
-
-          {/* Price */}
-          <Price
-            price={product.price}
-            {...(product.compareAtPrice ? { compareAtPrice: product.compareAtPrice } : {})}
-            size="lg"
-          />
 
           {/* Divider */}
           <hr className="border-border" />
