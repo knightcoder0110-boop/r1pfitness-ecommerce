@@ -12,7 +12,7 @@ interface OrderSummaryProps {
   items: LineItem[];
   subtotal: { amount: number; currency: string };
   /** Active coupon (code + discount in minor units). Optional. */
-  coupon?: { code: string; discount: Money } | null;
+  coupon?: { code: string; discount: Money; freeShipping?: boolean } | null;
   className?: string;
 }
 
@@ -22,7 +22,7 @@ export function OrderSummary({ items, subtotal, coupon, className }: OrderSummar
   // numbers shown here match the cart page and what WooCommerce will charge.
   const discountCents = coupon?.discount.amount ?? 0;
   const discountedSubtotalCents = Math.max(0, subtotal.amount - discountCents);
-  const shippingCents = calculateShippingCents(discountedSubtotalCents);
+  const shippingCents = coupon?.freeShipping ? 0 : calculateShippingCents(discountedSubtotalCents);
   const totalCents = discountedSubtotalCents + shippingCents;
   return (
     <aside

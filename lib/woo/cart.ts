@@ -2,6 +2,7 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { WooError } from "./errors";
+import { adminFetch } from "./client";
 import { mapCart, type RawStoreCart } from "./mappers";
 import type { Cart } from "./types";
 
@@ -196,7 +197,8 @@ export interface AddItemAttribute {
 
 export async function getCart(): Promise<Cart> {
   const { data, token } = await cartFetch<RawStoreCart>({ path: "/cart" });
-  return mapCart(data, token);
+  const cart = mapCart(data, token);
+  return enrichFreeShipping(cart);
 }
 
 export async function addCartItem(input: {
@@ -301,7 +303,8 @@ export async function applyCoupon(code: string): Promise<Cart> {
     method: "POST",
     body: { code },
   });
-  return mapCart(data, token);
+  const cart = mapCart(data, token);
+  return enrichFreeShipping(cart);
 }
 
 export async function removeCoupon(code: string): Promise<Cart> {
@@ -318,3 +321,56 @@ export async function removeCoupon(code: string): Promise<Cart> {
 
 /** Test-only. Exposed for unit tests that stub `fetch`. */
 export const __internal = { COOKIE_NAME, cartFetch };
+
+/**
+ * Enrich a mapped cart by resolving `free_shipping` from the WooCommerce REST
+ * API for any applied coupons. Called after `mapCart` in `getCart` and
+ * `applyCoupon` so the flag is always accurate.
+ */
+async function enrichFreeShipping(cart: Cart): Promise<Cart> {
+  if (cart.coupons.length === 0) return cart;
+  const codes = cart.coupons.map((c) => c.code);
+  const freeShipSet = await resolveFreeShippingCodes(codes);
+  if (freeShipSet.size === 0) return cart;
+  return {
+    ...cart,
+    coupons: cart.coupons.map((c) => ({
+      ...c,
+      freeShipping: freeShipSet.has(c.code.toLowerCase()),
+    })),
+  };
+}
+
+/**
+ * Returns the set of coupon codes (lowercased) that have `free_shipping: true`
+ * in WooCommerce. Internal helper used by `enrichFreeShipping` and
+ * `hasFreeShippingCoupon`.
+ */
+async function resolveFreeShippingCodes(codes: string[]): Promise<Set<string>> {
+  const results = await Promise.all(
+    codes.map(async (code): Promise<string | null> => {
+      try {
+        const rows = await adminFetch<Array<{ free_shipping: boolean }>>({
+          path: `/coupons?code=${encodeURIComponent(code)}`,
+        });
+        return Array.isArray(rows) && rows.some((c) => c.free_shipping === true)
+          ? code.toLowerCase()
+          : null;
+      } catch {
+        return null;
+      }
+    }),
+  );
+  return new Set(results.filter((r): r is string => r !== null));
+}
+
+/**
+ * Returns true if any of the supplied coupon codes has `free_shipping: true`
+ * in WooCommerce. Used by the checkout BFF to override flat-rate shipping
+ * when a free-shipping coupon is applied to the cart.
+ */
+export async function hasFreeShippingCoupon(codes: string[]): Promise<boolean> {
+  if (!codes.length) return false;
+  const freeSet = await resolveFreeShippingCodes(codes);
+  return freeSet.size > 0;
+}

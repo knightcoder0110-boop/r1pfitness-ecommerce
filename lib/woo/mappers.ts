@@ -415,6 +415,8 @@ export function mapCart(raw: RawStoreCart, token: string): Cart {
     coupons: (raw.coupons ?? []).map((c) => ({
       code: c.code,
       discount: money(c.totals.total_discount, c.totals.currency_code),
+      // Enriched to true by getCart/applyCoupon after a REST API lookup.
+      freeShipping: false,
     })),
   };
 }

@@ -41,7 +41,7 @@ export function CartView() {
     0,
     subtotal.amount - (coupon?.discount.amount ?? 0),
   );
-  const shippingCents = calculateShippingCents(discountedSubtotalCents);
+  const shippingCents = coupon?.freeShipping ? 0 : calculateShippingCents(discountedSubtotalCents);
   const totalCents = discountedSubtotalCents + shippingCents;
   const remainingForFreeCents = Math.max(
     0,

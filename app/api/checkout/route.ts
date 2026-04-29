@@ -12,7 +12,7 @@ import {
 import { calculateShippingCents } from "@/lib/constants/shipping";
 import { assertSameOrigin } from "@/lib/api/request-security";
 import { checkRateLimit } from "@/lib/api/ratelimit";
-import { getCart } from "@/lib/woo/cart";
+import { getCart, hasFreeShippingCoupon } from "@/lib/woo/cart";
 import type { CartLineItem } from "@/lib/woo/types";
 
 /**
@@ -150,7 +150,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const discountCents = serverCart.discountTotal.amount;
   const discountedSubtotalCents = Math.max(0, subtotalCents - discountCents);
-  const shippingCents = calculateShippingCents(discountedSubtotalCents);
+  const freeShipping = serverCouponCodes.length > 0
+    && await hasFreeShippingCoupon(serverCouponCodes);
+  const shippingCents = freeShipping ? 0 : calculateShippingCents(discountedSubtotalCents);
   const currency = serverCart.currency;
   const session = await auth();
   const customerId = session?.user.wooCustomerId && session.user.wooCustomerId !== "0"

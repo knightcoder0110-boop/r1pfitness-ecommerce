@@ -250,7 +250,7 @@ export function useServerCart() {
           (c) => c.code.toLowerCase() === code.toLowerCase(),
         );
         if (couponData) {
-          setCoupon({ code: couponData.code, discount: couponData.discount });
+          setCoupon({ code: couponData.code, discount: couponData.discount, freeShipping: couponData.freeShipping });
         }
       }
       return result;
