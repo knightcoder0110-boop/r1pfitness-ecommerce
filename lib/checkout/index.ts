@@ -1,6 +1,7 @@
 export * from "./types";
 export {
   createWooOrder,
+  getWooOrderForConfirmation,
   getWooOrder,
   markOrderProcessing,
   markOrderRefunded,

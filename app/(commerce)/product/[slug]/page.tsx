@@ -110,14 +110,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
             />
           </div>
 
-          {/* Divider */}
-          <hr className="border-border" />
-
-          {/* Complete the Look — portrait card grid */}
-          <ProductAddonGrid currentProduct={product} />
-
-          {/* Purchase — scarcity + variants + qty + ATC + trust strip (inside) */}
-          <ProductPurchase product={product} />
+          {/* Purchase — price → scarcity → variants → addon grid → ATC → trust */}
+          <ProductPurchase
+            product={product}
+            addonSlot={<ProductAddonGrid currentProduct={product} />}
+          />
 
           {/* Description accordion */}
           {product.description ? (

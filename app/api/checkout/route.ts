@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { ZodError } from "zod";
+import { auth } from "@/auth";
 import {
   CheckoutRequestSchema,
   type CheckoutRequest,
@@ -36,12 +37,12 @@ import type { CartLineItem } from "@/lib/woo/types";
  *  3. Load server cart via `getCart()`. Reject if empty.
  *  4. Cross-check client item IDs + quantities against server cart.
  *  5. Compute subtotal from SERVER cart line items.
- *  6. Derive shipping from `calculateShippingCents(subtotal)` (flat rate
- *     vs. free-over-threshold — single source of truth).
+ *  6. Derive shipping from the discounted subtotal (flat rate vs.
+ *     free-over-threshold — single source of truth).
  *  7. Create Woo order with SERVER items + shipping line. Woo calculates
  *     tax based on the billing address + configured tax rates and returns
  *     the final order total (subtotal + shipping + tax).
- *  8. Sanity-check Woo total ≥ subtotal + shipping; else 502.
+ *  8. Sanity-check Woo total ≥ discounted subtotal + shipping; else 502.
  *  9. Create Stripe PaymentIntent for the Woo total with
  *     `receipt_email` set so Stripe auto-sends an order confirmation.
  * 10. Return { clientSecret, orderId, totalAmount, currency }.
@@ -129,33 +130,42 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     attributes: li.attributes,
   }));
 
+  const serverCouponCodes = serverCart.coupons.map((coupon) => coupon.code);
   const trustedRequest: CheckoutRequest = {
     email: data.email,
     billing: data.billing,
     shipping: data.shipping,
     items: trustedItems,
-    coupons: data.coupons,
+    coupons: serverCouponCodes,
   };
 
-  // Compute subtotal from server cart items (minor units), derive flat-rate
-  // shipping from a single source of truth, and let WooCommerce calculate
-  // tax server-side based on the billing address. The Woo-returned `total`
-  // (subtotal + shipping + tax) is what we charge via Stripe.
+  // Compute subtotal and discount from the server cart (minor units), derive
+  // flat-rate shipping from a single source of truth, and let WooCommerce
+  // calculate tax server-side based on the billing address. The Woo-returned
+  // `total` (subtotal - discount + shipping + tax) is what we charge via Stripe.
   const subtotalCents = computeOrderTotal(trustedItems);
   if (subtotalCents <= 0) {
     return NextResponse.json({ error: "Order total must be > 0" }, { status: 422 });
   }
 
-  const shippingCents = calculateShippingCents(subtotalCents);
+  const discountCents = serverCart.discountTotal.amount;
+  const discountedSubtotalCents = Math.max(0, subtotalCents - discountCents);
+  const shippingCents = calculateShippingCents(discountedSubtotalCents);
   const currency = serverCart.currency;
+  const session = await auth();
+  const customerId = session?.user.wooCustomerId && session.user.wooCustomerId !== "0"
+    ? session.user.wooCustomerId
+    : undefined;
 
   // Create Woo order (pending, not yet paid). Woo computes tax based on
   // billing/shipping address + shipping line and returns the final total.
   let orderId: string;
+  let orderKey: string | undefined;
   let totalAmount: number;
   try {
-    const result = await createWooOrder(trustedRequest, shippingCents);
+    const result = await createWooOrder(trustedRequest, shippingCents, customerId);
     orderId = result.orderId;
+    orderKey = result.orderKey;
     totalAmount = result.totalCents;
   } catch (err) {
     console.error("[checkout] Woo order creation failed:", err);
@@ -165,10 +175,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // Sanity check: Woo's total must be at least subtotal + shipping. If a
-  // misconfigured tax rate or unexpected discount drops the total below
-  // that floor, abort instead of charging the wrong amount.
-  const expectedFloor = subtotalCents + shippingCents;
+  // Sanity check: Woo's total must be at least discounted subtotal + shipping.
+  // If an unexpected Woo calculation drops the total below that floor, abort
+  // instead of charging the wrong amount.
+  const expectedFloor = discountedSubtotalCents + shippingCents;
   if (totalAmount < expectedFloor) {
     console.error(
       `[checkout] Woo total ${totalAmount} below expected floor ${expectedFloor} for order ${orderId}`,
@@ -198,7 +208,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  const result: CheckoutResult = { clientSecret, orderId, totalAmount, currency };
+  const result: CheckoutResult = {
+    clientSecret,
+    orderId,
+    ...(orderKey ? { orderKey } : {}),
+    totalAmount,
+    currency,
+  };
   return NextResponse.json({ ok: true, data: result }, { status: 200 });
 }
 

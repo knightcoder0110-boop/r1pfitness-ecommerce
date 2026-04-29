@@ -18,6 +18,13 @@ import type { Product, ProductVariation } from "@/lib/woo/types";
 
 export interface ProductPurchaseProps {
   product: Product;
+  /**
+   * Server-rendered slot rendered just above the ATC button row.
+   * Pass `<ProductAddonGrid>` from the page (server component) — Next.js App
+   * Router allows passing server component trees as ReactNode props to client
+   * components, preserving the server/client boundary cleanly.
+   */
+  addonSlot?: React.ReactNode;
 }
 
 /**
@@ -32,7 +39,7 @@ export interface ProductPurchaseProps {
  * Keeping this isolated means the PDP page itself stays a server component
  * and can remain `generateStaticParams`-friendly.
  */
-export function ProductPurchase({ product }: ProductPurchaseProps) {
+export function ProductPurchase({ product, addonSlot }: ProductPurchaseProps) {
   const { addItem, open: openCart } = useServerCart();
   const showToast = useToastStore((s) => s.show);
   const setVariantImage = useActiveVariationStore((s) => s.setVariantImage);
@@ -179,6 +186,14 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
           onChange={setSelected}
         />
       )}
+      {/* Recommended add-ons — just above ATC */}
+      {addonSlot ? (
+        <>
+          <hr className="border-border" />
+          {addonSlot}
+        </>
+      ) : null}
+
       {/* ATC row: main button + wishlist icon side by side */}
       <div className="flex gap-2">
         <Button

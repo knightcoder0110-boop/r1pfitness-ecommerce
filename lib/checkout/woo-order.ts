@@ -22,10 +22,17 @@ interface WooLineItem {
 
 interface RawWooOrder {
   id: number;
+  order_key?: string;
+  customer_id?: number;
   number: string;
   status: string;
   currency: string;
   total: string;
+  discount_total?: string;
+  shipping_total?: string;
+  total_tax?: string;
+  date_created?: string;
+  date_modified?: string;
   billing: Record<string, string>;
   shipping: Record<string, string>;
   line_items: Array<{
@@ -43,6 +50,7 @@ interface RawWooOrder {
 /** Shape for creating a draft Woo order. */
 interface CreateOrderPayload {
   status: "pending";
+  customer_id?: number;
   currency: string;
   customer_note?: string;
   set_paid: false;
@@ -112,9 +120,11 @@ function toWooShipping(addr: CheckoutRequest["billing"]): Record<string, string>
 export async function createWooOrder(
   req: CheckoutRequest,
   shippingCents: number,
-): Promise<{ orderId: string; currency: string; totalCents: number }> {
+  customerId?: string,
+): Promise<{ orderId: string; orderKey?: string; currency: string; totalCents: number }> {
   const shipping = req.shipping ?? req.billing;
   const currency = req.items[0]?.unitPrice.currency ?? "USD";
+  const customerIdNumber = customerId ? Number.parseInt(customerId, 10) : 0;
 
   const lineItems: WooLineItem[] = req.items.map((item) => {
     const totalDollars = ((item.unitPrice.amount * item.quantity) / 100).toFixed(2);
@@ -133,6 +143,9 @@ export async function createWooOrder(
 
   const payload: CreateOrderPayload = {
     status: "pending",
+    ...(Number.isFinite(customerIdNumber) && customerIdNumber > 0
+      ? { customer_id: customerIdNumber }
+      : {}),
     currency,
     created_via: "checkout",
     payment_method: "stripe",
@@ -168,7 +181,73 @@ export async function createWooOrder(
   // Woo's `total` is a decimal string in major units; convert to cents.
   const totalCents = Math.round(parseFloat(raw.total) * 100);
 
-  return { orderId: String(raw.id), currency, totalCents };
+  return {
+    orderId: String(raw.id),
+    ...(raw.order_key ? { orderKey: raw.order_key } : {}),
+    currency,
+    totalCents,
+  };
+}
+
+function mapRawWooOrder(raw: RawWooOrder): Order {
+  const money = (value: string | undefined) => ({
+    amount: Math.round(parseFloat(value || "0") * 100),
+    currency: raw.currency,
+  });
+
+  return {
+    id: String(raw.id),
+    number: raw.number,
+    status: raw.status as Order["status"],
+    currency: raw.currency,
+    createdAt: raw.date_created ?? new Date().toISOString(),
+    updatedAt: raw.date_modified ?? new Date().toISOString(),
+    subtotal: money(raw.total),
+    discountTotal: money(raw.discount_total),
+    shippingTotal: money(raw.shipping_total),
+    taxTotal: money(raw.total_tax),
+    total: money(raw.total),
+    billing: {
+      firstName: raw.billing.first_name ?? "",
+      lastName: raw.billing.last_name ?? "",
+      line1: raw.billing.address_1 ?? "",
+      line2: raw.billing.address_2 || undefined,
+      city: raw.billing.city ?? "",
+      region: raw.billing.state ?? "",
+      postalCode: raw.billing.postcode ?? "",
+      country: raw.billing.country ?? "US",
+      phone: raw.billing.phone || undefined,
+      email: raw.billing.email || undefined,
+    },
+    shipping: {
+      firstName: raw.shipping.first_name ?? "",
+      lastName: raw.shipping.last_name ?? "",
+      line1: raw.shipping.address_1 ?? "",
+      line2: raw.shipping.address_2 || undefined,
+      city: raw.shipping.city ?? "",
+      region: raw.shipping.state ?? "",
+      postalCode: raw.shipping.postcode ?? "",
+      country: raw.shipping.country ?? "US",
+      phone: raw.shipping.phone || undefined,
+    },
+    items: raw.line_items.map((li) => ({
+      key: String(li.id),
+      productId: String(li.product_id),
+      variationId: li.variation_id ? String(li.variation_id) : undefined,
+      name: li.name,
+      sku: li.sku,
+      quantity: li.quantity,
+      unitPrice: {
+        amount: Math.round(parseFloat(li.price) * 100),
+        currency: raw.currency,
+      },
+      subtotal: {
+        amount: Math.round(parseFloat(li.total) * 100),
+        currency: raw.currency,
+      },
+      attributes: {},
+    })),
+  };
 }
 
 /**
@@ -182,59 +261,28 @@ export async function getWooOrder(orderId: string): Promise<Order | null> {
       next: { revalidate: 30 },
     });
 
-    return {
-      id: String(raw.id),
-      number: raw.number,
-      status: raw.status as Order["status"],
-      currency: raw.currency,
-      createdAt: new Date().toISOString(), // raw has date_created but typed loosely
-      updatedAt: new Date().toISOString(),
-      subtotal: { amount: Math.round(parseFloat(raw.total) * 100), currency: raw.currency },
-      discountTotal: { amount: 0, currency: raw.currency },
-      shippingTotal: { amount: 0, currency: raw.currency },
-      taxTotal: { amount: 0, currency: raw.currency },
-      total: { amount: Math.round(parseFloat(raw.total) * 100), currency: raw.currency },
-      billing: {
-        firstName: raw.billing.first_name ?? "",
-        lastName: raw.billing.last_name ?? "",
-        line1: raw.billing.address_1 ?? "",
-        line2: raw.billing.address_2 || undefined,
-        city: raw.billing.city ?? "",
-        region: raw.billing.state ?? "",
-        postalCode: raw.billing.postcode ?? "",
-        country: raw.billing.country ?? "US",
-        phone: raw.billing.phone || undefined,
-        email: raw.billing.email || undefined,
-      },
-      shipping: {
-        firstName: raw.shipping.first_name ?? "",
-        lastName: raw.shipping.last_name ?? "",
-        line1: raw.shipping.address_1 ?? "",
-        line2: raw.shipping.address_2 || undefined,
-        city: raw.shipping.city ?? "",
-        region: raw.shipping.state ?? "",
-        postalCode: raw.shipping.postcode ?? "",
-        country: raw.shipping.country ?? "US",
-        phone: raw.shipping.phone || undefined,
-      },
-      items: raw.line_items.map((li) => ({
-        key: String(li.id),
-        productId: String(li.product_id),
-        variationId: li.variation_id ? String(li.variation_id) : undefined,
-        name: li.name,
-        sku: li.sku,
-        quantity: li.quantity,
-        unitPrice: {
-          amount: Math.round(parseFloat(li.price) * 100),
-          currency: raw.currency,
-        },
-        subtotal: {
-          amount: Math.round(parseFloat(li.total) * 100),
-          currency: raw.currency,
-        },
-        attributes: {},
-      })),
-    };
+    return mapRawWooOrder(raw);
+  } catch {
+    return null;
+  }
+}
+
+/** Fetch a Woo order only when the caller has the non-guessable Woo order key. */
+export async function getWooOrderForConfirmation(
+  orderId: string,
+  orderKey: string | undefined,
+): Promise<Order | null> {
+  if (!orderKey) return null;
+
+  try {
+    const raw = await adminFetch<RawWooOrder>({
+      path: `/orders/${orderId}`,
+      next: { revalidate: 30 },
+    });
+
+    if (String(raw.id) !== orderId) return null;
+    if (raw.order_key !== orderKey) return null;
+    return mapRawWooOrder(raw);
   } catch {
     return null;
   }

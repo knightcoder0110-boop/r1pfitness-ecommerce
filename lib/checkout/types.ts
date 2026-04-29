@@ -66,6 +66,8 @@ export interface CheckoutResult {
   clientSecret: string;
   /** Woo order ID — used for the confirmation page. */
   orderId: string;
+  /** Woo order key — lets guest confirmation pages show the real order safely. */
+  orderKey?: string;
   /** Order total in minor units. */
   totalAmount: number;
   /** ISO currency code. */
