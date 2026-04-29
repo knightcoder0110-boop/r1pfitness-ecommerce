@@ -154,6 +154,7 @@ export function HeroRebirth({
               className={cn(
                 "w-full max-w-md sm:max-w-xl lg:max-w-2xl",
                 "text-center md:text-left mx-auto md:mx-0",
+                "md:pl-8 lg:pl-14",
               )}
             >
               {/* Eyebrow */}
