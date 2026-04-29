@@ -379,6 +379,100 @@ body::after {
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   RICH TEXT — single source of truth for WooCommerce / CMS HTML
+   ───────────────────────────────────────────────────────────────────
+   Apply `.rich-text` to any container that renders raw HTML from
+   WooCommerce, a CMS, or dangerouslySetInnerHTML. Never style raw
+   HTML output per-component — add to this block and it propagates.
+
+   Font scale:
+     body copy  → Cormorant Garamond (font-serif), 16px / 1.8 leading
+     headings   → Bebas Neue (font-display), tracked uppercase
+     labels     → Space Mono (font-mono), small-caps  
+   ═══════════════════════════════════════════════════════════════════ */
+
+.rich-text {
+  color: var(--color-text);
+  font-family: var(--font-serif);
+  font-size: 1rem;       /* 16px — comfortable reading size */
+  line-height: 1.8;
+}
+
+.rich-text p {
+  color: var(--color-text);
+  margin-bottom: 0.9em;
+}
+.rich-text p:last-child { margin-bottom: 0; }
+
+.rich-text h1,
+.rich-text h2,
+.rich-text h3,
+.rich-text h4 {
+  font-family: var(--font-display);
+  font-weight: 400;           /* Bebas Neue is already bold by nature */
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-text);
+  line-height: 1.15;
+  margin-top: 1.6em;
+  margin-bottom: 0.45em;
+}
+.rich-text h1:first-child,
+.rich-text h2:first-child,
+.rich-text h3:first-child,
+.rich-text h4:first-child { margin-top: 0; }
+
+.rich-text h2 { font-size: 1.35rem; }
+.rich-text h3 { font-size: 1.15rem; }
+.rich-text h4 { font-size: 1rem; letter-spacing: 0.18em; }
+
+.rich-text ul,
+.rich-text ol {
+  padding-left: 1.4rem;
+  margin-bottom: 0.9em;
+}
+.rich-text li {
+  color: var(--color-text);
+  margin-bottom: 0.35em;
+}
+.rich-text ul > li { list-style-type: disc; }
+.rich-text ol > li { list-style-type: decimal; }
+
+.rich-text strong,
+.rich-text b {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.rich-text em,
+.rich-text i {
+  font-style: italic;
+  color: var(--color-text);
+}
+
+.rich-text a {
+  color: var(--color-gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 150ms ease;
+}
+.rich-text a:hover { color: var(--color-text); }
+
+.rich-text blockquote {
+  border-left: 2px solid var(--color-gold);
+  padding-left: 1rem;
+  font-style: italic;
+  color: var(--color-muted);
+  margin: 1em 0;
+}
+
+.rich-text hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 1.5em 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    FORM PRIMITIVES
    ═══════════════════════════════════════════════════════════════════ */
 
