@@ -29,10 +29,6 @@ export function PriceDisplay({ price, compareAtPrice, className }: PriceDisplayP
   const onSale =
     compareAtPrice !== undefined && compareAtPrice.amount > price.amount;
 
-  const savingsAmount = onSale
-    ? { amount: compareAtPrice.amount - price.amount, currency: price.currency }
-    : null;
-
   const savingsPercent = onSale
     ? Math.round(((compareAtPrice.amount - price.amount) / compareAtPrice.amount) * 100)
     : null;
@@ -77,13 +73,6 @@ export function PriceDisplay({ price, compareAtPrice, className }: PriceDisplayP
           )}
         >
           −{savingsPercent}% OFF
-        </span>
-      ) : null}
-
-      {/* You-save line */}
-      {onSale && savingsAmount ? (
-        <span className="basis-full font-serif italic text-sm text-muted">
-          You save {formatMoney(savingsAmount)}
         </span>
       ) : null}
     </div>
