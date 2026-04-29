@@ -18,8 +18,12 @@ import {
   DEFAULT_STOCK_STATUS,
   SIZE_LABEL_NORMALIZATION,
   SIZE_MENU_ORDER,
+  TIER_LABEL_NORMALIZATION,
+  TIER_MENU_ORDER,
+  STYLE_MENU_ORDER,
   GOOGLE_CATEGORY_MAP,
   HANDLE_CATEGORY_FALLBACK,
+  HANDLE_CATEGORY_OVERRIDE,
   SKIP_GOOGLE_CATEGORY_PREFIXES,
   TAG_PREFIX_ROUTING,
   CATEGORY_TREE,
@@ -166,6 +170,23 @@ export function slugify(input: string): string {
     .replace(/^-|-$/g, "");
 }
 
+export function normalizeTierLabel(raw: string): string {
+  const key = raw.trim().toLowerCase().replace(/\s{2,}/g, " ").replace(/\u2014.*$/, "").trim();
+  return TIER_LABEL_NORMALIZATION[key] ?? raw.trim();
+}
+
+export function tierSlug(label: string): string {
+  return slugify(normalizeTierLabel(label));
+}
+
+export function tierMenuOrder(slug: string): number {
+  return TIER_MENU_ORDER[slug] ?? 999;
+}
+
+export function styleMenuOrder(slug: string): number {
+  return STYLE_MENU_ORDER[slug] ?? 999;
+}
+
 export function normalizeSizeLabel(raw: string): string {
   // Normalize: lowercase, collapse whitespace, strip non-word except hyphen
   const key = raw.trim().toLowerCase().replace(/\s+/g, "-");
@@ -208,6 +229,9 @@ export function styleCode(handle: string): string {
 const CATEGORY_LOOKUP = new Map(CATEGORY_TREE.map((c) => [c.slug, c]));
 
 export function resolveCategory(g: ProductGroup): string {
+  // Per-handle override takes priority over all other rules
+  if (HANDLE_CATEGORY_OVERRIDE[g.handle]) return HANDLE_CATEGORY_OVERRIDE[g.handle]!;
+
   // Try longest Google taxonomy match first
   const byGoogle = [...GOOGLE_CATEGORY_MAP]
     .sort((a, b) => b.contains.length - a.contains.length)
@@ -348,8 +372,7 @@ function addTerm(acc: AttrAccumulator, label: string, menuOrder?: number): { slu
 /**
  * Map a Shopify Option name to a global attribute taxonomy.
  * Returns null for dimensions we should ignore (e.g. "Title" placeholder,
- * protein-shake "Vanilla"/"Chocolate" flavors on excluded products, "Style"
- * which is Shopify's catch-all for per-SKU design names, etc.).
+ * protein-shake "Vanilla"/"Chocolate" flavors on excluded products, etc.).
  */
 function routeOptionName(optName: string): { taxonomy: string; name: string } | null {
   const n = optName.trim().toLowerCase();
@@ -357,11 +380,10 @@ function routeOptionName(optName: string): { taxonomy: string; name: string } | 
   if (n === "size" || n === "sock length") return { taxonomy: "pa_size", name: "Size" };
   if (n === "color") return { taxonomy: "pa_color", name: "Color" };
   if (n === "fit") return { taxonomy: "pa_fit", name: "Fit" };
-  // "Style" is Shopify's dumping-ground for any non-size/color variant axis —
-  // design names, flavors, collab codes. On our catalog it's noise (hats are
-  // already split into separate products; drinks get filtered out). Emit
-  // nothing to pa_*; the `_shopify_style` post_meta preserves the info.
-  if (n === "style") return null;
+  // "Style" on the mystery box = Male / Female / Unisex — a real variation axis.
+  if (n === "style") return { taxonomy: "pa_style", name: "Style" };
+  // "Tier" on the mystery box = Starter Pack / Pro Pack / Grail Pack / Mega Tier.
+  if (n === "tier") return { taxonomy: "pa_tier", name: "Tier" };
   // Unknown option — skip rather than pollute the global namespace
   return null;
 }
@@ -398,6 +420,11 @@ export function buildAttributes(g: ProductGroup, routed: RoutedTags): BuiltAttri
     if (route.taxonomy === "pa_size") {
       label = normalizeSizeLabel(optValue);
       menuOrder = sizeMenuOrder(sizeSlug(label));
+    } else if (route.taxonomy === "pa_tier") {
+      label = normalizeTierLabel(optValue);
+      menuOrder = tierMenuOrder(tierSlug(optValue));
+    } else if (route.taxonomy === "pa_style") {
+      menuOrder = styleMenuOrder(slugify(optValue));
     }
     const term = addTerm(acc, label, menuOrder);
     if (!term.slug) return;
@@ -445,8 +472,8 @@ export function buildAttributes(g: ProductGroup, routed: RoutedTags): BuiltAttri
   // Build final attribute array
   let position = 0;
   const attributes: PlannedProduct["attributes"] = [];
-  // Deterministic order: size, color, fit, collab, drop, material
-  const order = ["pa_size", "pa_color", "pa_fit", "pa_collab", "pa_drop", "pa_material"];
+  // Deterministic order: size, color, fit, collab, drop, material, style, tier
+  const order = ["pa_size", "pa_color", "pa_fit", "pa_collab", "pa_drop", "pa_material", "pa_style", "pa_tier"];
   const seen = new Set<string>();
   const emit = (taxonomy: string) => {
     const a = accumulators.get(taxonomy);
@@ -513,20 +540,29 @@ export function generateSku(
     const n = name.trim().toLowerCase();
     if (n === "color") colorVal = val;
     else if (n === "size" || n === "sock length") sizeVal = val;
+    else if (n === "style") styleVal = val;
+    else if (n === "tier") tierVal = val;
   };
+  let styleVal = "", tierVal = "";
   map(opt1Name, variant.opt1);
   map(opt2Name, variant.opt2);
+  map(_opt3Name, variant.opt3);
 
   const color = colorVal ? colorAbbr(colorVal) : "";
   const size = sizeVal ? slugify(normalizeSizeLabel(sizeVal)).toUpperCase() : "";
+  // Encode style (M/F/U) and tier abbreviation so mystery box variants get unique SKUs
+  const styleAbbr = styleVal ? styleVal.trim().toUpperCase().slice(0, 1) : "";
+  const tierAbbr = tierVal
+    ? normalizeTierLabel(tierVal).split(" ").map((w) => w[0]!.toUpperCase()).join("").slice(0, 4)
+    : "";
 
-  const parts = ["R1P", cat, style, color, size].filter(Boolean);
+  const parts = ["R1P", cat, style, color, styleAbbr, tierAbbr, size].filter(Boolean);
   let sku = parts.join("-");
   if (sku.length > SKU_MAX_LENGTH) {
     // Truncate the style portion
     const overflow = sku.length - SKU_MAX_LENGTH;
     const shortened = style.slice(0, Math.max(3, style.length - overflow));
-    sku = ["R1P", cat, shortened, color, size].filter(Boolean).join("-");
+    sku = ["R1P", cat, shortened, color, styleAbbr, tierAbbr, size].filter(Boolean).join("-");
   }
   return sku;
 }

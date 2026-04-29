@@ -9,6 +9,7 @@ import { StickyAddToCart } from "@/components/product/sticky-add-to-cart";
 import { StockScarcity } from "@/components/product/stock-scarcity";
 import { TrustStrip } from "@/components/product/trust-strip";
 import { Button } from "@/components/ui/button";
+import { PriceDisplay } from "@/components/product/price-display";
 import { useServerCart } from "@/lib/cart";
 import { useToastStore } from "@/lib/toast";
 import { useActiveVariationStore } from "@/lib/active-variation-store";
@@ -17,6 +18,13 @@ import type { Product, ProductVariation } from "@/lib/woo/types";
 
 export interface ProductPurchaseProps {
   product: Product;
+  /**
+   * Server-rendered slot rendered just above the ATC button row.
+   * Pass `<ProductAddonGrid>` from the page (server component) — Next.js App
+   * Router allows passing server component trees as ReactNode props to client
+   * components, preserving the server/client boundary cleanly.
+   */
+  addonSlot?: React.ReactNode;
 }
 
 /**
@@ -31,7 +39,7 @@ export interface ProductPurchaseProps {
  * Keeping this isolated means the PDP page itself stays a server component
  * and can remain `generateStaticParams`-friendly.
  */
-export function ProductPurchase({ product }: ProductPurchaseProps) {
+export function ProductPurchase({ product, addonSlot }: ProductPurchaseProps) {
   const { addItem, open: openCart } = useServerCart();
   const showToast = useToastStore((s) => s.show);
   const setVariantImage = useActiveVariationStore((s) => s.setVariantImage);
@@ -45,8 +53,17 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
     [product.attributes],
   );
 
-  // Selected attribute values: { pa_size: "M", pa_color: "Coral" }.
-  const [selected, setSelected] = useState<Record<string, string>>({});
+  // Selected attribute values: { pa_tier: "Starter Pack", pa_size: "S", pa_style: "Male" }.
+  // Pre-select the first available option for every variation attribute so that
+  // allSelected is true on mount — clicking a different Tier immediately
+  // updates the price without also requiring Size + Style to be clicked first.
+  const [selected, setSelected] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    for (const a of product.attributes) {
+      if (a.variation && a.options[0]) initial[a.id] = a.options[0];
+    }
+    return initial;
+  });
 
   const allSelected = requiredAttrs.every((a) => Boolean(selected[a.id]));
 
@@ -122,6 +139,16 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Reactive price — updates immediately when tier is clicked */}
+      <PriceDisplay
+        price={matchingVariation?.price ?? product.price}
+        {...(
+          (matchingVariation?.compareAtPrice ?? product.compareAtPrice)
+            ? { compareAtPrice: matchingVariation?.compareAtPrice ?? product.compareAtPrice }
+            : {}
+        )}
+      />
+
       {/* Stock scarcity — reacts to selected variation */}
       <StockScarcity product={product} variation={matchingVariation} />
 
@@ -159,6 +186,14 @@ export function ProductPurchase({ product }: ProductPurchaseProps) {
           onChange={setSelected}
         />
       )}
+      {/* Recommended add-ons — just above ATC */}
+      {addonSlot ? (
+        <>
+          <hr className="border-border" />
+          {addonSlot}
+        </>
+      ) : null}
+
       {/* ATC row: main button + wishlist icon side by side */}
       <div className="flex gap-2">
         <Button

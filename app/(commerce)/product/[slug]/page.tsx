@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductGallery, ProductPurchase, RelatedProducts } from "@/components/product";
-import { ProductAddons } from "@/components/product/product-addons";
+import { ProductAddonGrid } from "@/components/product/product-addon-grid";
 import { ProductBadgeBar } from "@/components/product/product-badge-bar";
 import { DescriptionReadMore } from "@/components/product/description-read-more";
 import { ShareButton } from "@/components/product/share-button";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Container } from "@/components/ui/container";
 import { Heading } from "@/components/ui/heading";
-import { Price } from "@/components/ui/price";
 import { getCatalog } from "@/lib/catalog";
 import { ROUTES, SITE } from "@/lib/constants";
 import { productSchema, breadcrumbSchema } from "@/lib/seo";
@@ -96,7 +95,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </div>
 
         {/* ── Right: product info ── */}
-        <div className="flex flex-col gap-6 sm:gap-7">
+        <div className="flex flex-col gap-4 sm:gap-5">
           {/* Tag-driven badge bar — shows highest-priority badge (new arrival, bestseller, few left, etc.) */}
           <ProductBadgeBar product={product} />
 
@@ -111,29 +110,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
             />
           </div>
 
-          {/* Price */}
-          <Price
-            price={product.price}
-            {...(product.compareAtPrice ? { compareAtPrice: product.compareAtPrice } : {})}
-            size="lg"
+          {/* Purchase — price → scarcity → variants → addon grid → ATC → trust */}
+          <ProductPurchase
+            product={product}
+            addonSlot={<ProductAddonGrid currentProduct={product} />}
           />
-
-          {/* Short description */}
-          {product.shortDescription ? (
-            <div
-              className="font-serif text-base sm:text-lg italic text-muted [&_p]:mb-0"
-              dangerouslySetInnerHTML={{ __html: product.shortDescription }}
-            />
-          ) : null}
-
-          {/* Divider */}
-          <hr className="border-border" />
-
-          {/* Complete the Look — add-on products */}
-          <ProductAddons currentProduct={product} />
-
-          {/* Purchase — scarcity + variants + qty + ATC + trust strip (inside) */}
-          <ProductPurchase product={product} />
 
           {/* Description accordion */}
           {product.description ? (

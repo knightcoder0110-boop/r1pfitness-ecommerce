@@ -24,7 +24,6 @@ export const EXCLUDE_MANIFEST: ExcludeEntry[] = [
   { handle: "r1pfitness-1-week-gym-pass",     reason: "Service: gym membership — POS only" },
   { handle: "studio-rental-hrs-2",            reason: "Service: studio rental" },
   { handle: "get-r1pped-30-day-challange",    reason: "Service: 30-day challenge program" },
-  { handle: "mystery-package",                reason: "Mystery box — needs manual curation, holdback for now" },
 
   // ── Honolulu Marathon one-offs (no inventory, event-specific) ─────────────
   { handle: "honolulu-marathon-singlet",          reason: "Event-specific item, no inventory/images" },

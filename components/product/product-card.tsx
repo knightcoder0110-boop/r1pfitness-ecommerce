@@ -87,16 +87,25 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
           </div>
         )}
 
-        {/* Badges — top-left, driven by the shared badge system */}
+        {/* Badges — top-left, driven by the shared badge system.
+            Max 1 on mobile to avoid crowding the wishlist button. */}
         <div className="absolute top-3 left-3 z-10">
           <ProductBadgeRow
             product={product}
+            max={1}
+            className="flex-col items-start gap-1.5 sm:hidden"
+          />
+          <ProductBadgeRow
+            product={product}
             max={2}
-            className="flex-col items-start gap-1.5"
+            className="hidden flex-col items-start gap-1.5 sm:flex"
           />
         </div>
 
-        <WishlistButton product={product} />
+        <WishlistButton product={product} className="sm:flex hidden" />
+
+        {/* Mobile wishlist: smaller, less opaque so it doesn't crowd the badge */}
+        <WishlistButton product={product} className="sm:hidden size-8" />
 
         {/* Quick Add — real action: variable products open the modal,
             simple products add to cart in one click. Hidden when sold out

@@ -1,11 +1,19 @@
 import {
   BADGE_DEFINITIONS,
-  getDiscountPercent,
   getPrimaryBadge,
   type BadgeResolvable,
+  type BadgeTone,
 } from "@/lib/badges";
 import { cn } from "@/lib/utils/cn";
-import { badgeIcon, getToneStyles } from "./product-badge";
+import { badgeIcon } from "./product-badge";
+
+/** Solid fill per tone — matches the metallic add-to-cart button language. */
+const SOLID_TONE: Record<BadgeTone, string> = {
+  gold: "bg-[linear-gradient(170deg,#E6C56A_0%,#D4AF55_28%,#C9A84C_55%,#A88934_100%)] text-bg",
+  coral: "bg-coral text-white",
+  ocean: "bg-ocean text-white",
+  sand: "bg-surface-3 text-text border border-border-strong",
+};
 
 export interface ProductBadgeBarProps {
   product: BadgeResolvable;
@@ -35,64 +43,30 @@ export function ProductBadgeBar({ product, className }: ProductBadgeBarProps) {
   if (!kind) return null;
 
   const def = BADGE_DEFINITIONS[kind];
-  const tone = getToneStyles(def.tone);
   const Icon = badgeIcon(def.icon);
-
-  // For sale badges, replace the static tagline with the actual % off.
-  const tagline =
-    kind === "sale"
-      ? `${getDiscountPercent(product) ?? 0}% off — for a limited window`
-      : def.tagline;
 
   return (
     <aside
       role="note"
-      aria-label={`${def.label}: ${tagline}`}
+      aria-label={def.label}
       data-badge-bar={kind}
       className={cn(
-        "relative flex h-11 sm:h-12 items-center overflow-hidden rounded-sm",
-        "border border-border",
-        tone.bar,
+        "inline-flex items-center gap-1.5 self-start",
+        "rounded-sm px-2.5 py-1",
+        SOLID_TONE[def.tone],
         className,
       )}
     >
-      {/* Left accent rail */}
-      <span
+      <Icon
         aria-hidden
-        className={cn("absolute inset-y-0 left-0 w-1", tone.accent)}
+        strokeWidth={2.5}
+        className="size-3 shrink-0"
       />
-
-      <div className="flex w-full items-center gap-3 pl-4 pr-3 sm:pl-5 sm:pr-4">
-        <Icon
-          aria-hidden
-          strokeWidth={2}
-          className={cn("size-4 sm:size-4.5 shrink-0", tone.icon)}
-        />
-
-        <span
-          className={cn(
-            "font-mono uppercase tracking-[0.22em] leading-none",
-            "text-[11px] sm:text-xs font-bold",
-            tone.label,
-          )}
-        >
-          {def.label}
-        </span>
-
-        {/* Divider + tagline — desktop only */}
-        <span
-          aria-hidden
-          className="hidden sm:inline-block h-3 w-px bg-border-strong/60"
-        />
-        <span
-          className={cn(
-            "hidden sm:inline-block truncate font-serif italic",
-            "text-sm text-muted",
-          )}
-        >
-          {tagline}
-        </span>
-      </div>
+      <span
+        className="font-mono text-[10px] uppercase tracking-[0.22em] font-bold leading-none"
+      >
+        {def.label}
+      </span>
     </aside>
   );
 }

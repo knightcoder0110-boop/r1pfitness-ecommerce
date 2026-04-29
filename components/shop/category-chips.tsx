@@ -4,6 +4,25 @@ import { getCatalog } from "@/lib/catalog";
 import { DEFAULT_SORT } from "@/lib/shop";
 import { cn } from "@/lib/utils/cn";
 
+/**
+ * Maps a WooCommerce category slug to a user-facing display override.
+ * Used to correct Woo category names without needing a WooCommerce admin edit.
+ */
+const CATEGORY_DISPLAY_OVERRIDES: Record<
+  string,
+  { label: string; href: string; activeWhen: string[] }
+> = {
+  /**
+   * The WooCommerce category slug is "mystery-boxes" but the admin-entered
+   * name is "Mystry-box" (typo). Override to the correct brand label.
+   */
+  "mystery-boxes": {
+    label: "Mystery Boxes",
+    href: ROUTES.category("mystery-boxes"),
+    activeWhen: ["mystery-boxes"],
+  },
+};
+
 interface CategoryChipsProps {
   /** Currently active category slug, or null when on /shop (All). */
   activeSlug: string | null;
@@ -37,12 +56,17 @@ export async function CategoryChips({ activeSlug, currentSort, className }: Cate
       href: `${ROUTES.shop}${sortSuffix}`,
       active: activeSlug === null,
     },
-    ...categories.map((c) => ({
-      key: c.slug,
-      label: c.name,
-      href: `${ROUTES.category(c.slug)}${sortSuffix}`,
-      active: c.slug === activeSlug,
-    })),
+    ...categories.map((c) => {
+      const override = CATEGORY_DISPLAY_OVERRIDES[c.slug];
+      return {
+        key: c.slug,
+        label: override ? override.label : c.name,
+        href: override ? `${override.href}${sortSuffix}` : `${ROUTES.category(c.slug)}${sortSuffix}`,
+        active: override
+          ? override.activeWhen.includes(activeSlug ?? "")
+          : c.slug === activeSlug,
+      };
+    }),
   ];
 
   return (

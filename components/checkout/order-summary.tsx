@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { CartLineItem as LineItem } from "@/lib/woo/types";
+import type { CartLineItem as LineItem, Money } from "@/lib/woo/types";
 import { Price } from "@/components/ui/price";
 import { ROUTES } from "@/lib/constants";
 import {
@@ -11,12 +11,19 @@ import { formatMoney } from "@/lib/utils/format";
 interface OrderSummaryProps {
   items: LineItem[];
   subtotal: { amount: number; currency: string };
+  /** Active coupon (code + discount in minor units). Optional. */
+  coupon?: { code: string; discount: Money; freeShipping?: boolean } | null;
   className?: string;
 }
 
-export function OrderSummary({ items, subtotal, className }: OrderSummaryProps) {
-  const shippingCents = calculateShippingCents(subtotal.amount);
+export function OrderSummary({ items, subtotal, coupon, className }: OrderSummaryProps) {
   const currency = subtotal.currency;
+  // Discount + shipping are computed from the discounted subtotal so the
+  // numbers shown here match the cart page and what WooCommerce will charge.
+  const discountCents = coupon?.discount.amount ?? 0;
+  const discountedSubtotalCents = Math.max(0, subtotal.amount - discountCents);
+  const shippingCents = coupon?.freeShipping ? 0 : calculateShippingCents(discountedSubtotalCents);
+  const totalCents = discountedSubtotalCents + shippingCents;
   return (
     <aside
       aria-label="Order summary"
@@ -62,6 +69,14 @@ export function OrderSummary({ items, subtotal, className }: OrderSummaryProps) 
             <Price price={subtotal} size="sm" />
           </dd>
         </div>
+        {coupon && (
+          <div className="flex justify-between">
+            <dt className="text-muted">Discount ({coupon.code})</dt>
+            <dd className="text-green-500 tabular-nums">
+              −{formatMoney(coupon.discount)}
+            </dd>
+          </div>
+        )}
         <div className="flex justify-between">
           <dt className="text-muted">Shipping</dt>
           <dd className="text-text tabular-nums">
@@ -71,6 +86,12 @@ export function OrderSummary({ items, subtotal, className }: OrderSummaryProps) 
         <div className="flex justify-between">
           <dt className="text-muted">Taxes</dt>
           <dd className="text-muted">Calculated next step</dd>
+        </div>
+        <div className="flex justify-between border-t border-border pt-3 text-text">
+          <dt>Total</dt>
+          <dd className="tabular-nums">
+            <Price price={{ amount: totalCents, currency }} size="sm" />
+          </dd>
         </div>
       </dl>
 

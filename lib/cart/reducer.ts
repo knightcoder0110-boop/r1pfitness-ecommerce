@@ -15,7 +15,7 @@ export interface CartState {
   items: CartLineItem[];
   currency: string;
   /** Applied coupon + discount amount. null when no coupon is active. */
-  coupon: { code: string; discount: Money } | null;
+  coupon: { code: string; discount: Money; freeShipping: boolean } | null;
 }
 
 export const EMPTY_CART: CartState = { items: [], currency: "USD", coupon: null };

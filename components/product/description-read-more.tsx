@@ -69,13 +69,15 @@ export function DescriptionReadMore({
         {isTall && <ToggleButton expanded={expanded} onClick={toggle} />}
       </div>
 
-      {/* Content */}
+      {/* Content — `.rich-text` in globals.css is the single source of
+          truth for all WooCommerce / CMS HTML styling. Never style raw
+          HTML output here — add rules to that class instead. */}
       <div
         ref={contentRef}
         className={cn(
-          "prose prose-invert max-w-none font-serif text-muted",
+          "rich-text",
           "transition-[max-height] duration-500 ease-out overflow-hidden",
-          !expanded && isTall ? "max-h-[140px]" : "max-h-[none]",
+          !expanded && isTall ? "max-h-35" : "max-h-none",
         )}
         dangerouslySetInnerHTML={{ __html: html }}
       />
@@ -85,7 +87,7 @@ export function DescriptionReadMore({
         <>
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-0 bottom-7 h-16 bg-gradient-to-t from-bg to-transparent"
+            className="pointer-events-none absolute inset-x-0 bottom-7 h-16 bg-linear-to-t from-bg to-transparent"
           />
           <ToggleButton expanded={false} onClick={toggle} />
         </>

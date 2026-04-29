@@ -41,7 +41,7 @@ export interface RawStoreAttribute {
   name: string;
   taxonomy?: string;
   has_variations?: boolean;
-  terms?: Array<{ name: string; slug: string }>;
+  terms?: Array<{ id?: number; name: string; slug: string }>;
 }
 
 export interface RawStoreProduct {
@@ -253,13 +253,18 @@ export function mapCategory(raw: RawStoreCategory): ProductCategory {
 
 function mapAttributes(raw: RawStoreAttribute[] | undefined): ProductAttribute[] {
   if (!raw) return [];
-  return raw.map((a) => ({
-    id: a.taxonomy ?? a.name,
-    name: a.name,
-    options: (a.terms ?? []).map((t) => t.name),
-    variation: a.has_variations ?? false,
-    visible: true,
-  }));
+  return raw.map((a) => {
+    // Sort terms by WooCommerce term id ascending (= creation order), so
+    // Starter Pack → Pro Pack → Grail Pack → Mega Tier instead of alphabetical.
+    const sortedTerms = [...(a.terms ?? [])].sort((x, y) => (x.id ?? 0) - (y.id ?? 0));
+    return {
+      id: a.taxonomy ?? a.name,
+      name: a.name,
+      options: sortedTerms.map((t) => t.name),
+      variation: a.has_variations ?? false,
+      visible: true,
+    };
+  });
 }
 
 function mapMetaDataRecord(raw: RawStoreProduct["meta_data"]): Record<string, unknown> {
@@ -410,6 +415,8 @@ export function mapCart(raw: RawStoreCart, token: string): Cart {
     coupons: (raw.coupons ?? []).map((c) => ({
       code: c.code,
       discount: money(c.totals.total_discount, c.totals.currency_code),
+      // Enriched to true by getCart/applyCoupon after a REST API lookup.
+      freeShipping: false,
     })),
   };
 }

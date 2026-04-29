@@ -189,10 +189,9 @@ export default async function HomePage() {
         {/* ══════════════════════════════════════════════════════════
             1.5 SHOP BY CATEGORY — horizontal scroll directly under hero
             Hand-curated tiles (see HomeCategoryScroller). "Bottoms" maps
-            to /shop/bottoms which renders a curated joggers+shorts view
-            (see shop/[category]/page.tsx alias handling); "Mystery Boxes"
-            renders a graceful coming-soon state until the category is
-            created in Woo.
+            to /shop/bottoms which renders a curated joggers+shorts view;
+            "Mystery Boxes" maps to /shop/mystery-boxes which fetches the
+            real `bundles` WooCommerce category (see shop/[category]/page.tsx).
             ══════════════════════════════════════════════════════════ */}
         <HomeCategoryScroller
           eyebrow="Shop by Category"
@@ -227,8 +226,7 @@ export default async function HomePage() {
               label: "Mystery Boxes",
               href: ROUTES.category("mystery-boxes"),
               image: "/images/products/gift-boxes/gift-boxes.png",
-              tagline: "Drop Zero",
-              note: "Coming soon",
+              tagline: "From $100",
             },
           ]}
         />

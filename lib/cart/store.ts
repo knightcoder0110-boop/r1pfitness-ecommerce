@@ -94,7 +94,7 @@ export const useCartStore = create<CartStoreState>()(
           if (s.items.length > 0) return {};
           const coupon =
             cart.coupons.length > 0
-              ? { code: cart.coupons[0]!.code, discount: cart.coupons[0]!.discount }
+              ? { code: cart.coupons[0]!.code, discount: cart.coupons[0]!.discount, freeShipping: cart.coupons[0]!.freeShipping }
               : null;
           return { items: cart.items, currency: cart.currency, coupon };
         }),
@@ -103,7 +103,7 @@ export const useCartStore = create<CartStoreState>()(
         set(() => {
           const coupon =
             cart.coupons.length > 0
-              ? { code: cart.coupons[0]!.code, discount: cart.coupons[0]!.discount }
+              ? { code: cart.coupons[0]!.code, discount: cart.coupons[0]!.discount, freeShipping: cart.coupons[0]!.freeShipping }
               : null;
           return { items: cart.items, currency: cart.currency, coupon };
         }),

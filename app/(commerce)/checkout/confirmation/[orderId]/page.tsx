@@ -9,10 +9,12 @@ import { CheckoutSuccessSync } from "@/components/checkout/checkout-success-sync
 import { TrackPurchaseClient } from "@/components/analytics/track-purchase-client";
 import { auth } from "@/auth";
 import { getCustomerOrder } from "@/lib/auth/woo-customer";
+import { getWooOrderForConfirmation } from "@/lib/checkout";
 import { ROUTES, SITE } from "@/lib/constants";
 
 interface ConfirmationPageProps {
   params: Promise<{ orderId: string }>;
+  searchParams: Promise<{ key?: string | string[] }>;
 }
 
 export const metadata: Metadata = {
@@ -29,11 +31,14 @@ export const metadata: Metadata = {
  * If the order is not found (invalid orderId) we still show a generic success
  * message — the payment succeeded even if the fetch fails.
  */
-export default async function ConfirmationPage({ params }: ConfirmationPageProps) {
+export default async function ConfirmationPage({ params, searchParams }: ConfirmationPageProps) {
   const { orderId } = await params;
+  const { key } = await searchParams;
+  const orderKey = Array.isArray(key) ? key[0] : key;
   const session = await auth();
   const customerId = session?.user.wooCustomerId ?? "0";
-  const order = await getCustomerOrder(orderId, customerId);
+  const customerOrder = await getCustomerOrder(orderId, customerId);
+  const order = customerOrder ?? await getWooOrderForConfirmation(orderId, orderKey);
   const itemCount = order?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
   const shippingName = order
     ? [order.shipping.firstName, order.shipping.lastName].filter(Boolean).join(" ")

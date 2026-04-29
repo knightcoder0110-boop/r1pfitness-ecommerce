@@ -208,6 +208,8 @@ export interface Cart {
 export interface AppliedCoupon {
   code: string;
   discount: Money;
+  /** True when WooCommerce has this coupon's `free_shipping` flag set. */
+  freeShipping: boolean;
 }
 
 export type OrderStatus =

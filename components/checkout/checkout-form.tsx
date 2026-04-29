@@ -13,10 +13,11 @@ import { AddressFields } from "./address-fields";
 import { Field } from "./field";
 import { Button } from "@/components/ui/button";
 import { Price } from "@/components/ui/price";
-import { useCartActions, useCartItems, useCartSubtotal } from "@/lib/cart";
+import { useCartActions, useCartCoupon, useCartItems, useCartSubtotal } from "@/lib/cart";
 import { trackBeginCheckout } from "@/lib/analytics";
 import type { CheckoutResult } from "@/lib/checkout/types";
 import { ROUTES } from "@/lib/constants";
+import { calculateShippingCents } from "@/lib/constants/shipping";
 
 // ── Stripe loader (singleton) ──────────────────────────────────────────────
 
@@ -33,11 +34,17 @@ function getStripePromise() {
 
 interface InnerFormProps {
   orderId: string;
+  orderKey?: string;
   totalAmount: number;
   currency: string;
 }
 
-function PaymentForm({ orderId, totalAmount, currency }: InnerFormProps) {
+function confirmationPath(orderId: string, orderKey?: string) {
+  const path = ROUTES.checkoutConfirmation(orderId);
+  return orderKey ? `${path}?key=${encodeURIComponent(orderKey)}` : path;
+}
+
+function PaymentForm({ orderId, orderKey, totalAmount, currency }: InnerFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const router = useRouter();
@@ -50,10 +57,11 @@ function PaymentForm({ orderId, totalAmount, currency }: InnerFormProps) {
     setIsProcessing(true);
     setPaymentError(null);
 
+    const confirmedPath = confirmationPath(orderId, orderKey);
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}${ROUTES.checkoutConfirmation(orderId)}`,
+        return_url: `${window.location.origin}${confirmedPath}`,
       },
       redirect: "if_required",
     });
@@ -66,7 +74,7 @@ function PaymentForm({ orderId, totalAmount, currency }: InnerFormProps) {
 
     // Payment succeeded without redirect (e.g. cards, some wallets).
     clear();
-    router.push(ROUTES.checkoutConfirmation(orderId));
+    router.push(confirmedPath);
   }
 
   return (
@@ -96,6 +104,7 @@ function PaymentForm({ orderId, totalAmount, currency }: InnerFormProps) {
 export function CheckoutForm() {
   const items = useCartItems();
   const subtotal = useCartSubtotal();
+  const coupon = useCartCoupon();
   const [step, setStep] = useState<"address" | "payment">("address");
   const [checkoutResult, setCheckoutResult] = useState<CheckoutResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -136,6 +145,7 @@ export function CheckoutForm() {
         sku: item.sku,
         attributes: item.attributes,
       })),
+      ...(coupon ? { coupons: [coupon.code] } : {}),
     };
 
     try {
@@ -173,6 +183,7 @@ export function CheckoutForm() {
           quantity: item.quantity,
           variationId: item.variationId,
         })),
+        ...(coupon ? { coupon: coupon.code } : {}),
       });
       setCheckoutResult(json.data as CheckoutResult);
       setStep("payment");
@@ -214,6 +225,7 @@ export function CheckoutForm() {
           </div>
           <PaymentForm
             orderId={checkoutResult.orderId}
+            orderKey={checkoutResult.orderKey}
             totalAmount={checkoutResult.totalAmount}
             currency={checkoutResult.currency}
           />
@@ -268,9 +280,18 @@ export function CheckoutForm() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <span className="font-mono text-xs uppercase tracking-[0.2em] text-muted">
-          Subtotal:{" "}
+          {coupon ? "Total (excl. tax):" : "Subtotal:"}{" "}
           <span className="text-text">
-            <Price price={subtotal} />
+            <Price
+              price={{
+                amount:
+                  Math.max(0, subtotal.amount - (coupon?.discount.amount ?? 0)) +
+                  calculateShippingCents(
+                    Math.max(0, subtotal.amount - (coupon?.discount.amount ?? 0)),
+                  ),
+                currency: subtotal.currency,
+              }}
+            />
           </span>
         </span>
         <Button type="submit" size="lg" full disabled={isSubmitting} className="sm:w-auto">

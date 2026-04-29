@@ -36,7 +36,41 @@ export const GLOBAL_ATTRIBUTES: GlobalAttributeDef[] = [
   { slug: "drop",     taxonomy: "pa_drop",     name: "Drop",     type: "select", order_by: "menu_order", has_archives: true  },
   { slug: "material", taxonomy: "pa_material", name: "Material", type: "select", order_by: "menu_order", has_archives: false },
   { slug: "collab",   taxonomy: "pa_collab",   name: "Collab",   type: "select", order_by: "menu_order", has_archives: true  },
+  // Mystery box dimensions
+  { slug: "style",    taxonomy: "pa_style",    name: "Style",    type: "select", order_by: "menu_order", has_archives: false },
+  { slug: "tier",     taxonomy: "pa_tier",     name: "Tier",     type: "select", order_by: "menu_order", has_archives: false },
 ];
+
+// ── Canonical tier ordering (menu_order for pa_tier terms) ─────────────────
+export const TIER_MENU_ORDER: Record<string, number> = {
+  "starter-pack": 1,
+  "pro-pack":     2,
+  "grail-pack":   3,
+  "mega-tier":    4,
+};
+
+// ── Tier label normalization ─────────────────────────────────────────────────
+// Unifies inconsistent CSV casing ("pro pack" → "Pro Pack") and truncates
+// the verbose MEGA TIER name used in the Shopify CSV.
+export const TIER_LABEL_NORMALIZATION: Record<string, string> = {
+  "starter pack": "Starter Pack",
+  "pro pack":     "Pro Pack",
+  "grail pack":   "Grail Pack",
+  "mega tier":    "Mega Tier",
+};
+
+// ── Style (gender) ordering (menu_order for pa_style terms) ──────────────────
+export const STYLE_MENU_ORDER: Record<string, number> = {
+  male:   1,
+  female: 2,
+  unisex: 3,
+};
+
+// ── Per-handle category override (checked before Google taxonomy match) ──────
+// Use when the Google category string would give the wrong Woo leaf category.
+export const HANDLE_CATEGORY_OVERRIDE: Record<string, string> = {
+  "mystery-package": "bundles",
+};
 
 // ── Canonical size ordering (menu_order for pa_size terms) ───────────────────
 // Lower = shown first. Unknown sizes fall back to alphabetical via order 999.
@@ -114,6 +148,9 @@ export const CATEGORY_TREE: CategoryDef[] = [
   // Collections + sub-collections
   { slug: "collections", name: "Collections", description: "Exclusive R1P Fitness themed collections." },
   { slug: "faith",       name: "Faith",       parent: "collections", description: "Faith-inspired apparel — wear your beliefs." },
+
+  // Bundles + mystery boxes
+  { slug: "bundles",     name: "Bundles",     parent: "drops",       description: "Mystery boxes and multi-item bundles." },
 ];
 
 // ── SKU category codes (short tokens for `R1P-{CAT}-{STYLE}-{COLOR}-{SIZE}`) ──
@@ -132,6 +169,7 @@ export const SKU_CAT_CODE: Record<string, string> = {
   accessories: "ACC",
   collabs:     "CLB",
   drops:       "DRP",
+  bundles:     "BDL",
   apparel:     "APP",          // fallback
 };
 

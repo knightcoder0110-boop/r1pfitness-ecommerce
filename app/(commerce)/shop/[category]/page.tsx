@@ -18,7 +18,8 @@ import type { ProductCategory } from "@/lib/woo/types";
  * page so these URLs never 404.
  *
  *  - `bottoms` → merges Woo categories `joggers` + `shorts` into one view.
- *  - `mystery-boxes` → coming-soon state (no underlying products yet).
+ *  - `mystery-boxes` → merges Woo category `bundles` (the seeded mystery
+ *    package drop) under a user-facing "Mystery Boxes" brand URL.
  *
  * Once these are created in Woo admin, delete the corresponding entry
  * and the real category will take over automatically.
@@ -46,10 +47,10 @@ const VIRTUAL_CATEGORIES: Record<
       id: "virtual-mystery-boxes",
       slug: "mystery-boxes",
       name: "Mystery Boxes",
-      description: "Curated surprise drops. Coming soon.",
+      description: "Curated surprise drops packed with R1P gear. Every box is a different tier — from Starter to Grail.",
       count: 0,
     },
-    sourceSlugs: [],
+    sourceSlugs: ["mystery-boxes"],
   },
 };
 

@@ -39,16 +39,18 @@ export function VariantPicker({ attributes, value, onChange }: VariantPickerProp
       {variationAttrs.map((attr) => {
         const selected = selection[attr.id];
         return (
-          <fieldset key={attr.id} className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0">
-            <legend className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+          <fieldset key={attr.id} className="py-5 first:pt-0 last:pb-0">
+            <legend className="font-mono text-[10px] uppercase tracking-[0.32em] text-muted">
               {attr.name}
               {selected ? (
-                <span className="ml-2 font-normal normal-case tracking-[0.15em] text-text">
+                <span className="ml-2 font-semibold normal-case tracking-[0.15em] text-text">
                   — {selected}
                 </span>
               ) : null}
             </legend>
-            <div role="radiogroup" aria-label={attr.name} className="flex flex-wrap gap-2">
+
+            {/* Gap between legend and chips */}
+            <div role="radiogroup" aria-label={attr.name} className="mt-3.5 flex flex-wrap gap-2.5">
               {attr.options.map((option) => {
                 const isSelected = selected === option;
                 return (
@@ -59,7 +61,9 @@ export function VariantPicker({ attributes, value, onChange }: VariantPickerProp
                     aria-checked={isSelected}
                     onClick={() => update(attr.id, option)}
                     className={cn(
-                      "min-w-11 rounded-sm border px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] transition-all duration-150 cursor-pointer",
+                      "min-w-12 rounded-sm border px-4 py-2.5",
+                      "font-mono text-xs font-bold uppercase tracking-[0.18em]",
+                      "transition-all duration-150 cursor-pointer",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-1 focus-visible:ring-offset-bg",
                       isSelected
                         ? "border-gold bg-gold/10 text-gold"
