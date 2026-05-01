@@ -8,6 +8,7 @@ import type {
   RefundedOrderPayload,
   CancelledOrderPayload,
   PaymentFailedPayload,
+  ShippedOrderPayload,
   EmailProfile,
 } from "./types";
 
@@ -144,6 +145,43 @@ export function buildPaymentFailedEvent(
     retryUrl: input.retryUrl,
     items: order.items.map(toEventItem),
     uniqueId: `payfail-${input.intentId}`,
+  };
+}
+
+export interface BuildShippedOrderInput {
+  order: Order;
+  trackingNumber: string;
+  trackingUrl: string;
+  carrier: string;
+  carrierName: string;
+  shippedAt: string;
+  estimatedDelivery?: string;
+  profile?: Partial<EmailProfile>;
+}
+
+/**
+ * Build an `order.shipped` payload.
+ *
+ * `uniqueId` keys on `(orderId, trackingNumber)` so a multi-package
+ * shipment fires one notification per parcel while a webhook replay
+ * for the same parcel is collapsed by Klaviyo.
+ */
+export function buildShippedOrderEvent(
+  input: BuildShippedOrderInput,
+): ShippedOrderPayload {
+  const { order } = input;
+  return {
+    profile: mergeProfile(order, input.profile),
+    orderId: order.id,
+    orderNumber: order.number,
+    trackingNumber: input.trackingNumber,
+    trackingUrl: input.trackingUrl,
+    carrier: input.carrier,
+    carrierName: input.carrierName,
+    shippedAt: input.shippedAt,
+    estimatedDelivery: input.estimatedDelivery,
+    items: order.items.map(toEventItem),
+    uniqueId: `ship-${order.id}-${input.trackingNumber}`,
   };
 }
 
