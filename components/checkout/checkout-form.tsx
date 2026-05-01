@@ -299,16 +299,13 @@ export function CheckoutForm() {
         <span className="font-mono text-xs uppercase tracking-[0.2em] text-muted">
           {coupon ? "Total (excl. tax):" : "Subtotal:"}{" "}
           <span className="text-text">
-            <Price
-              price={{
-                amount:
-                  Math.max(0, subtotal.amount - (coupon?.discount.amount ?? 0)) +
-                  calculateShippingCents(
-                    Math.max(0, subtotal.amount - (coupon?.discount.amount ?? 0)),
-                  ),
-                currency: subtotal.currency,
-              }}
-            />
+            {(() => {
+              const discounted = Math.max(0, subtotal.amount - (coupon?.discount.amount ?? 0));
+              const shipping = coupon?.freeShipping ? 0 : calculateShippingCents(discounted);
+              return (
+                <Price price={{ amount: discounted + shipping, currency: subtotal.currency }} />
+              );
+            })()}
           </span>
         </span>
         <Button type="submit" size="lg" full disabled={isSubmitting} className="sm:w-auto">
