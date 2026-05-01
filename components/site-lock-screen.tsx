@@ -139,7 +139,10 @@ export default function SiteLockScreen() {
   const [email, setEmail] = useState("");
   const [signupError, setSignupError] = useState("");
   const [signupLoading, setSignupLoading] = useState(false);
-  const [signupSuccess, setSignupSuccess] = useState(false);
+  // null  → form is open
+  // "new"      → user just joined the list
+  // "already"  → email was already subscribed (de-dup path)
+  const [signupSuccess, setSignupSuccess] = useState<null | "new" | "already">(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,13 +202,20 @@ export default function SiteLockScreen() {
 
       const data = (await res.json().catch(() => null)) as {
         ok?: boolean;
+        data?: { subscribed?: boolean; alreadySubscribed?: boolean };
         error?: { message?: string };
       } | null;
 
       if (res.ok && data?.ok) {
-        setSignupSuccess(true);
+        const already = data.data?.alreadySubscribed === true;
+        setSignupSuccess(already ? "already" : "new");
         setEmail("");
-        showToast("You're on the VIP list. Welcome to the ohana.", "success");
+        showToast(
+          already
+            ? "You're already on the list, ohana. Sit tight \u2014 we're cooking something special."
+            : "You're in. Welcome to the ohana \u2014 something special is coming.",
+          "success",
+        );
         return;
       }
 
@@ -518,12 +528,33 @@ export default function SiteLockScreen() {
                         className="border-gold/35 bg-gold/10 rounded-sm border px-4 py-4"
                         role="status"
                       >
-                        <p className="text-gold font-serif text-base italic">
-                          You&apos;re in. We&apos;ll send the first-drop details to your inbox.
-                        </p>
-                        <p className="text-muted mt-2 font-mono text-[10px] tracking-[0.2em] uppercase">
-                          Mahalo for joining the family.
-                        </p>
+                        {signupSuccess === "already" ? (
+                          <>
+                            <p className="text-gold font-serif text-base italic">
+                              You&apos;re already on the list, ohana.
+                            </p>
+                            <p className="text-muted mt-2 text-sm leading-relaxed">
+                              Sit tight — we&apos;re cooking something very special for the
+                              ohana, and you&apos;ll be the first to know when it drops.
+                            </p>
+                            <p className="text-muted mt-3 font-mono text-[10px] tracking-[0.2em] uppercase">
+                              Mahalo for being family.
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-gold font-serif text-base italic">
+                              You&apos;re in. Welcome to the ohana.
+                            </p>
+                            <p className="text-muted mt-2 text-sm leading-relaxed">
+                              We&apos;re cooking something very special for the ohana, and
+                              you&apos;ll be the first to know when it drops.
+                            </p>
+                            <p className="text-muted mt-3 font-mono text-[10px] tracking-[0.2em] uppercase">
+                              Mahalo for joining the family.
+                            </p>
+                          </>
+                        )}
                       </div>
                     ) : (
                       <form onSubmit={handleSignup} className="flex flex-col gap-3" noValidate>
