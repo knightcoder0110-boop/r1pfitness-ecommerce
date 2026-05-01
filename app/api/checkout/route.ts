@@ -191,15 +191,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
-  // Create Stripe PaymentIntent. `receipt_email` ensures Stripe sends a
-  // hosted receipt automatically — our baseline order confirmation.
+  // Create Stripe PaymentIntent. We deliberately do NOT pass
+  // `receipt_email` — Klaviyo's `Placed Order` flow owns the customer
+  // confirmation email; Stripe receipts would duplicate it.
   let clientSecret: string;
   try {
     const intent = await createPaymentIntent(
       totalAmount,
       currency,
       { orderId, email: data.email },
-      data.email,
     );
     clientSecret = intent.client_secret!;
   } catch (err) {

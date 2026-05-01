@@ -9,7 +9,9 @@ import {
   markOrderProcessing,
   markOrderRefunded,
 } from "@/lib/checkout/woo-order";
-import { trackKlaviyoPlacedOrder } from "@/lib/klaviyo";
+import { emit } from "@/lib/email";
+import { buildPlacedOrderEvent, buildRefundedOrderEvent } from "@/lib/email/events";
+import type { PaymentMethodKind } from "@/lib/email/types";
 import { env } from "@/lib/env";
 
 /**
@@ -59,33 +61,29 @@ export async function POST(req: Request): Promise<NextResponse> {
           await markOrderProcessing(orderId, intent.id);
           console.log(`[stripe-webhook] Order ${orderId} marked processing, tx ${intent.id}`);
 
-          // Fire Klaviyo "Placed Order" event so the configured flow can
-          // send the branded order-confirmation email. Failures here must
-          // never bubble up — Stripe would retry the webhook and we'd
-          // double-process the Woo order. Best-effort, log on error.
+          // Emit the order.placed lifecycle event. The email layer
+          // never throws — a provider outage must not cause Stripe to
+          // retry the webhook and double-process the Woo order.
           try {
             const order = await getWooOrder(orderId);
             const customerEmail =
               order?.billing.email ?? intent.metadata?.email ?? intent.receipt_email ?? null;
             if (order && customerEmail) {
-              await trackKlaviyoPlacedOrder({
-                email: customerEmail,
-                orderId,
-                total: order.total.amount / 100,
-                currency: order.total.currency,
-                firstName: order.billing.firstName || undefined,
-                lastName: order.billing.lastName || undefined,
-                items: order.items.map((li) => ({
-                  productId: li.productId,
-                  sku: li.sku,
-                  name: li.name,
-                  quantity: li.quantity,
-                  unitPrice: li.unitPrice.amount / 100,
-                })),
+              const profileEmailOverride =
+                order.billing.email ? undefined : { email: customerEmail };
+              await emit({
+                type: "order.placed",
+                payload: buildPlacedOrderEvent({
+                  order,
+                  profile: profileEmailOverride,
+                  paymentMethod: detectPaymentMethod(intent),
+                  siteUrl: env.NEXT_PUBLIC_SITE_URL ?? "",
+                  orderUrl: orderUrl(orderId),
+                }),
               });
             }
-          } catch (klaviyoErr) {
-            console.error("[stripe-webhook] Klaviyo Placed Order failed:", klaviyoErr);
+          } catch (emitErr) {
+            console.error("[stripe-webhook] order.placed emit failed:", emitErr);
           }
         }
         break;
@@ -103,6 +101,23 @@ export async function POST(req: Request): Promise<NextResponse> {
         if (orderId) {
           await markOrderRefunded(orderId);
           console.log(`[stripe-webhook] Order ${orderId} marked refunded`);
+
+          try {
+            const order = await getWooOrder(orderId);
+            if (order && order.billing.email) {
+              await emit({
+                type: "order.refunded",
+                payload: buildRefundedOrderEvent({
+                  order,
+                  refundAmount: charge.amount_refunded / 100,
+                  refundKey: charge.id,
+                  reason: charge.refunds?.data[0]?.reason ?? undefined,
+                }),
+              });
+            }
+          } catch (emitErr) {
+            console.error("[stripe-webhook] order.refunded emit failed:", emitErr);
+          }
         }
         break;
       }
@@ -116,4 +131,31 @@ export async function POST(req: Request): Promise<NextResponse> {
   }
 
   return NextResponse.json({ received: true });
+}
+
+/**
+ * Map a Stripe PaymentIntent to our normalised PaymentMethodKind.
+ *
+ * The intent's `payment_method_types` is an array; we trust the first
+ * entry. For ECE-driven Apple/Google/Link/PayPal payments the type is
+ * carried on the underlying PaymentMethod, but at webhook time we have
+ * the intent only. "card" is the safe default.
+ */
+function detectPaymentMethod(intent: Stripe.PaymentIntent): PaymentMethodKind {
+  const t = intent.payment_method_types?.[0];
+  switch (t) {
+    case "card":
+      return "card";
+    case "link":
+      return "link";
+    case "paypal":
+      return "paypal";
+    default:
+      return t ? "other" : "card";
+  }
+}
+
+function orderUrl(orderId: string): string {
+  const base = env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "";
+  return `${base}/account/orders/${orderId}`;
 }
