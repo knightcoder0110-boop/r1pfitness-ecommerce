@@ -16,6 +16,11 @@ const LOCK_BYPASS_PREFIXES = [
   // follows the redirect to /locked, receives HTML, and logs
   // "The requested resource isn't a valid image ... received null".
   "/api/image-proxy",
+  // Apple Pay / Google Pay domain verification files. These have no file
+  // extension so the static-asset matcher does NOT exclude them — without
+  // an explicit bypass, Apple's verification crawler would receive the
+  // /locked HTML page and refuse to register the domain.
+  "/.well-known",
 ];
 
 function isBypassPath(pathname: string): boolean {

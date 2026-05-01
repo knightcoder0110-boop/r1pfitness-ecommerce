@@ -11,6 +11,7 @@ import {
 import { loadStripe, type StripeElementsOptions } from "@stripe/stripe-js";
 import { AddressFields } from "./address-fields";
 import { Field } from "./field";
+import { ExpressCheckout } from "./express-checkout";
 import { Button } from "@/components/ui/button";
 import { Price } from "@/components/ui/price";
 import { useCartActions, useCartCoupon, useCartItems, useCartSubtotal } from "@/lib/cart";
@@ -18,6 +19,7 @@ import { trackBeginCheckout } from "@/lib/analytics";
 import type { CheckoutResult } from "@/lib/checkout/types";
 import { ROUTES } from "@/lib/constants";
 import { calculateShippingCents } from "@/lib/constants/shipping";
+import { mintIdempotencyKey } from "@/lib/checkout/idempotency-key";
 
 // ── Stripe loader (singleton) ──────────────────────────────────────────────
 
@@ -259,6 +261,17 @@ export function CheckoutForm() {
 
   return (
     <form onSubmit={handleAddressSubmit} noValidate className="flex flex-col gap-6">
+      <ExpressCheckout />
+      <div
+        className="relative flex items-center justify-center"
+        role="separator"
+        aria-label="Or pay with card below"
+      >
+        <span className="absolute inset-x-0 top-1/2 h-px bg-border" aria-hidden />
+        <span className="relative bg-bg px-3 font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
+          Or pay with card
+        </span>
+      </div>
       <fieldset className="border border-border p-5 sm:p-6">
         <legend className="px-1 font-mono text-[10px] uppercase tracking-[0.3em] text-muted">
           Contact
@@ -314,25 +327,4 @@ export function CheckoutForm() {
       </div>
     </form>
   );
-}
-
-/**
- * Generate a UUID v4 for the checkout idempotency key.
- *
- * Modern browsers (Chrome ≥ 92, Safari ≥ 15.4, Firefox ≥ 95) expose
- * `crypto.randomUUID()` over secure contexts. We fall back to a
- * `getRandomValues`-backed implementation for older Safari that we
- * still see in our analytics. The output must match the v4 shape the
- * server schema validates.
- */
-function mintIdempotencyKey(): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
-  }
-  const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
-  bytes[6] = (bytes[6]! & 0x0f) | 0x40; // version 4
-  bytes[8] = (bytes[8]! & 0x3f) | 0x80; // variant 10
-  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
