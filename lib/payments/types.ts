@@ -130,6 +130,8 @@ export interface PaymentFailedEvent {
   type: "payment.failed";
   intentId: string;
   orderId: string | null;
+  /** Customer email captured on the intent (metadata or receipt_email). */
+  customerEmail: string | null;
   /** Stripe-style failure code, normalised but not enumerated. */
   failureCode?: string;
   failureMessage?: string;

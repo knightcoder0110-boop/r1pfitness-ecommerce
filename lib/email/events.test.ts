@@ -7,6 +7,7 @@ import {
   buildPlacedOrderEvent,
   buildRefundedOrderEvent,
   buildCancelledOrderEvent,
+  buildPaymentFailedEvent,
 } from "./events";
 
 function makeOrder(overrides: Partial<Order> = {}): Order {
@@ -171,5 +172,57 @@ describe("buildCancelledOrderEvent", () => {
     });
     expect(e.reason).toBe("auto_timeout");
     expect(e.uniqueId).toBe("cancel-1042");
+  });
+});
+
+describe("buildPaymentFailedEvent", () => {
+  it("includes failure context and a retry URL", () => {
+    const e = buildPaymentFailedEvent({
+      order: makeOrder(),
+      failureCode: "card_declined",
+      failureMessage: "Your card was declined.",
+      retryUrl: "https://r1pfitness.com/checkout",
+      intentId: "pi_abc",
+    });
+
+    expect(e.failureCode).toBe("card_declined");
+    expect(e.failureMessage).toBe("Your card was declined.");
+    expect(e.retryUrl).toBe("https://r1pfitness.com/checkout");
+    expect(e.profile.email).toBe("kai@example.com");
+    expect(e.items).toHaveLength(1);
+  });
+
+  it("keys uniqueId on intentId so retries with a new PI dedupe independently", () => {
+    const a = buildPaymentFailedEvent({
+      order: makeOrder(),
+      failureCode: "card_declined",
+      failureMessage: "x",
+      retryUrl: "https://r1pfitness.com/checkout",
+      intentId: "pi_a",
+    });
+    const b = buildPaymentFailedEvent({
+      order: makeOrder(),
+      failureCode: "card_declined",
+      failureMessage: "x",
+      retryUrl: "https://r1pfitness.com/checkout",
+      intentId: "pi_b",
+    });
+    expect(a.uniqueId).toBe("payfail-pi_a");
+    expect(b.uniqueId).toBe("payfail-pi_b");
+  });
+
+  it("falls back to the profile override email when Woo billing has none", () => {
+    const order = makeOrder({
+      billing: { ...makeOrder().billing, email: "" },
+    });
+    const e = buildPaymentFailedEvent({
+      order,
+      failureCode: "card_declined",
+      failureMessage: "x",
+      retryUrl: "https://r1pfitness.com/checkout",
+      intentId: "pi_x",
+      profile: { email: "stripe@example.com" },
+    });
+    expect(e.profile.email).toBe("stripe@example.com");
   });
 });

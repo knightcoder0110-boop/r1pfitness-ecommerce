@@ -84,10 +84,13 @@ function toSucceeded(intent: Stripe.PaymentIntent): PaymentSucceededEvent {
 
 function toFailed(intent: Stripe.PaymentIntent): PaymentFailedEvent {
   const err = intent.last_payment_error;
+  const customerEmail =
+    intent.metadata?.email ?? intent.receipt_email ?? null;
   return {
     type: "payment.failed",
     intentId: intent.id,
     orderId: intent.metadata?.orderId ?? null,
+    customerEmail,
     failureCode: err?.code,
     failureMessage: err?.message,
   };

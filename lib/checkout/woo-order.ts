@@ -323,3 +323,81 @@ export async function markOrderRefunded(orderId: string): Promise<void> {
     timeoutMs: 15_000,
   });
 }
+
+/**
+ * Transition a Woo order to "cancelled".
+ *
+ * Used when:
+ *  - Stripe fires `payment_intent.canceled` (customer abandoned the
+ *    sheet, or a downstream cron auto-cancelled a stale pending PI).
+ *  - The auto-cancel cron (PR A-9) reaps pending orders past the
+ *    timeout window.
+ *
+ * Idempotent: a Woo order already in `cancelled`, `refunded`, or any
+ * post-payment success state is left untouched. We never roll back a
+ * `processing`/`completed` order via this path.
+ *
+ * @param orderId Woo order id
+ * @param reason  Free-form note saved as a Woo customer note (visible
+ *                in admin) — keeps the audit trail readable for ops.
+ */
+export async function markOrderCancelled(
+  orderId: string,
+  reason?: string,
+): Promise<void> {
+  const order = await getWooOrder(orderId);
+  if (
+    order?.status === "cancelled" ||
+    order?.status === "refunded" ||
+    order?.status === "processing" ||
+    order?.status === "completed"
+  ) {
+    return;
+  }
+
+  await adminFetch({
+    path: `/orders/${orderId}`,
+    method: "PUT",
+    body: {
+      status: "cancelled",
+      ...(reason ? { customer_note: reason } : {}),
+    },
+    timeoutMs: 15_000,
+  });
+}
+
+/**
+ * Transition a Woo order to "failed".
+ *
+ * Distinct from `cancelled` — a `failed` order means the customer
+ * attempted payment but the PSP declined (card_declined, insufficient
+ * funds, etc.). The customer can retry from the same checkout link.
+ * Cron does not auto-cancel `failed` orders so a retry remains possible.
+ *
+ * Idempotent and never overwrites a successful state.
+ */
+export async function markOrderFailed(
+  orderId: string,
+  reason?: string,
+): Promise<void> {
+  const order = await getWooOrder(orderId);
+  if (
+    order?.status === "failed" ||
+    order?.status === "cancelled" ||
+    order?.status === "refunded" ||
+    order?.status === "processing" ||
+    order?.status === "completed"
+  ) {
+    return;
+  }
+
+  await adminFetch({
+    path: `/orders/${orderId}`,
+    method: "PUT",
+    body: {
+      status: "failed",
+      ...(reason ? { customer_note: reason } : {}),
+    },
+    timeoutMs: 15_000,
+  });
+}

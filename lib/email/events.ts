@@ -7,6 +7,7 @@ import type {
   PlacedOrderPayload,
   RefundedOrderPayload,
   CancelledOrderPayload,
+  PaymentFailedPayload,
   EmailProfile,
 } from "./types";
 
@@ -109,6 +110,40 @@ export function buildCancelledOrderEvent(
     reason: input.reason,
     items: order.items.map(toEventItem),
     uniqueId: `cancel-${order.id}`,
+  };
+}
+
+export interface BuildPaymentFailedInput {
+  order: Order;
+  failureCode: string;
+  failureMessage: string;
+  /** Absolute URL the customer can use to retry the same intent. */
+  retryUrl: string;
+  /** Stripe payment intent id; lets us idempotently dedupe retries. */
+  intentId: string;
+  profile?: Partial<EmailProfile>;
+}
+
+/**
+ * Build a `payment.failed` payload for delivery to the email provider.
+ *
+ * `uniqueId` keys on the *intent id*, not the order id, so a customer
+ * who retries with a fresh PI gets a fresh notification while a
+ * provider-side retry of the same PI dedupes correctly.
+ */
+export function buildPaymentFailedEvent(
+  input: BuildPaymentFailedInput,
+): PaymentFailedPayload {
+  const { order } = input;
+  return {
+    profile: mergeProfile(order, input.profile),
+    orderId: order.id,
+    orderNumber: order.number,
+    failureCode: input.failureCode,
+    failureMessage: input.failureMessage,
+    retryUrl: input.retryUrl,
+    items: order.items.map(toEventItem),
+    uniqueId: `payfail-${input.intentId}`,
   };
 }
 

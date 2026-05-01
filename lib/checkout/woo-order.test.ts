@@ -144,3 +144,72 @@ describe("getWooOrderForConfirmation", () => {
     expect(order?.shippingTotal.amount).toBe(1000);
   });
 });
+
+describe("markOrderCancelled", () => {
+  it("transitions a pending order to cancelled with a customer note", async () => {
+    // First call: getWooOrder; second: PUT
+    adminFetch.mockResolvedValueOnce(rawOrder({ status: "pending" }));
+    adminFetch.mockResolvedValueOnce({});
+
+    const { markOrderCancelled } = await import("./woo-order");
+    await markOrderCancelled("123", "Payment canceled: abandoned");
+
+    const putCall = adminFetch.mock.calls[1]?.[0];
+    expect(putCall.method).toBe("PUT");
+    expect(putCall.path).toBe("/orders/123");
+    expect(putCall.body.status).toBe("cancelled");
+    expect(putCall.body.customer_note).toContain("abandoned");
+  });
+
+  it.each(["cancelled", "refunded", "processing", "completed"] as const)(
+    "is a no-op when the order is already in terminal state %s",
+    async (status) => {
+      adminFetch.mockResolvedValueOnce(rawOrder({ status }));
+
+      const { markOrderCancelled } = await import("./woo-order");
+      await markOrderCancelled("123");
+
+      // GET only — no PUT.
+      expect(adminFetch).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it("still cancels when getWooOrder returns null (cannot read status)", async () => {
+    // adminFetch throws inside getWooOrder, which catches → returns null.
+    // Then PUT must still fire so we do not silently leak pending orders.
+    adminFetch.mockRejectedValueOnce(new Error("woo unreachable"));
+    adminFetch.mockResolvedValueOnce({});
+
+    const { markOrderCancelled } = await import("./woo-order");
+    await markOrderCancelled("123");
+
+    expect(adminFetch).toHaveBeenCalledTimes(2);
+    expect(adminFetch.mock.calls[1]?.[0].body.status).toBe("cancelled");
+  });
+});
+
+describe("markOrderFailed", () => {
+  it("transitions a pending order to failed with a reason", async () => {
+    adminFetch.mockResolvedValueOnce(rawOrder({ status: "pending" }));
+    adminFetch.mockResolvedValueOnce({});
+
+    const { markOrderFailed } = await import("./woo-order");
+    await markOrderFailed("123", "Payment failed: card_declined — Card declined");
+
+    const putCall = adminFetch.mock.calls[1]?.[0];
+    expect(putCall.body.status).toBe("failed");
+    expect(putCall.body.customer_note).toContain("card_declined");
+  });
+
+  it.each(["failed", "cancelled", "refunded", "processing", "completed"] as const)(
+    "is a no-op when the order is already in state %s",
+    async (status) => {
+      adminFetch.mockResolvedValueOnce(rawOrder({ status }));
+
+      const { markOrderFailed } = await import("./woo-order");
+      await markOrderFailed("123");
+
+      expect(adminFetch).toHaveBeenCalledTimes(1);
+    },
+  );
+});

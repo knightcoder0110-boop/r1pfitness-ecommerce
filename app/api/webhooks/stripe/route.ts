@@ -4,11 +4,18 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import {
   getWooOrder,
+  markOrderCancelled,
+  markOrderFailed,
   markOrderProcessing,
   markOrderRefunded,
 } from "@/lib/checkout/woo-order";
 import { emit } from "@/lib/email";
-import { buildPlacedOrderEvent, buildRefundedOrderEvent } from "@/lib/email/events";
+import {
+  buildCancelledOrderEvent,
+  buildPaymentFailedEvent,
+  buildPlacedOrderEvent,
+  buildRefundedOrderEvent,
+} from "@/lib/email/events";
 import { env } from "@/lib/env";
 import {
   getPaymentProvider,
@@ -25,8 +32,8 @@ import {
  *
  * Events handled:
  *  - `payment.succeeded` → mark Woo order "processing", emit Klaviyo "Placed Order"
- *  - `payment.failed`    → log (Woo order stays pending; user retries)
- *  - `payment.canceled`  → log (canceled flow lands in PR A-7)
+ *  - `payment.failed`    → mark Woo order "failed", emit Klaviyo "Payment Failed"
+ *  - `payment.canceled`  → mark Woo order "cancelled", emit Klaviyo "Cancelled Order"
  *  - `charge.refunded`   → mark Woo order "refunded", emit Klaviyo "Refunded Order"
  *
  * Security:
@@ -104,16 +111,75 @@ export async function POST(req: Request): Promise<NextResponse> {
       }
 
       case "payment.failed": {
+        const intentId = event.intentId;
+        const code = event.failureCode ?? "unknown";
+        const message = event.failureMessage ?? "Payment failed";
         console.warn(
-          `[stripe-webhook] Payment failed for order ${event.orderId ?? "unknown"}: ${event.failureCode ?? ""} ${event.failureMessage ?? ""}`.trim(),
+          `[stripe-webhook] Payment failed for order ${event.orderId ?? "unknown"}: ${code} ${message}`,
         );
+
+        if (!event.orderId) break;
+
+        await markOrderFailed(event.orderId, `Payment failed: ${code} — ${message}`);
+
+        try {
+          const order = await getWooOrder(event.orderId);
+          const customerEmail = order?.billing.email ?? event.customerEmail ?? null;
+          if (order && customerEmail) {
+            const profileEmailOverride = order.billing.email
+              ? undefined
+              : { email: customerEmail };
+            await emit({
+              type: "payment.failed",
+              payload: buildPaymentFailedEvent({
+                order,
+                profile: profileEmailOverride,
+                failureCode: code,
+                failureMessage: message,
+                retryUrl: retryUrl(),
+                intentId,
+              }),
+            });
+          }
+        } catch (emitErr) {
+          console.error("[stripe-webhook] payment.failed emit failed:", emitErr);
+        }
         break;
       }
 
       case "payment.canceled": {
+        const reason = event.cancellationReason ?? "unknown";
         console.warn(
-          `[stripe-webhook] Payment canceled for order ${event.orderId ?? "unknown"}: ${event.cancellationReason ?? ""}`.trim(),
+          `[stripe-webhook] Payment canceled for order ${event.orderId ?? "unknown"}: ${reason}`,
         );
+
+        if (!event.orderId) break;
+
+        await markOrderCancelled(event.orderId, `Payment canceled: ${reason}`);
+
+        try {
+          const order = await getWooOrder(event.orderId);
+          if (order && order.billing.email) {
+            await emit({
+              type: "order.cancelled",
+              payload: buildCancelledOrderEvent({
+                order,
+                // Stripe-side cancel reasons are not customer-friendly; bucket
+                // them into our cancellation taxonomy. `abandoned` (the most
+                // common cause — checkout sheet closed) and `requested_by_customer`
+                // both fall under customer_request; everything else (failed
+                // 3DS, fraud, etc.) is the auto/system bucket so the email
+                // copy doesn't blame the customer.
+                reason:
+                  reason === "requested_by_customer" || reason === "abandoned"
+                    ? "customer_request"
+                    : "auto_timeout",
+              }),
+            });
+          }
+        } catch (emitErr) {
+          console.error("[stripe-webhook] order.cancelled emit failed:", emitErr);
+        }
         break;
       }
 
@@ -157,4 +223,9 @@ export async function POST(req: Request): Promise<NextResponse> {
 function orderUrl(orderId: string): string {
   const base = env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "";
   return `${base}/account/orders/${orderId}`;
+}
+
+function retryUrl(): string {
+  const base = env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "";
+  return `${base}/checkout`;
 }
