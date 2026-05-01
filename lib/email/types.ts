@@ -1,6 +1,9 @@
 import "server-only";
 
 import type { Order, Money } from "@/lib/woo/types";
+import type { PaymentMethodKind } from "@/lib/payments/types";
+
+export type { PaymentMethodKind };
 
 // ---------------------------------------------------------------------------
 // Profile
@@ -31,15 +34,6 @@ export type ConsentSource =
 // ---------------------------------------------------------------------------
 // Order lifecycle event union
 // ---------------------------------------------------------------------------
-
-/** Payment method kind, normalised across providers. */
-export type PaymentMethodKind =
-  | "card"
-  | "apple_pay"
-  | "google_pay"
-  | "link"
-  | "paypal"
-  | "other";
 
 /** Item shape used by every order-related event. */
 export interface EventOrderItem {

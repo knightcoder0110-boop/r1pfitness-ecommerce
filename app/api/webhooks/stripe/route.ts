@@ -2,8 +2,6 @@ import "server-only";
 
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import type Stripe from "stripe";
-import { getStripe } from "@/lib/checkout";
 import {
   getWooOrder,
   markOrderProcessing,
@@ -11,119 +9,142 @@ import {
 } from "@/lib/checkout/woo-order";
 import { emit } from "@/lib/email";
 import { buildPlacedOrderEvent, buildRefundedOrderEvent } from "@/lib/email/events";
-import type { PaymentMethodKind } from "@/lib/email/types";
 import { env } from "@/lib/env";
+import {
+  getPaymentProvider,
+  WebhookConfigError,
+  WebhookSignatureError,
+} from "@/lib/payments";
 
 /**
  * POST /api/webhooks/stripe
  *
- * Listens for Stripe events and transitions WooCommerce orders accordingly.
+ * Provider-neutral webhook router. Verification + event translation
+ * happen inside `provider.parseWebhook(...)`; this route only knows
+ * about `ProviderEvent` variants.
  *
  * Events handled:
- *  - `payment_intent.succeeded` → mark Woo order "processing"
- *  - `payment_intent.payment_failed` → log (order stays "pending", user retries)
+ *  - `payment.succeeded` → mark Woo order "processing", emit Klaviyo "Placed Order"
+ *  - `payment.failed`    → log (Woo order stays pending; user retries)
+ *  - `payment.canceled`  → log (canceled flow lands in PR A-7)
+ *  - `charge.refunded`   → mark Woo order "refunded", emit Klaviyo "Refunded Order"
  *
- * Security: every request is verified with the Stripe-Signature header using
- * STRIPE_WEBHOOK_SECRET. Requests that fail verification are rejected 400.
+ * Security:
+ *  - Signature is verified inside `parseWebhook` (Stripe `constructEvent`).
+ *    Failures return 400 so Stripe will retry once it's actually misconfigured
+ *    on our side and stop after the configured retry window otherwise.
+ *  - Email-emit failures are swallowed so a downstream provider outage
+ *    cannot cause Stripe to retry the webhook and double-process the
+ *    underlying Woo order.
  */
 export async function POST(req: Request): Promise<NextResponse> {
-  const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
-  if (!webhookSecret) {
-    console.error("[stripe-webhook] STRIPE_WEBHOOK_SECRET not configured");
-    return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
-  }
-
-  const rawBody = await req.arrayBuffer();
-  const buf = Buffer.from(rawBody);
+  const rawBody = Buffer.from(await req.arrayBuffer());
 
   const headersList = await headers();
   const sig = headersList.get("stripe-signature");
-  if (!sig) {
-    return NextResponse.json({ error: "Missing stripe-signature" }, { status: 400 });
-  }
 
-  const stripe = getStripe();
   let event;
   try {
-    event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
+    event = await getPaymentProvider().parseWebhook(rawBody, sig);
   } catch (err) {
+    if (err instanceof WebhookConfigError) {
+      console.error("[stripe-webhook]", err.message);
+      return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
+    }
+    if (err instanceof WebhookSignatureError) {
+      console.error("[stripe-webhook]", err.message);
+      return NextResponse.json({ error: err.message }, { status: 400 });
+    }
     const msg = err instanceof Error ? err.message : "Unknown error";
-    console.error("[stripe-webhook] Signature verification failed:", msg);
-    return NextResponse.json({ error: `Webhook signature invalid: ${msg}` }, { status: 400 });
+    console.error("[stripe-webhook] unexpected parse error:", msg);
+    return NextResponse.json({ error: "Webhook parse failed" }, { status: 400 });
+  }
+
+  if (!event) {
+    // Verified but uninteresting event. Respond 200 so Stripe stops retrying.
+    return NextResponse.json({ received: true });
   }
 
   try {
     switch (event.type) {
-      case "payment_intent.succeeded": {
-        const intent = event.data.object;
-        const orderId = intent.metadata?.orderId;
-        if (orderId) {
-          await markOrderProcessing(orderId, intent.id);
-          console.log(`[stripe-webhook] Order ${orderId} marked processing, tx ${intent.id}`);
+      case "payment.succeeded": {
+        if (!event.orderId) {
+          console.warn(
+            `[stripe-webhook] payment.succeeded with no orderId, intent ${event.intentId}`,
+          );
+          break;
+        }
+        await markOrderProcessing(event.orderId, event.intentId);
+        console.log(
+          `[stripe-webhook] Order ${event.orderId} marked processing, tx ${event.intentId}`,
+        );
 
-          // Emit the order.placed lifecycle event. The email layer
-          // never throws — a provider outage must not cause Stripe to
-          // retry the webhook and double-process the Woo order.
-          try {
-            const order = await getWooOrder(orderId);
-            const customerEmail =
-              order?.billing.email ?? intent.metadata?.email ?? intent.receipt_email ?? null;
-            if (order && customerEmail) {
-              const profileEmailOverride =
-                order.billing.email ? undefined : { email: customerEmail };
-              await emit({
-                type: "order.placed",
-                payload: buildPlacedOrderEvent({
-                  order,
-                  profile: profileEmailOverride,
-                  paymentMethod: detectPaymentMethod(intent),
-                  siteUrl: env.NEXT_PUBLIC_SITE_URL ?? "",
-                  orderUrl: orderUrl(orderId),
-                }),
-              });
-            }
-          } catch (emitErr) {
-            console.error("[stripe-webhook] order.placed emit failed:", emitErr);
+        try {
+          const order = await getWooOrder(event.orderId);
+          const customerEmail = order?.billing.email ?? event.customerEmail ?? null;
+          if (order && customerEmail) {
+            const profileEmailOverride = order.billing.email
+              ? undefined
+              : { email: customerEmail };
+            await emit({
+              type: "order.placed",
+              payload: buildPlacedOrderEvent({
+                order,
+                profile: profileEmailOverride,
+                paymentMethod: event.paymentMethodKind,
+                siteUrl: env.NEXT_PUBLIC_SITE_URL ?? "",
+                orderUrl: orderUrl(event.orderId),
+              }),
+            });
           }
+        } catch (emitErr) {
+          console.error("[stripe-webhook] order.placed emit failed:", emitErr);
         }
         break;
       }
-      case "payment_intent.payment_failed": {
-        const intent = event.data.object;
-        const orderId = intent.metadata?.orderId;
-        console.warn(`[stripe-webhook] Payment failed for order ${orderId ?? "unknown"}`);
+
+      case "payment.failed": {
+        console.warn(
+          `[stripe-webhook] Payment failed for order ${event.orderId ?? "unknown"}: ${event.failureCode ?? ""} ${event.failureMessage ?? ""}`.trim(),
+        );
         break;
       }
+
+      case "payment.canceled": {
+        console.warn(
+          `[stripe-webhook] Payment canceled for order ${event.orderId ?? "unknown"}: ${event.cancellationReason ?? ""}`.trim(),
+        );
+        break;
+      }
+
       case "charge.refunded": {
-        const charge = event.data.object;
-        const orderId = (charge.metadata as Record<string, string> | undefined)?.orderId
-          ?? (charge.payment_intent as Stripe.PaymentIntent | null)?.metadata?.orderId;
-        if (orderId) {
-          await markOrderRefunded(orderId);
-          console.log(`[stripe-webhook] Order ${orderId} marked refunded`);
+        if (!event.orderId) {
+          console.warn(
+            `[stripe-webhook] charge.refunded with no orderId, charge ${event.chargeId}`,
+          );
+          break;
+        }
+        await markOrderRefunded(event.orderId);
+        console.log(`[stripe-webhook] Order ${event.orderId} marked refunded`);
 
-          try {
-            const order = await getWooOrder(orderId);
-            if (order && order.billing.email) {
-              await emit({
-                type: "order.refunded",
-                payload: buildRefundedOrderEvent({
-                  order,
-                  refundAmount: charge.amount_refunded / 100,
-                  refundKey: charge.id,
-                  reason: charge.refunds?.data[0]?.reason ?? undefined,
-                }),
-              });
-            }
-          } catch (emitErr) {
-            console.error("[stripe-webhook] order.refunded emit failed:", emitErr);
+        try {
+          const order = await getWooOrder(event.orderId);
+          if (order && order.billing.email) {
+            await emit({
+              type: "order.refunded",
+              payload: buildRefundedOrderEvent({
+                order,
+                refundAmount: event.amountRefunded / 100,
+                refundKey: event.chargeId,
+                reason: event.reason,
+              }),
+            });
           }
+        } catch (emitErr) {
+          console.error("[stripe-webhook] order.refunded emit failed:", emitErr);
         }
         break;
       }
-      default:
-        // Ignore unhandled events — return 200 so Stripe doesn't retry.
-        break;
     }
   } catch (err) {
     console.error("[stripe-webhook] Handler error:", err);
@@ -131,28 +152,6 @@ export async function POST(req: Request): Promise<NextResponse> {
   }
 
   return NextResponse.json({ received: true });
-}
-
-/**
- * Map a Stripe PaymentIntent to our normalised PaymentMethodKind.
- *
- * The intent's `payment_method_types` is an array; we trust the first
- * entry. For ECE-driven Apple/Google/Link/PayPal payments the type is
- * carried on the underlying PaymentMethod, but at webhook time we have
- * the intent only. "card" is the safe default.
- */
-function detectPaymentMethod(intent: Stripe.PaymentIntent): PaymentMethodKind {
-  const t = intent.payment_method_types?.[0];
-  switch (t) {
-    case "card":
-      return "card";
-    case "link":
-      return "link";
-    case "paypal":
-      return "paypal";
-    default:
-      return t ? "other" : "card";
-  }
 }
 
 function orderUrl(orderId: string): string {

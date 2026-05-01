@@ -6,12 +6,12 @@ import {
   type CheckoutRequest,
   type CheckoutResult,
   computeOrderTotal,
-  createPaymentIntent,
   createWooOrder,
 } from "@/lib/checkout";
 import { calculateShippingCents } from "@/lib/constants/shipping";
 import { assertSameOrigin } from "@/lib/api/request-security";
 import { checkRateLimit } from "@/lib/api/ratelimit";
+import { getPaymentProvider } from "@/lib/payments";
 import { getOrCreate, isValidIdempotencyKey } from "@/lib/payments/intent-cache";
 import { getCart, hasFreeShippingCoupon } from "@/lib/woo/cart";
 import type { CartLineItem } from "@/lib/woo/types";
@@ -201,17 +201,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       throw new CheckoutFloorError();
     }
 
-    const intent = await createPaymentIntent(
-      totalCents,
+    const intent = await getPaymentProvider().createIntent({
+      amount: totalCents,
       currency,
-      { orderId, email: data.email },
-      idempotencyKey,
-    );
+      orderId,
+      email: data.email,
+      ...(idempotencyKey ? { idempotencyKey } : {}),
+    });
     return {
       orderId,
       ...(orderKey ? { orderKey } : {}),
       totalAmount: totalCents,
-      clientSecret: intent.client_secret!,
+      clientSecret: intent.confirmationToken,
     };
   };
 

@@ -6,4 +6,5 @@ export {
   markOrderProcessing,
   markOrderRefunded,
 } from "./woo-order";
-export { getStripe, createPaymentIntent } from "./stripe";
+// Stripe SDK access has moved to `@/lib/payments`. Use
+// `getPaymentProvider().createIntent(...)` for new code.

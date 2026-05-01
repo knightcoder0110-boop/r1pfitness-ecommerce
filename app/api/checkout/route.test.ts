@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type * as CheckoutModule from "@/lib/checkout";
+import type * as PaymentsModule from "@/lib/payments";
 
 vi.mock("server-only", () => ({}));
 
@@ -9,7 +11,7 @@ vi.mock("server-only", () => ({}));
 const getCart = vi.hoisted(() => vi.fn());
 const hasFreeShippingCoupon = vi.hoisted(() => vi.fn());
 const createWooOrder = vi.hoisted(() => vi.fn());
-const createPaymentIntent = vi.hoisted(() => vi.fn());
+const createIntent = vi.hoisted(() => vi.fn());
 const auth = vi.hoisted(() => vi.fn());
 const checkRateLimit = vi.hoisted(() =>
   vi.fn(() => ({ ok: true, resetAt: Date.now() + 60_000 })),
@@ -21,12 +23,23 @@ vi.mock("@/lib/woo/cart", () => ({
 }));
 
 vi.mock("@/lib/checkout", async () => {
-  const actual: typeof import("@/lib/checkout") =
-    await vi.importActual("@/lib/checkout");
+  const actual = await vi.importActual<typeof CheckoutModule>("@/lib/checkout");
   return {
     ...actual,
     createWooOrder,
-    createPaymentIntent,
+  };
+});
+
+vi.mock("@/lib/payments", async () => {
+  const actual = await vi.importActual<typeof PaymentsModule>("@/lib/payments");
+  return {
+    ...actual,
+    getPaymentProvider: () => ({
+      name: "stripe" as const,
+      createIntent,
+      retrieveIntent: vi.fn(),
+      parseWebhook: vi.fn(),
+    }),
   };
 });
 
@@ -111,7 +124,7 @@ beforeEach(async () => {
   getCart.mockReset();
   hasFreeShippingCoupon.mockReset().mockResolvedValue(false);
   createWooOrder.mockReset();
-  createPaymentIntent.mockReset();
+  createIntent.mockReset();
   auth.mockReset().mockResolvedValue(null);
   checkRateLimit.mockReset().mockReturnValue({ ok: true, resetAt: Date.now() + 60_000 });
   getCart.mockResolvedValue(makeServerCart());
@@ -135,8 +148,11 @@ describe("POST /api/checkout — idempotency", () => {
       orderKey: "wc_order_abc",
       totalCents: 6000,
     });
-    createPaymentIntent.mockResolvedValue({
-      client_secret: "pi_test_secret",
+    createIntent.mockResolvedValue({
+      providerIntentId: "pi_test",
+      confirmationToken: "pi_test_secret",
+      amount: 6000,
+      currency: "usd",
     });
 
     const { POST } = await import("./route");
@@ -155,10 +171,13 @@ describe("POST /api/checkout — idempotency", () => {
     expect(j2.data.clientSecret).toBe("pi_test_secret");
 
     expect(createWooOrder).toHaveBeenCalledTimes(1);
-    expect(createPaymentIntent).toHaveBeenCalledTimes(1);
+    expect(createIntent).toHaveBeenCalledTimes(1);
 
-    // Stripe must receive the idempotency key as the 4th arg.
-    expect(createPaymentIntent.mock.calls[0]![3]).toBe(KEY_A);
+    // Provider receives the idempotency key in the input.
+    expect(createIntent.mock.calls[0]![0]).toMatchObject({
+      orderId: "1042",
+      idempotencyKey: KEY_A,
+    });
   });
 
   it("collapses concurrent submits with the same key into a single in-flight call", async () => {
@@ -169,7 +188,12 @@ describe("POST /api/checkout — idempotency", () => {
           resolveOrder = r;
         }),
     );
-    createPaymentIntent.mockResolvedValue({ client_secret: "pi_test_secret" });
+    createIntent.mockResolvedValue({
+      providerIntentId: "pi_test",
+      confirmationToken: "pi_test_secret",
+      amount: 6000,
+      currency: "usd",
+    });
 
     const { POST } = await import("./route");
 
@@ -185,14 +209,19 @@ describe("POST /api/checkout — idempotency", () => {
     expect(r1.status).toBe(200);
     expect(r2.status).toBe(200);
     expect(createWooOrder).toHaveBeenCalledTimes(1);
-    expect(createPaymentIntent).toHaveBeenCalledTimes(1);
+    expect(createIntent).toHaveBeenCalledTimes(1);
   });
 
   it("evicts the cache when Woo creation fails so a retry creates a fresh attempt", async () => {
     createWooOrder
       .mockRejectedValueOnce(new Error("woo down"))
       .mockResolvedValueOnce({ orderId: "1042", totalCents: 6000 });
-    createPaymentIntent.mockResolvedValue({ client_secret: "pi_test_secret" });
+    createIntent.mockResolvedValue({
+      providerIntentId: "pi_test",
+      confirmationToken: "pi_test_secret",
+      amount: 6000,
+      currency: "usd",
+    });
 
     const { POST } = await import("./route");
 
@@ -209,9 +238,19 @@ describe("POST /api/checkout — idempotency", () => {
     createWooOrder
       .mockResolvedValueOnce({ orderId: "1042", totalCents: 6000 })
       .mockResolvedValueOnce({ orderId: "1043", totalCents: 6000 });
-    createPaymentIntent
-      .mockResolvedValueOnce({ client_secret: "pi_a" })
-      .mockResolvedValueOnce({ client_secret: "pi_b" });
+    createIntent
+      .mockResolvedValueOnce({
+        providerIntentId: "pi_a",
+        confirmationToken: "pi_a",
+        amount: 6000,
+        currency: "usd",
+      })
+      .mockResolvedValueOnce({
+        providerIntentId: "pi_b",
+        confirmationToken: "pi_b",
+        amount: 6000,
+        currency: "usd",
+      });
 
     const { POST } = await import("./route");
     const r1 = await POST(mkRequest(makeBody()) as never);
@@ -230,7 +269,12 @@ describe("POST /api/checkout — idempotency", () => {
 
   it("falls back to non-idempotent path when key is omitted (legacy clients)", async () => {
     createWooOrder.mockResolvedValue({ orderId: "1042", totalCents: 6000 });
-    createPaymentIntent.mockResolvedValue({ client_secret: "pi_test_secret" });
+    createIntent.mockResolvedValue({
+      providerIntentId: "pi_test",
+      confirmationToken: "pi_test_secret",
+      amount: 6000,
+      currency: "usd",
+    });
 
     const { POST } = await import("./route");
     const body = makeBody();
@@ -241,7 +285,7 @@ describe("POST /api/checkout — idempotency", () => {
     expect(r1.status).toBe(200);
     expect(r2.status).toBe(200);
     expect(createWooOrder).toHaveBeenCalledTimes(2);
-    expect(createPaymentIntent.mock.calls[0]![3]).toBeUndefined();
+    expect(createIntent.mock.calls[0]![0].idempotencyKey).toBeUndefined();
   });
 
   it("rejects a malformed idempotency key with 422", async () => {
