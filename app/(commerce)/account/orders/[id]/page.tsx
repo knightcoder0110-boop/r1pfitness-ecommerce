@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { Price } from "@/components/ui/price";
+import { ShipmentCard } from "@/components/orders/shipment-card";
 import { getCustomerOrder } from "@/lib/auth/woo-customer";
+import { getShipmentFromWooOrder } from "@/lib/checkout/shipment";
 import { ROUTES } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -20,6 +22,11 @@ export default async function OrderDetailPage({ params }: Props) {
   const session = await auth();
   const order = await getCustomerOrder(id, session?.user.wooCustomerId ?? "0");
   if (!order) notFound();
+
+  const shippedStatuses = ["completed", "processing", "on-hold"];
+  const shipment = shippedStatuses.includes(order.status.toLowerCase())
+    ? await getShipmentFromWooOrder(order.id)
+    : null;
 
   const lines = [
     { label: "Subtotal", value: order.subtotal },
@@ -55,6 +62,8 @@ export default async function OrderDetailPage({ params }: Props) {
         </div>
         <Price price={order.total} size="lg" />
       </div>
+
+      <ShipmentCard shipment={shipment} orderStatus={order.status} />
 
       {/* ── Line items ───────────────────────────────────────────────── */}
       <section>
