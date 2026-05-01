@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Elements,
@@ -111,6 +111,19 @@ export function CheckoutForm() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
+  // Idempotency key for /api/checkout. Generated lazily on first submit
+  // and stable across retries of the same submit attempt, so a network
+  // error followed by a re-click doesn't create a duplicate Woo order.
+  // We rotate the key after a successful response (the user has moved
+  // to the payment step and any later retry should be a fresh attempt).
+  const idempotencyKeyRef = useRef<string | null>(null);
+  function getOrMintIdempotencyKey(): string {
+    if (!idempotencyKeyRef.current) {
+      idempotencyKeyRef.current = mintIdempotencyKey();
+    }
+    return idempotencyKeyRef.current;
+  }
+
   async function handleAddressSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsSubmitting(true);
@@ -146,6 +159,7 @@ export function CheckoutForm() {
         attributes: item.attributes,
       })),
       ...(coupon ? { coupons: [coupon.code] } : {}),
+      idempotencyKey: getOrMintIdempotencyKey(),
     };
 
     try {
@@ -187,6 +201,9 @@ export function CheckoutForm() {
       });
       setCheckoutResult(json.data as CheckoutResult);
       setStep("payment");
+      // Successful checkout — next attempt (e.g. from a back-button
+      // navigation) should be a fresh logical submit, not a replay.
+      idempotencyKeyRef.current = null;
     } catch {
       setServerError("Network error. Please check your connection and try again.");
     } finally {
@@ -300,4 +317,25 @@ export function CheckoutForm() {
       </div>
     </form>
   );
+}
+
+/**
+ * Generate a UUID v4 for the checkout idempotency key.
+ *
+ * Modern browsers (Chrome ≥ 92, Safari ≥ 15.4, Firefox ≥ 95) expose
+ * `crypto.randomUUID()` over secure contexts. We fall back to a
+ * `getRandomValues`-backed implementation for older Safari that we
+ * still see in our analytics. The output must match the v4 shape the
+ * server schema validates.
+ */
+function mintIdempotencyKey(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  bytes[6] = (bytes[6]! & 0x0f) | 0x40; // version 4
+  bytes[8] = (bytes[8]! & 0x3f) | 0x80; // variant 10
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }

@@ -12,6 +12,7 @@ import {
 import { calculateShippingCents } from "@/lib/constants/shipping";
 import { assertSameOrigin } from "@/lib/api/request-security";
 import { checkRateLimit } from "@/lib/api/ratelimit";
+import { getOrCreate, isValidIdempotencyKey } from "@/lib/payments/intent-cache";
 import { getCart, hasFreeShippingCoupon } from "@/lib/woo/cart";
 import type { CartLineItem } from "@/lib/woo/types";
 
@@ -159,51 +160,78 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     ? session.user.wooCustomerId
     : undefined;
 
-  // Create Woo order (pending, not yet paid). Woo computes tax based on
-  // billing/shipping address + shipping line and returns the final total.
+  // Create Woo order (pending, not yet paid) AND Stripe PaymentIntent.
+  //
+  // Both side-effects are wrapped in the in-memory idempotency cache
+  // keyed by the client-supplied UUID. This collapses double-clicks /
+  // browser retries / rapid re-submits into a single Woo order + a
+  // single PaymentIntent: a second concurrent request awaits the same
+  // in-flight Promise, and a follow-up retried HTTP call returns the
+  // resolved value. The Stripe-side `idempotencyKey` is a defence-in-
+  // depth backstop in case our process-local cache misses (e.g. two
+  // different lambdas).
+  //
+  // When the client omits the key (stale browser tab from before this
+  // PR shipped), we fall back to the legacy non-idempotent path so
+  // their checkout still works.
   let orderId: string;
   let orderKey: string | undefined;
   let totalAmount: number;
-  try {
-    const result = await createWooOrder(trustedRequest, shippingCents, customerId);
-    orderId = result.orderId;
-    orderKey = result.orderKey;
-    totalAmount = result.totalCents;
-  } catch (err) {
-    console.error("[checkout] Woo order creation failed:", err);
-    return NextResponse.json(
-      { error: "Could not create order. Please try again." },
-      { status: 502 },
-    );
-  }
-
-  // Sanity check: Woo's total must be at least discounted subtotal + shipping.
-  // If an unexpected Woo calculation drops the total below that floor, abort
-  // instead of charging the wrong amount.
-  const expectedFloor = discountedSubtotalCents + shippingCents;
-  if (totalAmount < expectedFloor) {
-    console.error(
-      `[checkout] Woo total ${totalAmount} below expected floor ${expectedFloor} for order ${orderId}`,
-    );
-    return NextResponse.json(
-      { error: "Order total mismatch. Please refresh and try again." },
-      { status: 502 },
-    );
-  }
-
-  // Create Stripe PaymentIntent. We deliberately do NOT pass
-  // `receipt_email` — Klaviyo's `Placed Order` flow owns the customer
-  // confirmation email; Stripe receipts would duplicate it.
   let clientSecret: string;
-  try {
+  const idempotencyKey = data.idempotencyKey;
+
+  const work = async (): Promise<{
+    orderId: string;
+    orderKey?: string;
+    totalAmount: number;
+    clientSecret: string;
+  }> => {
+    const { orderId, orderKey, totalCents } = await createWooOrder(
+      trustedRequest,
+      shippingCents,
+      customerId,
+    );
+
+    // Sanity check: Woo's total must be at least discounted subtotal + shipping.
+    const expectedFloor = discountedSubtotalCents + shippingCents;
+    if (totalCents < expectedFloor) {
+      console.error(
+        `[checkout] Woo total ${totalCents} below expected floor ${expectedFloor} for order ${orderId}`,
+      );
+      throw new CheckoutFloorError();
+    }
+
     const intent = await createPaymentIntent(
-      totalAmount,
+      totalCents,
       currency,
       { orderId, email: data.email },
+      idempotencyKey,
     );
-    clientSecret = intent.client_secret!;
+    return {
+      orderId,
+      ...(orderKey ? { orderKey } : {}),
+      totalAmount: totalCents,
+      clientSecret: intent.client_secret!,
+    };
+  };
+
+  try {
+    const out =
+      idempotencyKey && isValidIdempotencyKey(idempotencyKey)
+        ? await getOrCreate(idempotencyKey, work)
+        : await work();
+    orderId = out.orderId;
+    orderKey = out.orderKey;
+    totalAmount = out.totalAmount;
+    clientSecret = out.clientSecret;
   } catch (err) {
-    console.error("[checkout] Stripe PaymentIntent creation failed:", err);
+    if (err instanceof CheckoutFloorError) {
+      return NextResponse.json(
+        { error: "Order total mismatch. Please refresh and try again." },
+        { status: 502 },
+      );
+    }
+    console.error("[checkout] order/intent creation failed:", err);
     return NextResponse.json(
       { error: "Could not initialise payment. Please try again." },
       { status: 502 },
@@ -228,6 +256,18 @@ function formatZodError(err: ZodError): Record<string, string[]> {
     out[key]!.push(issue.message);
   }
   return out;
+}
+
+/**
+ * Sentinel thrown inside the cached factory when Woo returns a total
+ * that is below our computed floor. Caught at the call site to render
+ * the user-facing 502 instead of the generic error path.
+ */
+class CheckoutFloorError extends Error {
+  constructor() {
+    super("Woo total below expected floor");
+    this.name = "CheckoutFloorError";
+  }
 }
 
 /**

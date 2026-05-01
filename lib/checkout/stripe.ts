@@ -29,20 +29,29 @@ export function getStripe(): Stripe {
  * confirmation email. Setting `receipt_email` would cause Stripe to
  * also send its own hosted receipt, producing duplicate emails.
  *
- * @param amountCents - Total in minor units (e.g. 4999 = $49.99).
- * @param currency    - ISO 4217 code, lowercase (e.g. "usd").
- * @param metadata    - Freeform metadata attached to the PaymentIntent.
+ * @param amountCents     - Total in minor units (e.g. 4999 = $49.99).
+ * @param currency        - ISO 4217 code, lowercase (e.g. "usd").
+ * @param metadata        - Freeform metadata attached to the PaymentIntent.
+ * @param idempotencyKey  - When provided, sent to Stripe as the request
+ *                          `Idempotency-Key` header so duplicate calls
+ *                          (across lambdas, retries, etc.) do not
+ *                          create duplicate PaymentIntents. See:
+ *                          https://stripe.com/docs/api/idempotent_requests
  */
 export async function createPaymentIntent(
   amountCents: number,
   currency: string,
   metadata: Record<string, string> = {},
+  idempotencyKey?: string,
 ): Promise<Stripe.PaymentIntent> {
   const stripe = getStripe();
-  return stripe.paymentIntents.create({
-    amount: amountCents,
-    currency: currency.toLowerCase(),
-    automatic_payment_methods: { enabled: true },
-    metadata: { ...metadata, site: "merch" },
-  });
+  return stripe.paymentIntents.create(
+    {
+      amount: amountCents,
+      currency: currency.toLowerCase(),
+      automatic_payment_methods: { enabled: true },
+      metadata: { ...metadata, site: "merch" },
+    },
+    idempotencyKey ? { idempotencyKey } : undefined,
+  );
 }
