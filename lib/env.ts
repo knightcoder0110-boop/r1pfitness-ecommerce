@@ -50,6 +50,11 @@ export const env = createEnv({
     SUPPORT_EMAIL: z.string().email().optional(),
     KLAVIYO_CONTACT_TEMPLATE_ID: z.string().optional(),
 
+    // Vercel Cron — shared secret used to authenticate scheduled invocations
+    // of /api/cron/*. Vercel sends `Authorization: Bearer ${CRON_SECRET}`
+    // for each cron run; the route refuses to run without it.
+    CRON_SECRET: z.string().min(16).optional(),
+
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   },
 
@@ -80,6 +85,7 @@ export const env = createEnv({
     WP_BASE_URL: process.env.WP_BASE_URL,
     SUPPORT_EMAIL: process.env.SUPPORT_EMAIL,
     KLAVIYO_CONTACT_TEMPLATE_ID: process.env.KLAVIYO_CONTACT_TEMPLATE_ID,
+    CRON_SECRET: process.env.CRON_SECRET,
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_NEXT_DROP_DATE: process.env.NEXT_PUBLIC_NEXT_DROP_DATE,

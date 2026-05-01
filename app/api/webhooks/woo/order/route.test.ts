@@ -95,7 +95,7 @@ function buildReq(body: object, opts: { signed?: boolean; topic?: string } = {})
 
 async function load() {
   const m = await import("./route");
-  return m.POST as (req: Request) => Promise<Response>;
+  return m.POST as unknown as (req: Request) => Promise<Response>;
 }
 
 // ---------------------------------------------------------------------------

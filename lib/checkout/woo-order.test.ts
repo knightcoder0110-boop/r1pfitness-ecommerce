@@ -213,3 +213,40 @@ describe("markOrderFailed", () => {
     },
   );
 });
+
+describe("listPendingOrdersBefore", () => {
+  it("queries Woo with the right pagination + filter, returns the projection", async () => {
+    adminFetch.mockResolvedValueOnce([
+      rawOrder({ id: 1, number: "1", date_modified: "2026-04-30T08:00:00" }),
+      rawOrder({ id: 2, number: "2", date_modified: "2026-04-30T09:00:00" }),
+    ]);
+
+    const { listPendingOrdersBefore } = await import("./woo-order");
+    const out = await listPendingOrdersBefore("2026-04-30T10:00:00.000Z", 50);
+
+    const arg = adminFetch.mock.calls[0]?.[0];
+    expect(arg.path).toContain("status=pending");
+    expect(arg.path).toContain("before=2026-04-30T10");
+    expect(arg.path).toContain("per_page=50");
+    expect(arg.path).toContain("dates_are_gmt=true");
+
+    expect(out).toEqual([
+      { id: "1", number: "1", modifiedAt: "2026-04-30T08:00:00" },
+      { id: "2", number: "2", modifiedAt: "2026-04-30T09:00:00" },
+    ]);
+  });
+
+  it("returns [] when Woo errors (transient unreachable)", async () => {
+    adminFetch.mockRejectedValueOnce(new Error("woo down"));
+    const { listPendingOrdersBefore } = await import("./woo-order");
+    const out = await listPendingOrdersBefore("2026-04-30T10:00:00.000Z");
+    expect(out).toEqual([]);
+  });
+
+  it("returns [] when Woo returns a non-array (defensive)", async () => {
+    adminFetch.mockResolvedValueOnce({} as never);
+    const { listPendingOrdersBefore } = await import("./woo-order");
+    const out = await listPendingOrdersBefore("2026-04-30T10:00:00.000Z");
+    expect(out).toEqual([]);
+  });
+});

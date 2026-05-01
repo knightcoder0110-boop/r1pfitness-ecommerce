@@ -401,3 +401,51 @@ export async function markOrderFailed(
     timeoutMs: 15_000,
   });
 }
+
+/**
+ * List Woo orders currently in `pending` status that were last modified
+ * **before** the supplied cutoff. Used by the auto-cancel cron (PR A-9)
+ * to reap stale checkouts where the customer never completed payment.
+ *
+ * Why `date_modified` and not `date_created`:
+ *  - A customer can re-enter the same checkout link and the order will
+ *    be touched (line items / shipping recomputed) without the status
+ *    changing. Using `date_modified` avoids reaping a draft the customer
+ *    is actively editing.
+ *
+ * Returns the minimal projection the cron needs (`id`, `number`,
+ * `date_modified`). Pagination caps out at one page of 100 — we accept
+ * the deferred work; the next cron tick picks up the residue.
+ */
+export async function listPendingOrdersBefore(
+  cutoffIso: string,
+  limit = 100,
+): Promise<Array<{ id: string; number: string; modifiedAt: string }>> {
+  // Woo's REST API exposes `before` as ISO 8601, applied to date_modified
+  // when `dates_are_gmt=true` is set. We send GMT explicitly to avoid
+  // server-timezone drift between Woo and Vercel.
+  const params = new URLSearchParams({
+    status: "pending",
+    before: cutoffIso,
+    per_page: String(limit),
+    orderby: "date",
+    order: "asc",
+    dates_are_gmt: "true",
+  });
+
+  try {
+    const raw = await adminFetch<RawWooOrder[]>({
+      path: `/orders?${params.toString()}`,
+      timeoutMs: 20_000,
+    });
+    if (!Array.isArray(raw)) return [];
+    return raw.map((o) => ({
+      id: String(o.id),
+      number: o.number,
+      modifiedAt: o.date_modified ?? "",
+    }));
+  } catch (err) {
+    console.error("[woo] listPendingOrdersBefore failed:", err);
+    return [];
+  }
+}
