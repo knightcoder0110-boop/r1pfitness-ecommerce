@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { assertSameOrigin } from "@/lib/api/request-security";
+import { ApiError } from "@/lib/api/errors";
 import { checkRateLimit } from "@/lib/api/ratelimit";
 import {
   createSiteUnlockCookieValue,
@@ -8,7 +9,20 @@ import {
 } from "@/lib/site-lock-cookie";
 
 export async function POST(request: Request) {
-  assertSameOrigin(request);
+  // assertSameOrigin throws ApiError(403) when the Origin/Referer is missing
+  // or cross-origin. Catch it here so the client sees a clean 403 instead of
+  // an unhandled 500.
+  try {
+    assertSameOrigin(request);
+  } catch (err) {
+    if (err instanceof ApiError) {
+      return NextResponse.json(
+        { ok: false, error: err.message },
+        { status: err.status },
+      );
+    }
+    throw err;
+  }
 
   // Rate limit before touching the body. 3 attempts / 15 min / IP is
   // aggressive enough to make brute-force impractical while still allowing

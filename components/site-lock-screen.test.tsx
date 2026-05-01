@@ -67,13 +67,19 @@ describe("<SiteLockScreen />", () => {
     expect(screen.getByRole("button", { name: /join the vip list/i })).toBeInTheDocument();
   });
 
-  it("subscribes a visitor to the VIP list", async () => {
+  it("subscribes a new visitor to the VIP list", async () => {
     const user = userEvent.setup();
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ ok: true, data: { subscribed: true } }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }),
+      new Response(
+        JSON.stringify({
+          ok: true,
+          data: { subscribed: true, alreadySubscribed: false },
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
     );
     vi.stubGlobal("fetch", fetchMock);
 
@@ -91,11 +97,44 @@ describe("<SiteLockScreen />", () => {
         body: JSON.stringify({ email: "singhatwork55@gmail.com" }),
       }),
     );
-    expect(await screen.findByText(/we'll send the first-drop details/i)).toBeInTheDocument();
+    expect(await screen.findByText(/welcome to the ohana/i)).toBeInTheDocument();
     expect(useToastStore.getState()).toMatchObject({
       visible: true,
       type: "success",
-      message: "You're on the VIP list. Welcome to the ohana.",
+      message: "You're in. Welcome to the ohana — something special is coming.",
+    });
+  });
+
+  it("tells visitors they're already on the list when alreadySubscribed is true", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          ok: true,
+          data: { subscribed: true, alreadySubscribed: true },
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<SiteLockScreen />);
+    await user.click(screen.getByRole("button", { name: /join the vip list/i }));
+    await user.type(screen.getByLabelText(/email address/i), "manishsingh8135@gmail.com");
+    await user.click(screen.getByRole("button", { name: /get first access/i }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(
+      await screen.findByText(/you're already on the list, ohana/i),
+    ).toBeInTheDocument();
+    expect(useToastStore.getState()).toMatchObject({
+      visible: true,
+      type: "success",
+      message:
+        "You're already on the list, ohana. Sit tight — we're cooking something special.",
     });
   });
 

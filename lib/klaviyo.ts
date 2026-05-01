@@ -2,7 +2,57 @@ const KLAVIYO_API_BASE = "https://a.klaviyo.com/api";
 
 interface SubscribeResult {
   success: boolean;
+  /** True when the email was already a member of the list. */
+  alreadySubscribed?: boolean;
   error?: string;
+}
+
+/**
+ * Check whether an email is already a member of the configured list.
+ *
+ * Klaviyo's bulk-create-jobs endpoint is async and returns 202 even when
+ * the profile is already on the list, so we cannot tell the user they're
+ * already subscribed from the create response alone. We therefore probe
+ * the list membership endpoint first.
+ *
+ * Endpoint: `GET /lists/{listId}/profiles?filter=equals(email,"x@y.com")`
+ *  - 200 with `data.length > 0`  → already a member
+ *  - 200 with `data.length === 0` → not a member
+ *  - 401/403/5xx                  → throws so the caller can fall through
+ *                                    to "best effort" subscribe (we never
+ *                                    block legit signups on probe failure).
+ */
+async function isAlreadyOnList(email: string): Promise<boolean> {
+  const apiKey = process.env.KLAVIYO_PRIVATE_API_KEY!;
+  const listId = process.env.KLAVIYO_LIST_ID!;
+
+  // Email values inside the filter must be quoted; Klaviyo's filter parser
+  // does not allow embedded double quotes, so reject them defensively.
+  if (email.includes('"')) return false;
+
+  const url =
+    `${KLAVIYO_API_BASE}/lists/${encodeURIComponent(listId)}/profiles/` +
+    `?filter=${encodeURIComponent(`equals(email,"${email}")`)}` +
+    `&fields[profile]=email&page[size]=1`;
+
+  const res = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: `Klaviyo-API-Key ${apiKey}`,
+      revision: "2024-10-15",
+      Accept: "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Klaviyo list-membership probe failed (HTTP ${res.status}): ${body}`);
+  }
+
+  const json = (await res.json().catch(() => null)) as
+    | { data?: Array<unknown> }
+    | null;
+  return Array.isArray(json?.data) && json.data.length > 0;
 }
 
 export async function subscribeToKlaviyo(email: string): Promise<SubscribeResult> {
@@ -12,6 +62,20 @@ export async function subscribeToKlaviyo(email: string): Promise<SubscribeResult
   if (!apiKey || !listId) {
     console.error("Klaviyo env vars not configured");
     return { success: false, error: "Email service not configured." };
+  }
+
+  // ── 1. Probe list membership so we can show a friendly "already on the
+  //      list" message instead of silently re-confirming a duplicate.
+  //      Probe failures are logged but never block subscription — the
+  //      bulk-create job below is idempotent on Klaviyo's side anyway.
+  try {
+    const already = await isAlreadyOnList(email);
+    if (already) {
+      console.log(`[Klaviyo] ${email} is already on list ${listId}`);
+      return { success: true, alreadySubscribed: true };
+    }
+  } catch (err) {
+    console.warn("[Klaviyo] membership probe failed, falling through to subscribe:", err);
   }
 
   try {

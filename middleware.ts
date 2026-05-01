@@ -16,6 +16,11 @@ const LOCK_BYPASS_PREFIXES = [
   // follows the redirect to /locked, receives HTML, and logs
   // "The requested resource isn't a valid image ... received null".
   "/api/image-proxy",
+  // Newsletter / VIP-list signup. The site-lock screen itself collects
+  // emails via this endpoint, so it MUST work without the unlock cookie
+  // — otherwise every "Join the Ohana" submission redirects to /locked
+  // and fetch sees an HTML body, surfacing as a generic error to the user.
+  "/api/subscribe",
 ];
 
 function isBypassPath(pathname: string): boolean {
