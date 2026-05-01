@@ -52,10 +52,12 @@ describe("subscribeToKlaviyo", () => {
 
     expect(result).toEqual({ success: true, alreadySubscribed: true });
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchMock.mock.calls[0];
+    const call = fetchMock.mock.calls[0]!;
+    const url = call[0] as string;
+    const init = call[1] as RequestInit;
     expect(url).toContain("/lists/TEST_LIST/profiles/");
     expect(url).toContain(encodeURIComponent('equals(email,"dup@example.com")'));
-    expect((init as RequestInit).method).toBe("GET");
+    expect(init.method).toBe("GET");
   });
 
   it("subscribes via the bulk-create job when the probe returns no profiles", async () => {
@@ -67,10 +69,11 @@ describe("subscribeToKlaviyo", () => {
 
     expect(result).toEqual({ success: true });
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(fetchMock.mock.calls[1][0]).toContain(
+    const subscribeCall = fetchMock.mock.calls[1]!;
+    expect(subscribeCall[0]).toContain(
       "/profile-subscription-bulk-create-jobs/",
     );
-    expect((fetchMock.mock.calls[1][1] as RequestInit).method).toBe("POST");
+    expect((subscribeCall[1] as RequestInit).method).toBe("POST");
   });
 
   it("falls through to subscribe when the probe fails (never blocks legit signups)", async () => {
@@ -113,7 +116,8 @@ describe("subscribeToKlaviyo", () => {
     expect(result).toEqual({ success: true });
     // only one call: probe was bypassed, only POST happened
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(fetchMock.mock.calls[0][0]).toContain(
+    const onlyCall = fetchMock.mock.calls[0]!;
+    expect(onlyCall[0]).toContain(
       "/profile-subscription-bulk-create-jobs/",
     );
   });

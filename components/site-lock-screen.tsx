@@ -432,7 +432,7 @@ export default function SiteLockScreen() {
                         !loading ? { y: -2, boxShadow: "0 0 28px rgba(201,168,76,0.35)" } : {}
                       }
                       whileTap={!loading ? { scale: 0.975 } : {}}
-                      className="bg-gold text-bg font-display flex w-full items-center justify-center gap-3 rounded-sm py-4 text-base font-black tracking-[0.22em] uppercase transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+                      className="bg-gold text-bg font-display flex w-full cursor-pointer items-center justify-center gap-3 rounded-sm py-4 text-base font-black tracking-[0.22em] uppercase transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
                       style={{ boxShadow: "var(--shadow-metallic)" }}
                     >
                       {loading ? (
@@ -481,7 +481,7 @@ export default function SiteLockScreen() {
                       }}
                       whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.975 }}
-                      className="border-border bg-surface-1/80 text-text hover:border-gold hover:text-gold font-display flex w-full items-center justify-center gap-3 rounded-sm border px-5 py-4 text-sm font-black tracking-[0.18em] uppercase transition-colors"
+                      className="border-border bg-surface-1/80 text-text hover:border-gold hover:text-gold font-display flex w-full cursor-pointer items-center justify-center gap-3 rounded-sm border px-5 py-4 text-sm font-black tracking-[0.18em] uppercase transition-colors"
                     >
                       <Mail aria-hidden className="size-4 shrink-0" />
                       Join the VIP List
@@ -503,7 +503,7 @@ export default function SiteLockScreen() {
                       setMode("password");
                       setSignupError("");
                     }}
-                    className="text-faint hover:text-gold inline-flex w-fit items-center gap-2 font-mono text-[10px] tracking-[0.22em] uppercase transition-colors"
+                    className="text-faint hover:text-gold inline-flex w-fit cursor-pointer items-center gap-2 font-mono text-[10px] tracking-[0.22em] uppercase transition-colors"
                   >
                     <ArrowLeft aria-hidden className="size-3.5" />
                     Back to password
@@ -524,38 +524,115 @@ export default function SiteLockScreen() {
                     </div>
 
                     {signupSuccess ? (
-                      <div
-                        className="border-gold/35 bg-gold/10 rounded-sm border px-4 py-4"
+                      <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
+                        className="border-gold/35 relative overflow-hidden rounded-sm border px-5 py-5"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, rgba(201,168,76,0.18) 0%, rgba(201,168,76,0.04) 60%, rgba(13,13,13,0.6) 100%)",
+                          boxShadow:
+                            "0 18px 60px rgba(201,168,76,0.18), inset 0 1px 0 rgba(255,255,255,0.04)",
+                        }}
                         role="status"
+                        aria-live="polite"
                       >
+                        {/* Decorative gold sheen sweep */}
+                        <div
+                          aria-hidden
+                          className="pointer-events-none absolute inset-0 opacity-50"
+                          style={{
+                            background:
+                              "radial-gradient(circle at 100% 0%, rgba(201,168,76,0.25), transparent 50%)",
+                          }}
+                        />
+
+                        {/* Status badge */}
+                        <div className="relative mb-3 inline-flex items-center gap-2">
+                          <span className="bg-gold/20 ring-gold/40 flex size-6 items-center justify-center rounded-full ring-1">
+                            <svg
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                              aria-hidden
+                              className="text-gold size-3.5"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M16.704 5.29a.75.75 0 0 1 .006 1.06l-7.5 7.55a.75.75 0 0 1-1.07.006L3.29 8.964a.75.75 0 0 1 1.06-1.06l4.32 4.318 6.972-7.022a.75.75 0 0 1 1.06-.006Z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </span>
+                          <span className="text-gold font-mono text-[10px] tracking-[0.32em] uppercase">
+                            {signupSuccess === "already" ? "Already Ohana" : "Ohana Confirmed"}
+                          </span>
+                        </div>
+
                         {signupSuccess === "already" ? (
                           <>
-                            <p className="text-gold font-serif text-base italic">
+                            <p className="font-display text-text relative text-xl leading-tight tracking-[0.04em] uppercase">
                               You&apos;re already on the list, ohana.
                             </p>
-                            <p className="text-muted mt-2 text-sm leading-relaxed">
+                            <p className="text-muted relative mt-3 text-sm leading-relaxed">
                               Sit tight — we&apos;re cooking something very special for the
                               ohana, and you&apos;ll be the first to know when it drops.
-                            </p>
-                            <p className="text-muted mt-3 font-mono text-[10px] tracking-[0.2em] uppercase">
-                              Mahalo for being family.
                             </p>
                           </>
                         ) : (
                           <>
-                            <p className="text-gold font-serif text-base italic">
+                            <p className="font-display text-text relative text-xl leading-tight tracking-[0.04em] uppercase">
                               You&apos;re in. Welcome to the ohana.
                             </p>
-                            <p className="text-muted mt-2 text-sm leading-relaxed">
+                            <p className="text-muted relative mt-3 text-sm leading-relaxed">
                               We&apos;re cooking something very special for the ohana, and
                               you&apos;ll be the first to know when it drops.
                             </p>
-                            <p className="text-muted mt-3 font-mono text-[10px] tracking-[0.2em] uppercase">
-                              Mahalo for joining the family.
-                            </p>
                           </>
                         )}
-                      </div>
+
+                        {/* Special-password tease card */}
+                        <div
+                          className="border-gold/25 relative mt-4 flex items-start gap-3 rounded-sm border bg-black/35 px-3.5 py-3"
+                        >
+                          <span
+                            aria-hidden
+                            className="bg-gold/15 ring-gold/30 mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-sm ring-1"
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth={1.5}
+                              aria-hidden
+                              className="text-gold size-4"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m12 0H4.5a1.5 1.5 0 0 0-1.5 1.5v7.5a1.5 1.5 0 0 0 1.5 1.5h15a1.5 1.5 0 0 0 1.5-1.5V12a1.5 1.5 0 0 0-1.5-1.5Z"
+                              />
+                            </svg>
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-gold font-mono text-[9px] tracking-[0.3em] uppercase">
+                              When the drop lands
+                            </p>
+                            <p className="text-text mt-1 text-[13px] leading-snug">
+                              We&apos;ll email you a{" "}
+                              <span className="text-gold font-semibold">
+                                private VIP password
+                              </span>{" "}
+                              that unlocks the drop before it goes public. Watch your inbox.
+                            </p>
+                          </div>
+                        </div>
+
+                        <p className="text-faint relative mt-4 text-center font-mono text-[10px] tracking-[0.3em] uppercase">
+                          🌴 &nbsp;Mahalo for{" "}
+                          {signupSuccess === "already" ? "being" : "joining the"} family
+                        </p>
+                      </motion.div>
                     ) : (
                       <form onSubmit={handleSignup} className="flex flex-col gap-3" noValidate>
                         <label htmlFor="vip-email" className="sr-only">
@@ -600,7 +677,7 @@ export default function SiteLockScreen() {
                               : {}
                           }
                           whileTap={!signupLoading ? { scale: 0.975 } : {}}
-                          className="bg-gold text-bg font-display flex w-full items-center justify-center gap-3 rounded-sm py-4 text-base font-black tracking-[0.2em] uppercase transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+                          className="bg-gold text-bg font-display flex w-full cursor-pointer items-center justify-center gap-3 rounded-sm py-4 text-base font-black tracking-[0.2em] uppercase transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
                           style={{ boxShadow: "var(--shadow-metallic)" }}
                         >
                           {signupLoading ? "Joining..." : "Get First Access"}

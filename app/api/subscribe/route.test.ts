@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { NextRequest } from "next/server";
 
 vi.mock("server-only", () => ({}));
 
@@ -10,7 +11,7 @@ vi.mock("@/lib/klaviyo", () => ({
 
 import { POST } from "./route";
 
-function makeRequest(body: unknown): Request {
+function makeRequest(body: unknown): NextRequest {
   return new Request("http://localhost/api/subscribe", {
     method: "POST",
     headers: {
@@ -18,7 +19,7 @@ function makeRequest(body: unknown): Request {
       Origin: "http://localhost",
     },
     body: JSON.stringify(body),
-  });
+  }) as unknown as NextRequest;
 }
 
 describe("POST /api/subscribe", () => {
