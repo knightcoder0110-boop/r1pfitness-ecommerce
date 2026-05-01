@@ -55,6 +55,56 @@ async function isAlreadyOnList(email: string): Promise<boolean> {
   return Array.isArray(json?.data) && json.data.length > 0;
 }
 
+/**
+ * Fire a "Joined VIP List" metric event for `email`.
+ *
+ * This triggers any Klaviyo Flow that has "Metric: Joined VIP List" as its
+ * entry condition — e.g. the VIP welcome email flow. The event is fired
+ * fire-and-forget after a successful NEW subscription (not for duplicates).
+ *
+ * Klaviyo automatically creates the profile if it doesn't exist yet and
+ * associates the event with the existing profile when it does.
+ */
+async function trackVIPSignupEvent(email: string, apiKey: string): Promise<void> {
+  const res = await fetch(`${KLAVIYO_API_BASE}/events/`, {
+    method: "POST",
+    headers: {
+      Authorization: `Klaviyo-API-Key ${apiKey}`,
+      "Content-Type": "application/json",
+      revision: "2024-10-15",
+    },
+    body: JSON.stringify({
+      data: {
+        type: "event",
+        attributes: {
+          metric: {
+            data: {
+              type: "metric",
+              attributes: { name: "Joined VIP List" },
+            },
+          },
+          profile: {
+            data: {
+              type: "profile",
+              attributes: { email },
+            },
+          },
+          properties: {
+            source: "VIP signup form",
+          },
+          time: new Date().toISOString(),
+        },
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Klaviyo event track failed (HTTP ${res.status}): ${body}`);
+  }
+  console.log(`[Klaviyo] ✓ Fired "Joined VIP List" event for ${email}`);
+}
+
 export async function subscribeToKlaviyo(email: string): Promise<SubscribeResult> {
   const apiKey = process.env.KLAVIYO_PRIVATE_API_KEY;
   const listId = process.env.KLAVIYO_LIST_ID;
@@ -125,6 +175,12 @@ export async function subscribeToKlaviyo(email: string): Promise<SubscribeResult
 
     if (res.ok || res.status === 202) {
       console.log(`[Klaviyo] ✓ Successfully subscribed ${email} (HTTP ${res.status})`);
+      // Fire a metric event so a "Joined VIP List" Klaviyo Flow can send the
+      // welcome email. We fire-and-forget — a failure here must never block
+      // the subscription success response.
+      trackVIPSignupEvent(email, apiKey).catch((err) =>
+        console.warn("[Klaviyo] VIP event track failed (non-fatal):", err),
+      );
       return { success: true };
     }
 
