@@ -169,6 +169,7 @@ export interface EmitResult {
 
 export interface SubscribeResult {
   ok: boolean;
+  alreadySubscribed?: boolean;
   error?: string;
 }
 
