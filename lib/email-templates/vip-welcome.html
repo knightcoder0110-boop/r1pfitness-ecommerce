@@ -555,13 +555,70 @@
               </td>
             </tr>
 
+            <!-- ── Instagram ─────────────────────────────────────── -->
+            <tr>
+              <td align="center" style="padding: 28px 56px 0 56px;">
+                <a
+                  href="https://www.instagram.com/r1pfitness/"
+                  target="_blank"
+                  style="display: inline-block; text-decoration: none;"
+                >
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <!-- Instagram icon — PNG, no SVG (Klaviyo strips SVG) -->
+                      <td
+                        width="40" height="40"
+                        align="center" valign="middle"
+                        style="width: 40px; height: 40px; padding: 0;"
+                      >
+                        <img
+                          src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/96px-Instagram_icon.png"
+                          alt="Instagram"
+                          width="40" height="40"
+                          style="display: block; width: 40px; height: 40px; border-radius: 10px;"
+                        />
+                      </td>
+                      <!-- Spacer -->
+                      <td width="12" style="width: 12px;">&nbsp;</td>
+                      <!-- Text label -->
+                      <td
+                        valign="middle"
+                        style="
+                          border: 1px solid rgba(201, 168, 76, 0.3);
+                          border-radius: 3px;
+                          padding: 12px 20px;
+                          background-color: rgba(201, 168, 76, 0.07);
+                          vertical-align: middle;
+                        "
+                      >
+                        <p
+                          class="mono"
+                          style="
+                            margin: 0;
+                            color: #c9a84c;
+                            font-size: 10px;
+                            letter-spacing: 0.3em;
+                            line-height: 1;
+                            white-space: nowrap;
+                          "
+                        >
+                          @R1PFITNESS &nbsp;&#8250;&nbsp; FOLLOW ON INSTAGRAM
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </a>
+              </td>
+            </tr>
+
             <!-- ── Footer ────────────────────────────────────────── -->
             <tr>
               <td
                 class="px-mobile"
                 align="center"
                 style="
-                  padding: 22px 56px;
+                  padding: 28px 56px 22px 56px;
+                  margin-top: 32px;
                   background-color: #0a0a0a;
                   border-top: 1px solid rgba(255, 255, 255, 0.06);
                   color: #6a6557;
@@ -579,7 +636,7 @@
                 >r1pfitness.com</a>.<br />
                 If this wasn&rsquo;t you, you can
                 <a
-                  href="{% unsubscribe %}"
+                  href="{{ unsubscribe_link }}"
                   style="color: #c9a84c; text-decoration: underline;"
                 >unsubscribe here</a>.
                 <br /><br />
