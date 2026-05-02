@@ -68,14 +68,11 @@ interface CategoryPageProps {
 }
 
 export async function generateStaticParams() {
-  try {
-    const categories = await getCatalog().listCategories();
-    return categories.map((c) => ({ category: c.slug }));
-  } catch {
-    // If Woo is unreachable at build time, skip pre-generation.
-    // Pages are still rendered on-demand via dynamicParams = true (the default).
-    return [];
-  }
+  // Build-time prerendering against the live Woo catalog is too slow / flaky
+  // (Cloudways is unreachable from Vercel build IPs intermittently). Skip
+  // pre-generation entirely; pages render on first visit via dynamicParams
+  // (default true) and are cached/revalidated thereafter.
+  return [];
 }
 
 export async function generateMetadata(

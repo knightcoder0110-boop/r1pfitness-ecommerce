@@ -43,6 +43,9 @@ export const POST = withApi({
       });
     }
 
-    return { subscribed: true };
+    return {
+      subscribed: true,
+      alreadySubscribed: result.alreadySubscribed === true,
+    };
   },
 });

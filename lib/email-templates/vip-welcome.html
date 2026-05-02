@@ -1,0 +1,651 @@
+<!--
+  R1P FITNESS — VIP WELCOME EMAIL
+  ────────────────────────────────────────────────────────────────────────────
+  Paste this HTML into a Klaviyo "drag-and-drop" template ►  Source mode,
+  OR into a "code-only" template, OR into any transactional sender that
+  accepts raw HTML.
+
+  Drop-in tokens (Klaviyo personalization):
+    {{ first_name|default:'Ohana' }}
+    {{ event.specialPasswordHint|default:"" }}
+
+  Tested visually against:
+    - Apple Mail (light + dark)
+    - Gmail web (light + dark)
+    - Gmail iOS / Android
+    - Outlook 2019/365 (Windows + Mac)
+    - Yahoo Mail web
+  ────────────────────────────────────────────────────────────────────────────
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta name="color-scheme" content="dark only" />
+    <meta name="supported-color-schemes" content="dark only" />
+    <title>Welcome to the R1P Ohana</title>
+    <!--[if mso]>
+      <style type="text/css">
+        table { border-collapse: collapse; }
+        .mso-display-block { display: block !important; }
+      </style>
+      <noscript>
+        <xml>
+          <o:OfficeDocumentSettings>
+            <o:PixelsPerInch>96</o:PixelsPerInch>
+            <o:AllowPNG />
+          </o:OfficeDocumentSettings>
+        </xml>
+      </noscript>
+    <![endif]-->
+    <style>
+      /* ── Reset ─────────────────────────────────────────────────────── */
+      body,
+      table,
+      td,
+      a {
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+      }
+      table,
+      td {
+        mso-table-lspace: 0pt;
+        mso-table-rspace: 0pt;
+      }
+      img {
+        -ms-interpolation-mode: bicubic;
+        border: 0;
+        height: auto;
+        line-height: 100%;
+        outline: none;
+        text-decoration: none;
+        display: block;
+      }
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        background-color: #0d0d0d;
+      }
+      a {
+        text-decoration: none;
+      }
+
+      /* ── Type ──────────────────────────────────────────────────────── */
+      .display {
+        font-family: "Bebas Neue", "Oswald", "Helvetica Neue", Arial, sans-serif;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+      .body-text {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+      }
+      .mono {
+        font-family: "SF Mono", "JetBrains Mono", "Fira Code", Consolas, monospace;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+      }
+
+      /* ── Mobile ────────────────────────────────────────────────────── */
+      @media only screen and (max-width: 600px) {
+        .container {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+        .px-mobile {
+          padding-left: 24px !important;
+          padding-right: 24px !important;
+        }
+        .h1-mobile {
+          font-size: 36px !important;
+          line-height: 1.05 !important;
+        }
+        .h2-mobile {
+          font-size: 22px !important;
+        }
+        .stack-mobile {
+          width: 100% !important;
+          display: block !important;
+        }
+        .hide-mobile {
+          display: none !important;
+        }
+      }
+
+      /* ── Dark client overrides ─────────────────────────────────────── */
+      @media (prefers-color-scheme: dark) {
+        .force-dark {
+          background-color: #0d0d0d !important;
+        }
+      }
+    </style>
+  </head>
+  <body
+    class="force-dark"
+    style="
+      background-color: #0d0d0d;
+      margin: 0;
+      padding: 0;
+      color: #f4f1ea;
+    "
+  >
+    <!-- Preheader (hidden, shown in inbox preview) -->
+    <div
+      style="
+        display: none;
+        font-size: 1px;
+        line-height: 1px;
+        max-height: 0;
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        mso-hide: all;
+        font-family: sans-serif;
+      "
+    >
+      You're in. We're cooking something very special for the ohana —
+      private VIP password incoming on drop day. 🌴
+    </div>
+
+    <table
+      role="presentation"
+      cellpadding="0"
+      cellspacing="0"
+      border="0"
+      width="100%"
+      style="background-color: #0d0d0d;"
+    >
+      <tr>
+        <td align="center" style="padding: 32px 16px;">
+          <!-- ────────── CONTAINER ────────── -->
+          <table
+            class="container"
+            role="presentation"
+            cellpadding="0"
+            cellspacing="0"
+            border="0"
+            width="600"
+            style="
+              width: 600px;
+              max-width: 600px;
+              background-color: #131313;
+              border: 1px solid rgba(201, 168, 76, 0.18);
+              border-radius: 4px;
+              overflow: hidden;
+              box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+            "
+          >
+            <!-- ── Brand bar ─────────────────────────────────────── -->
+            <tr>
+              <td
+                align="center"
+                style="
+                  background:
+                    linear-gradient(
+                      135deg,
+                      rgba(201, 168, 76, 0.18) 0%,
+                      rgba(201, 168, 76, 0.04) 60%,
+                      rgba(13, 13, 13, 0.6) 100%
+                    );
+                  padding: 28px 24px 22px 24px;
+                  border-bottom: 1px solid rgba(201, 168, 76, 0.18);
+                "
+              >
+                <p
+                  class="mono"
+                  style="
+                    margin: 0;
+                    color: #c9a84c;
+                    font-size: 11px;
+                    letter-spacing: 0.32em;
+                    line-height: 1;
+                  "
+                >
+                  R1P&nbsp;FITNESS &nbsp;&middot;&nbsp; OHANA
+                </p>
+                <p
+                  class="display"
+                  style="
+                    margin: 8px 0 0 0;
+                    color: #c9a84c;
+                    font-size: 14px;
+                    letter-spacing: 0.42em;
+                    line-height: 1;
+                  "
+                >
+                  🌴 &nbsp; FIRST&nbsp;DROP&nbsp;VIP
+                </p>
+              </td>
+            </tr>
+
+            <!-- ── Hero ──────────────────────────────────────────── -->
+            <tr>
+              <td
+                class="px-mobile"
+                style="padding: 48px 56px 8px 56px; text-align: left;"
+              >
+                <p
+                  class="mono"
+                  style="
+                    margin: 0 0 14px 0;
+                    color: #c9a84c;
+                    font-size: 11px;
+                    letter-spacing: 0.3em;
+                    line-height: 1;
+                  "
+                >
+                  Ohana Confirmed
+                </p>
+                <h1
+                  class="display h1-mobile"
+                  style="
+                    margin: 0;
+                    color: #f4f1ea;
+                    font-size: 52px;
+                    line-height: 0.92;
+                    font-weight: 900;
+                    letter-spacing: 0.02em;
+                  "
+                >
+                  YOU&rsquo;RE&nbsp;IN.<br />
+                  <span style="color: #c9a84c;">WELCOME&nbsp;TO&nbsp;THE OHANA.</span>
+                </h1>
+              </td>
+            </tr>
+
+            <!-- ── Body ──────────────────────────────────────────── -->
+            <tr>
+              <td
+                class="body-text px-mobile"
+                style="
+                  padding: 24px 56px 8px 56px;
+                  color: #c2bdb1;
+                  font-size: 16px;
+                  line-height: 1.65;
+                "
+              >
+                Aloha {{ first_name|default:'Ohana' }},
+                <br /><br />
+                We&rsquo;re cooking something very special for the ohana, and
+                you&rsquo;ll be the first to know when it drops. No public
+                noise. No lines. Just the family &mdash; you in, the rest
+                out.
+              </td>
+            </tr>
+
+            <!-- ── VIP Password Card ─────────────────────────────── -->
+            <tr>
+              <td class="px-mobile" style="padding: 28px 56px 12px 56px;">
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  border="0"
+                  width="100%"
+                  style="
+                    border: 1px solid rgba(201, 168, 76, 0.32);
+                    border-radius: 4px;
+                    background:
+                      linear-gradient(
+                        135deg,
+                        rgba(201, 168, 76, 0.14) 0%,
+                        rgba(13, 13, 13, 0.4) 100%
+                      );
+                  "
+                >
+                  <tr>
+                    <td style="padding: 22px 22px 22px 22px;">
+                      <p
+                        class="mono"
+                        style="
+                          margin: 0;
+                          color: #c9a84c;
+                          font-size: 10px;
+                          letter-spacing: 0.34em;
+                          line-height: 1;
+                        "
+                      >
+                        🔐 &nbsp;When&nbsp;the&nbsp;drop&nbsp;lands
+                      </p>
+                      <p
+                        class="display"
+                        style="
+                          margin: 12px 0 8px 0;
+                          color: #f4f1ea;
+                          font-size: 22px;
+                          line-height: 1.15;
+                          letter-spacing: 0.05em;
+                        "
+                      >
+                        Your private VIP password is on the way.
+                      </p>
+                      <p
+                        class="body-text"
+                        style="
+                          margin: 0;
+                          color: #c2bdb1;
+                          font-size: 15px;
+                          line-height: 1.55;
+                        "
+                      >
+                        On drop day we&rsquo;ll email you a
+                        <strong style="color: #c9a84c;">private password</strong>
+                        that unlocks the launch before it goes public. Watch
+                        your inbox &mdash; and add
+                        <a
+                          href="mailto:hello@r1pfitness.com"
+                          style="color: #c9a84c; text-decoration: underline;"
+                        >hello@r1pfitness.com</a>
+                        to your contacts so it doesn&rsquo;t get filtered.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- ── What's coming (3-up) ──────────────────────────── -->
+            <tr>
+              <td class="px-mobile" style="padding: 32px 56px 8px 56px;">
+                <p
+                  class="mono"
+                  style="
+                    margin: 0 0 18px 0;
+                    color: #8a857a;
+                    font-size: 10px;
+                    letter-spacing: 0.3em;
+                    line-height: 1;
+                  "
+                >
+                  What being ohana means
+                </p>
+                <table
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  border="0"
+                  width="100%"
+                >
+                  <tr>
+                    <td
+                      class="stack-mobile"
+                      width="33%"
+                      valign="top"
+                      style="
+                        padding: 16px 14px;
+                        border: 1px solid rgba(255, 255, 255, 0.06);
+                        border-radius: 4px;
+                        background-color: rgba(255, 255, 255, 0.02);
+                      "
+                    >
+                      <p
+                        class="display"
+                        style="
+                          margin: 0;
+                          color: #c9a84c;
+                          font-size: 13px;
+                          letter-spacing: 0.18em;
+                        "
+                      >
+                        Early Access
+                      </p>
+                      <p
+                        class="body-text"
+                        style="
+                          margin: 8px 0 0 0;
+                          color: #c2bdb1;
+                          font-size: 13px;
+                          line-height: 1.5;
+                        "
+                      >
+                        Shop every limited drop before it goes public.
+                      </p>
+                    </td>
+                    <td class="hide-mobile" width="3%">&nbsp;</td>
+                    <td
+                      class="stack-mobile"
+                      width="33%"
+                      valign="top"
+                      style="
+                        padding: 16px 14px;
+                        border: 1px solid rgba(255, 255, 255, 0.06);
+                        border-radius: 4px;
+                        background-color: rgba(255, 255, 255, 0.02);
+                      "
+                    >
+                      <p
+                        class="display"
+                        style="
+                          margin: 0;
+                          color: #c9a84c;
+                          font-size: 13px;
+                          letter-spacing: 0.18em;
+                        "
+                      >
+                        Secret Releases
+                      </p>
+                      <p
+                        class="body-text"
+                        style="
+                          margin: 8px 0 0 0;
+                          color: #c2bdb1;
+                          font-size: 13px;
+                          line-height: 1.5;
+                        "
+                      >
+                        Family-only pieces you won&rsquo;t see anywhere else.
+                      </p>
+                    </td>
+                    <td class="hide-mobile" width="3%">&nbsp;</td>
+                    <td
+                      class="stack-mobile"
+                      width="33%"
+                      valign="top"
+                      style="
+                        padding: 16px 14px;
+                        border: 1px solid rgba(255, 255, 255, 0.06);
+                        border-radius: 4px;
+                        background-color: rgba(255, 255, 255, 0.02);
+                      "
+                    >
+                      <p
+                        class="display"
+                        style="
+                          margin: 0;
+                          color: #c9a84c;
+                          font-size: 13px;
+                          letter-spacing: 0.18em;
+                        "
+                      >
+                        VIP Pricing
+                      </p>
+                      <p
+                        class="body-text"
+                        style="
+                          margin: 8px 0 0 0;
+                          color: #c2bdb1;
+                          font-size: 13px;
+                          line-height: 1.5;
+                        "
+                      >
+                        Ohana-only discounts and surprise gifts.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- ── CTA ───────────────────────────────────────────── -->
+            <tr>
+              <td class="px-mobile" align="center" style="padding: 36px 56px 8px 56px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td
+                      align="center"
+                      bgcolor="#c9a84c"
+                      style="
+                        border-radius: 3px;
+                        background-color: #c9a84c;
+                        box-shadow: 0 12px 40px rgba(201, 168, 76, 0.25);
+                      "
+                    >
+                      <a
+                        href="https://r1pfitness.com"
+                        class="display"
+                        style="
+                          display: inline-block;
+                          padding: 16px 36px;
+                          color: #0d0d0d;
+                          font-size: 14px;
+                          font-weight: 900;
+                          letter-spacing: 0.22em;
+                          text-decoration: none;
+                        "
+                      >
+                        VISIT&nbsp;R1P&nbsp;FITNESS &nbsp;&rarr;
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- ── Mantra ────────────────────────────────────────── -->
+            <tr>
+              <td
+                class="px-mobile"
+                align="center"
+                style="padding: 24px 56px 8px 56px;"
+              >
+                <p
+                  class="mono"
+                  style="
+                    margin: 0;
+                    color: #8a857a;
+                    font-size: 10px;
+                    line-height: 1.8;
+                    letter-spacing: 0.28em;
+                  "
+                >
+                  Discipline connects us.&nbsp;&nbsp;Purpose drives us.<br />
+                  Passion defines us. &nbsp;<span style="color: #c9a84c;">We are 1R&nbsp;P.</span>
+                </p>
+              </td>
+            </tr>
+
+            <!-- ── Sign-off ──────────────────────────────────────── -->
+            <tr>
+              <td
+                class="body-text px-mobile"
+                style="
+                  padding: 28px 56px 36px 56px;
+                  color: #c2bdb1;
+                  font-size: 15px;
+                  line-height: 1.6;
+                  text-align: left;
+                "
+              >
+                Mahalo for joining the family.<br />
+                <span style="color: #c9a84c;">— The R1P Ohana</span>
+              </td>
+            </tr>
+
+            <!-- ── Instagram ─────────────────────────────────────── -->
+            <tr>
+              <td align="center" style="padding: 28px 56px 0 56px;">
+                <a
+                  href="https://www.instagram.com/r1pfitness/"
+                  target="_blank"
+                  style="display: inline-block; text-decoration: none;"
+                >
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <!-- Instagram icon — PNG, no SVG (Klaviyo strips SVG) -->
+                      <td
+                        width="40" height="40"
+                        align="center" valign="middle"
+                        style="width: 40px; height: 40px; padding: 0;"
+                      >
+                        <img
+                          src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Instagram_icon.png/96px-Instagram_icon.png"
+                          alt="Instagram"
+                          width="40" height="40"
+                          style="display: block; width: 40px; height: 40px; border-radius: 10px;"
+                        />
+                      </td>
+                      <!-- Spacer -->
+                      <td width="12" style="width: 12px;">&nbsp;</td>
+                      <!-- Text label -->
+                      <td
+                        valign="middle"
+                        style="
+                          border: 1px solid rgba(201, 168, 76, 0.3);
+                          border-radius: 3px;
+                          padding: 12px 20px;
+                          background-color: rgba(201, 168, 76, 0.07);
+                          vertical-align: middle;
+                        "
+                      >
+                        <p
+                          class="mono"
+                          style="
+                            margin: 0;
+                            color: #c9a84c;
+                            font-size: 10px;
+                            letter-spacing: 0.3em;
+                            line-height: 1;
+                            white-space: nowrap;
+                          "
+                        >
+                          @R1PFITNESS &nbsp;&#8250;&nbsp; FOLLOW ON INSTAGRAM
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
+                </a>
+              </td>
+            </tr>
+
+            <!-- ── Footer ────────────────────────────────────────── -->
+            <tr>
+              <td
+                class="px-mobile"
+                align="center"
+                style="
+                  padding: 28px 56px 22px 56px;
+                  margin-top: 32px;
+                  background-color: #0a0a0a;
+                  border-top: 1px solid rgba(255, 255, 255, 0.06);
+                  color: #6a6557;
+                  font-size: 11px;
+                  line-height: 1.7;
+                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                    Roboto, Arial, sans-serif;
+                "
+              >
+                You&rsquo;re receiving this because you joined the R1P
+                Fitness VIP list at
+                <a
+                  href="https://r1pfitness.com"
+                  style="color: #c9a84c; text-decoration: none;"
+                >r1pfitness.com</a>.<br />
+                If this wasn&rsquo;t you, you can
+                <a
+                  href="{{ unsubscribe_link }}"
+                  style="color: #c9a84c; text-decoration: underline;"
+                >unsubscribe here</a>.
+                <br /><br />
+                R1P Fitness &middot; Ohana Forever &middot; 🌴
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

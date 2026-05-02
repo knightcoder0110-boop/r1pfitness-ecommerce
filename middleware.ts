@@ -21,6 +21,11 @@ const LOCK_BYPASS_PREFIXES = [
   // an explicit bypass, Apple's verification crawler would receive the
   // /locked HTML page and refuse to register the domain.
   "/.well-known",
+  // Newsletter / VIP-list signup. The site-lock screen itself collects
+  // emails via this endpoint, so it MUST work without the unlock cookie
+  // — otherwise every "Join the Ohana" submission redirects to /locked
+  // and fetch sees an HTML body, surfacing as a generic error to the user.
+  "/api/subscribe",
 ];
 
 function isBypassPath(pathname: string): boolean {

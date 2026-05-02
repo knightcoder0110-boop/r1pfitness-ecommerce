@@ -16,7 +16,12 @@ export const revalidate = 3600;
 
 export default async function CollectionsPage() {
   const catalog = getCatalog();
-  const categories = await catalog.listCategories();
+  let categories: Awaited<ReturnType<typeof catalog.listCategories>> = [];
+  try {
+    categories = await catalog.listCategories();
+  } catch {
+    // Woo unreachable at build/render time — show empty-state UI.
+  }
 
   // Filter out the uncategorized / root category
   const displayCategories = categories.filter((c) => c.slug !== "uncategorized");
